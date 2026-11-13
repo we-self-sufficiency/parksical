@@ -181,7 +181,7 @@ class DefaultMissionJudge : MissionJudge {
         val all = results.toList() + d.stages.drop(results.size).map {
             StageResult(it.index, it.mission, 0, note, false)
         }
-        return RunRecord(d.lotId, mode, startedAtMs, durationMs, totalShifts, all, trace.toList(), events.toList())
+        return RunRecord(d.lotId, mode, startedAtMs, durationMs, totalShifts, all, trace.toList(), events.toList(), cleared = note.isEmpty())
     }
 
     private fun record(s: VehicleState) {

@@ -63,6 +63,8 @@ data class RunRecord(
     val stageResults: List<StageResult>,
     val trace: List<TracePoint>,
     val events: List<TraceEvent>,
+    /** True only when the last stage ended with P in time (not aborted, not timed out). */
+    val cleared: Boolean = false,
 ) {
     val totalStars: Int get() = stageResults.sumOf { it.stars }
 }

@@ -53,6 +53,7 @@ class MissionJudgeTest {
         assertEquals(listOf(3, 3, 3), rec.stageResults.map { it.stars })
         assertTrue(rec.stageResults[2].summary.contains("타임어택"))
         assertTrue(rec.trace.isNotEmpty())
+        assertTrue(rec.cleared)
     }
 
     @Test fun spiralStopsAreCounted() {
@@ -104,6 +105,7 @@ class MissionJudgeTest {
         feed(Gear.DRIVE, 12f)
         val st = judge.status.value as RunStatus.Aborted
         assertEquals("저속 상한 초과로 미션이 중단됐어요", st.reason)
+        assertEquals(false, st.partial.cleared)
     }
 
     @Test fun shortSpeedSpikeDoesNotAbort() {
@@ -124,6 +126,7 @@ class MissionJudgeTest {
         val rec = (judge.status.value as RunStatus.Finished).record
         assertEquals(listOf(3, 0, 0), rec.stageResults.map { it.stars })
         assertEquals("시간 초과", rec.stageResults[1].summary)
+        assertEquals(false, rec.cleared)
     }
 
     @Test fun practiceHasNoTimeLimit() {

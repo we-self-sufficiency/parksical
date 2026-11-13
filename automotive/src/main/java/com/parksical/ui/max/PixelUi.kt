@@ -181,8 +181,7 @@ internal fun MissionType.supported(c: VehicleCapabilities): Boolean = when (this
 }
 
 /** A CHALLENGE record counts as a stamp only when every stage was judged (aborted partials have fewer). */
-internal fun RunRecord.cleared(dungeon: Dungeon?): Boolean =
-    dungeon != null && stageResults.size >= dungeon.stages.size
+internal fun RunRecord.cleared(@Suppress("UNUSED_PARAMETER") dungeon: Dungeon?): Boolean = cleared
 
 internal fun stampsOf(base: Int, records: List<RunRecord>, dungeonOf: (String) -> Dungeon?): Int =
     base + records.count { it.mode == RunMode.CHALLENGE && it.cleared(dungeonOf(it.lotId)) }

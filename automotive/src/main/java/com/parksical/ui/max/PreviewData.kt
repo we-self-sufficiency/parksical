@@ -24,6 +24,6 @@ internal object SampleData {
         }
         val events = List(shifts) { TraceEvent(40_000L + it * 3000L, 120f + it * 9f, TraceEventType.GEAR_CHANGE) } +
             List(sharp) { TraceEvent(15_000L + it * 8000L, 45f + it * 40f, TraceEventType.SHARP_STEER) }
-        return RunRecord("daon", mode, 0L, durMs, shifts, if (full) results(stars) else results(stars).take(1), trace, events)
+        return RunRecord("daon", mode, 0L, durMs, shifts, if (full) results(stars) else results(stars).take(1), trace, events, cleared = full)
     }
 }

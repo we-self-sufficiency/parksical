@@ -1,0 +1,12 @@
+{
+  "lotId": "66666666-6666-4666-8666-666666666666",
+  "lotVersion": 1,
+  "status": "INSUFFICIENT_SAMPLES",
+  "source": "SYNTHETIC",
+  "privacyStatus": "DEVELOPMENT_ONLY_NOT_ANONYMIZED",
+  "ruleVersion": "reviews-v1",
+  "sampleCount": 1,
+  "version": 1,
+  "updatedAt": "2026-11-14T00:00:00.000Z",
+  "score": null
+}

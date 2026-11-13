@@ -32,7 +32,20 @@
     "difficulty-query.json": "DifficultyQuery",
     "lot-search-query.json": "LotSearchQuery",
     "lot-search-page.json": "LotPage",
-    "lot-detail.json": "LotDetail"
+    "lot-detail.json": "LotDetail",
+    "review-create.json": "ReviewCreate",
+    "review-update.json": "ReviewUpdate",
+    "review-delete.json": "ReviewDelete",
+    "review-receipt.json": "ReviewReceipt",
+    "review-private.json": "PrivateReview",
+    "review-mine.json": "ReviewMine",
+    "review-deleted.json": "ReviewReceipt",
+    "review-aggregate.json": "ReviewAggregateResponse",
+    "review-aggregate-small.json": "ReviewAggregateResponse",
+    "review-difficulty.json": "DifficultyResponse",
+    "review-rebuild.json": "ReviewRebuild",
+    "review-rebuilt.json": "ReviewRebuildReceipt",
+    "review-updated.json": "ReviewReceipt"
   },
   "cases": [
     {
@@ -200,6 +213,59 @@
       "status": 200,
       "schema": "LotDetail",
       "example": "lot-detail.json"
+    },
+    {
+      "name": "createReview synthetic development",
+      "operationId": "createReview",
+      "status": 201,
+      "schema": "ReviewReceipt",
+      "example": "review-receipt.json",
+      "requestExample": "review-create.json"
+    },
+    {
+      "name": "getReview synthetic development",
+      "operationId": "getReview",
+      "status": 200,
+      "schema": "PrivateReview",
+      "example": "review-private.json"
+    },
+    {
+      "name": "getMyLotReview synthetic development",
+      "operationId": "getMyLotReview",
+      "status": 200,
+      "schema": "ReviewMine",
+      "example": "review-mine.json"
+    },
+    {
+      "name": "updateReview synthetic development",
+      "operationId": "updateReview",
+      "status": 200,
+      "schema": "ReviewReceipt",
+      "example": "review-updated.json",
+      "requestExample": "review-update.json"
+    },
+    {
+      "name": "deleteReview synthetic development",
+      "operationId": "deleteReview",
+      "status": 200,
+      "schema": "ReviewReceipt",
+      "example": "review-deleted.json",
+      "requestExample": "review-delete.json"
+    },
+    {
+      "name": "getReviewAggregate synthetic development",
+      "operationId": "getReviewAggregate",
+      "status": 200,
+      "schema": "ReviewAggregateResponse",
+      "example": "review-aggregate.json"
+    },
+    {
+      "name": "rebuildReviewAggregate synthetic development",
+      "operationId": "rebuildReviewAggregate",
+      "status": 201,
+      "schema": "ReviewRebuildReceipt",
+      "example": "review-rebuilt.json",
+      "requestExample": "review-rebuild.json"
     }
   ],
   "negativeCases": [
@@ -438,6 +504,72 @@
         "sort": "INVALID"
       },
       "reason": "unknown sort"
+    },
+    {
+      "schema": "ReviewCreate",
+      "baseExample": "review-create.json",
+      "set": {
+        "rating": "INVALID"
+      },
+      "reason": "review enum"
+    },
+    {
+      "schema": "ReviewCreate",
+      "baseExample": "review-create.json",
+      "set": {
+        "source": "OBSERVED"
+      },
+      "reason": "no real input"
+    },
+    {
+      "schema": "ReviewCreate",
+      "baseExample": "review-create.json",
+      "set": {
+        "rawSignals": [
+          1
+        ]
+      },
+      "reason": "no raw signals"
+    },
+    {
+      "schema": "ReviewCreate",
+      "baseExample": "review-create.json",
+      "set": {
+        "lotVersion": 0
+      },
+      "reason": "positive lot version"
+    },
+    {
+      "schema": "ReviewCreate",
+      "baseExample": "review-create.json",
+      "set": {
+        "visitId": "not-uuid"
+      },
+      "reason": "strict visit UUID"
+    },
+    {
+      "schema": "ReviewAggregateResponse",
+      "baseExample": "review-aggregate-small.json",
+      "set": {
+        "score": 1
+      },
+      "reason": "small sample mean withheld"
+    },
+    {
+      "schema": "ReviewAggregateResponse",
+      "baseExample": "review-aggregate.json",
+      "set": {
+        "userId": "77777777-7777-4777-8777-777777777777"
+      },
+      "reason": "no account identifier in aggregate"
+    },
+    {
+      "schema": "ReviewUpdate",
+      "baseExample": "review-update.json",
+      "set": {
+        "expectedVersion": 0
+      },
+      "reason": "positive optimistic version"
     }
   ]
 }

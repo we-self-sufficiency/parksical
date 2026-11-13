@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.6.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management and S-07 authenticated difficulty read are implemented. Public search/detail remain design. No production deployment, real sources, actual SDK validation or physical parkability assessment is claimed."
+    "version": "0.7.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed."
   },
   "servers": [
     {
@@ -381,7 +381,7 @@
     "/lots": {
       "get": {
         "operationId": "listLots",
-        "description": "WEB or VEHICLE bearer; active SYNTHETIC catalog only. No occupancy, geocoding, verified discount eligibility or MAX availability. Synthetic navigation coordinates have usable=false. No-store; session limit 300 reads/5 min. See docs/lot-search.md. Radius defaults to 3000m (1..20000), or all four bounds (non-wrapping, diagonal <=40km and each axis <=1 degree). Origin latitude/longitude always required. Distance is unrounded spherical Haversine metres, R=6371008.8. EASIEST uses difficulty-v1 unroundedScore null-last, ties by distance then UUID. At most 1000 matching current lots; excess returns 422 SEARCH_TOO_BROAD. Cursor binds normalized query/year and catalog versions; changed catalog returns 409 SEARCH_CHANGED. Unknown fields/malformed pairs are 400. Listed discounts are conditions, not eligibility.",
+        "description": "WEB or VEHICLE bearer; active SYNTHETIC catalog only. No occupancy, geocoding, verified discount eligibility or MAX availability. Synthetic navigation coordinates have usable=false. No-store; session limit 300 reads/5 min. See docs/lot-search.md. Radius defaults to 3000m (1..20000), or all four bounds (non-wrapping, diagonal <=40km and each axis <=1 degree). Origin latitude/longitude always required. Distance is unrounded spherical Haversine metres, R=6371008.8. EASIEST uses difficulty-v1 unroundedScore null-last, ties by distance then UUID. At most 1000 matching current lots; excess returns 422 SEARCH_TOO_BROAD. Cursor binds normalized query/year and catalog versions; changed catalog returns 409 SEARCH_CHANGED. Unknown fields/malformed pairs are 400. Listed discounts are conditions, not eligibility. S-08 optional synthetic review aggregate metadata. Default disabled preserves prior calculation; explicit opt-in uses stored same-version reviews, count<5 excluded and score withheld. No actual collection/anonymization approval. Aggregate version changes invalidate search cursor.",
         "responses": {
           "200": {
             "description": "Success",
@@ -649,7 +649,7 @@
     "/lots/{lotId}": {
       "get": {
         "operationId": "getLot",
-        "description": "WEB or VEHICLE bearer; active SYNTHETIC catalog only. No occupancy, geocoding, verified discount eligibility or MAX availability. Synthetic navigation coordinates have usable=false. No-store; session limit 300 reads/5 min. See docs/lot-search.md. Current or historical active revision; both current and requested must remain active. Full versioned geometry, source/rights, fees/hours/photos and identical S-07 calculation evidence.",
+        "description": "WEB or VEHICLE bearer; active SYNTHETIC catalog only. No occupancy, geocoding, verified discount eligibility or MAX availability. Synthetic navigation coordinates have usable=false. No-store; session limit 300 reads/5 min. See docs/lot-search.md. Current or historical active revision; both current and requested must remain active. Full versioned geometry, source/rights, fees/hours/photos and identical S-07 calculation evidence. S-08 optional synthetic review aggregate metadata. Default disabled preserves prior calculation; explicit opt-in uses stored same-version reviews, count<5 excluded and score withheld. No actual collection/anonymization approval. Aggregate version changes invalidate search cursor.",
         "responses": {
           "200": {
             "description": "Success",
@@ -2512,7 +2512,7 @@
     "/lots/{lotId}/difficulty": {
       "get": {
         "operationId": "getLotDifficulty",
-        "description": "Authenticated WEB or VEHICLE read of an active synthetic lot. Weighted-factor heuristic from authored structure score and built year; missing/insufficient aggregates excluded. Minimum weight 40%, correction and final clipping/rounding are versioned. No geometry-derived structure grade, raw signals, sample fabrication, parkability claim or production activation. Cache-Control: no-store.",
+        "description": "Authenticated WEB or VEHICLE read of an active synthetic lot. Weighted-factor heuristic from authored structure score and built year; missing/insufficient aggregates excluded. Minimum weight 40%, correction and final clipping/rounding are versioned. No geometry-derived structure grade, raw signals, sample fabrication, parkability claim or production activation. Cache-Control: no-store. S-08 optional synthetic review aggregate metadata. Default disabled preserves prior calculation; explicit opt-in uses stored same-version reviews, count<5 excluded and score withheld. No actual collection/anonymization approval. Aggregate version changes invalidate search cursor.",
         "security": [
           {
             "bearerAuth": []
@@ -2728,7 +2728,16 @@
                     "SYNTHETIC_DATA",
                     "PARTIAL_DATA",
                     "REFERENCE_VEHICLE_USED"
-                  ]
+                  ],
+                  "reviewAggregation": {
+                    "status": "DISABLED",
+                    "source": "SYNTHETIC",
+                    "privacyStatus": "DEVELOPMENT_ONLY_NOT_ANONYMIZED",
+                    "ruleVersion": "reviews-v1",
+                    "sampleCount": null,
+                    "version": null,
+                    "updatedAt": null
+                  }
                 }
               }
             }
@@ -2759,6 +2768,597 @@
           },
           "503": {
             "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/reviews": {
+      "post": {
+        "operationId": "createReview",
+        "description": "Synthetic development reviews only. Requires non-production DEV auth and explicit DEV_REVIEWS_ENABLED. Real data/collection/anonymization policy D-02 remains pending. No-store; own private data only, aggregate has no account/visit/review IDs. WEB or VEHICLE bearer. One owner/lot/revision visit and review, own synthetic visit must match lot/version. Duplicate 409 REVIEW_ALREADY_EXISTS, deleted tombstone 409 REVIEW_DELETED. No visit ingestion endpoint.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_REVIEW",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic result/immutable mutation receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reviews/me": {
+      "get": {
+        "operationId": "getMyLotReview",
+        "description": "Synthetic development reviews only. Requires non-production DEV auth and explicit DEV_REVIEWS_ENABLED. Real data/collection/anonymization policy D-02 remains pending. No-store; own private data only, aggregate has no account/visit/review IDs. WEB or VEHICLE bearer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_REVIEW",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lotVersion",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic result/immutable mutation receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewMine"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        }
+      }
+    },
+    "/reviews/{reviewId}": {
+      "get": {
+        "operationId": "getReview",
+        "description": "Synthetic development reviews only. Requires non-production DEV auth and explicit DEV_REVIEWS_ENABLED. Real data/collection/anonymization policy D-02 remains pending. No-store; own private data only, aggregate has no account/visit/review IDs. WEB or VEHICLE bearer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_REVIEW",
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic result/immutable mutation receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivateReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateReview",
+        "description": "Synthetic development reviews only. Requires non-production DEV auth and explicit DEV_REVIEWS_ENABLED. Real data/collection/anonymization policy D-02 remains pending. No-store; own private data only, aggregate has no account/visit/review IDs. WEB or VEHICLE bearer. expectedVersion required. All review/projection/receipt writes commit or rollback together. Replay never adds a sample. Delete clears rating; no re-create for same visit.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_REVIEW",
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic result/immutable mutation receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewUpdate"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteReview",
+        "description": "Synthetic development reviews only. Requires non-production DEV auth and explicit DEV_REVIEWS_ENABLED. Real data/collection/anonymization policy D-02 remains pending. No-store; own private data only, aggregate has no account/visit/review IDs. WEB or VEHICLE bearer. expectedVersion required. All review/projection/receipt writes commit or rollback together. Replay never adds a sample. Delete clears rating; no re-create for same visit.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_REVIEW",
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic result/immutable mutation receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewDelete"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lots/{lotId}/reviews/aggregate": {
+      "get": {
+        "operationId": "getReviewAggregate",
+        "description": "Synthetic development reviews only. Requires non-production DEV auth and explicit DEV_REVIEWS_ENABLED. Real data/collection/anonymization policy D-02 remains pending. No-store; own private data only, aggregate has no account/visit/review IDs. WEB or VEHICLE bearer. Means withheld below 5 samples. Minimum count is a development quality rule, not anonymity proof. Current and requested revisions must be active.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_REVIEW",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lotVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic result/immutable mutation receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewAggregateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        }
+      }
+    },
+    "/admin/lots/{lotId}/revisions/{version}/review-aggregate/rebuild": {
+      "post": {
+        "operationId": "rebuildReviewAggregate",
+        "description": "Synthetic development reviews only. Requires non-production DEV auth and explicit DEV_REVIEWS_ENABLED. Real data/collection/anonymization policy D-02 remains pending. No-store; own private data only, aggregate has no account/visit/review IDs. ADMIN+WEB only.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic result/immutable mutation receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRebuildReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRebuild"
+              }
+            }
           }
         }
       }
@@ -5920,6 +6520,9 @@
                 "REFERENCE_VEHICLE_USED"
               ]
             }
+          },
+          "reviewAggregation": {
+            "$ref": "#/components/schemas/ReviewAggregation"
           }
         },
         "required": [
@@ -5938,7 +6541,8 @@
           "vehicle",
           "factors",
           "rule",
-          "caveats"
+          "caveats",
+          "reviewAggregation"
         ],
         "allOf": [
           {
@@ -6139,6 +6743,9 @@
                 "REFERENCE_VEHICLE_USED"
               ]
             }
+          },
+          "reviewAggregation": {
+            "$ref": "#/components/schemas/ReviewAggregation"
           }
         },
         "required": [
@@ -6150,7 +6757,8 @@
           "asOfYear",
           "vehicle",
           "coverage",
-          "caveats"
+          "caveats",
+          "reviewAggregation"
         ],
         "allOf": [
           {
@@ -6428,6 +7036,444 @@
         "required": [
           "latitude",
           "longitude"
+        ]
+      },
+      "ReviewAggregation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DISABLED",
+              "NO_SAMPLES",
+              "INSUFFICIENT_SAMPLES",
+              "READY"
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "privacyStatus": {
+            "const": "DEVELOPMENT_ONLY_NOT_ANONYMIZED"
+          },
+          "ruleVersion": {
+            "const": "reviews-v1"
+          },
+          "sampleCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "source",
+          "privacyStatus",
+          "ruleVersion",
+          "sampleCount",
+          "version",
+          "updatedAt"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "DISABLED"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "sampleCount": {
+                  "type": "null"
+                },
+                "version": {
+                  "type": "null"
+                },
+                "updatedAt": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "READY"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "sampleCount": {
+                  "type": "integer",
+                  "minimum": 5
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ReviewCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "visitId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rating": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "NORMAL",
+              "HARD"
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "lotVersion",
+          "visitId",
+          "rating"
+        ]
+      },
+      "ReviewUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "rating": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "NORMAL",
+              "HARD"
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "rating"
+        ]
+      },
+      "ReviewDelete": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "ReviewReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reviewId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "reviewId",
+          "version",
+          "deleted",
+          "aggregateVersion"
+        ]
+      },
+      "PrivateReview": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "visitId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rating": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "NORMAL",
+              "HARD"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "visitId",
+          "rating",
+          "version",
+          "source",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ReviewMine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivateReview"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "review"
+        ]
+      },
+      "ReviewAggregateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DISABLED",
+              "NO_SAMPLES",
+              "INSUFFICIENT_SAMPLES",
+              "READY"
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "privacyStatus": {
+            "const": "DEVELOPMENT_ONLY_NOT_ANONYMIZED"
+          },
+          "ruleVersion": {
+            "const": "reviews-v1"
+          },
+          "sampleCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5,
+                "multipleOf": 1e-06
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "lotVersion",
+          "status",
+          "source",
+          "privacyStatus",
+          "ruleVersion",
+          "sampleCount",
+          "version",
+          "updatedAt",
+          "score"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "DISABLED",
+                    "NO_SAMPLES",
+                    "INSUFFICIENT_SAMPLES"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "score": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ReviewRebuild": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ruleVersion": {
+            "const": "reviews-v1"
+          }
+        },
+        "required": [
+          "ruleVersion"
+        ]
+      },
+      "ReviewRebuildReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "const": "reviews-v1"
+          }
+        },
+        "required": [
+          "lotId",
+          "lotVersion",
+          "aggregateVersion",
+          "ruleVersion"
         ]
       }
     },

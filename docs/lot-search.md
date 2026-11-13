@@ -49,7 +49,7 @@ cursor는 버전 있는 주차장 후보 목록과 정렬에 영향을 주는 qu
 
 모든 현재 자료는 SYNTHETIC이다. navigation은 WGS84 좌표를 제공하되 **usable=false, reason=SYNTHETIC_COORDINATE**로 실제 NaviHelper 목적지 설정에 사용하지 않도록 한다. 서버가 내비를 실행하지 않는다. challenge는 available=false/status=NOT_CONFIGURED다. 별점이나 관리자 challengeAllowed만으로 운영 장소·시간·미션·차량 조건을 충족했다고 표시하지 않는다. 실제 점유/빈자리 수 필드는 제공하지 않는다.
 
-전체 JSON: [query](examples/lot-search-query.json), [검색 페이지](examples/lot-search-page.json), [상세·32면 구조](examples/lot-detail.json). [OpenAPI](openapi.json) 문서 버전은 0.6.0이며 차량 이벤트 contractVersion 1.0은 유지된다.
+전체 JSON: [query](examples/lot-search-query.json), [검색 페이지](examples/lot-search-page.json), [상세·32면 구조](examples/lot-detail.json). [OpenAPI](openapi.json) 문서 버전은 0.7.0이며 차량 이벤트 contractVersion 1.0은 유지된다.
 
 ## 오류·재시도·개인정보
 
@@ -70,4 +70,6 @@ migration은 LotRevision에 기본 빈 배열 discountCodes와 source/active/lat
 
 검증은 단위 거리/극점·날짜변경선/범위·엄격 DTO·동률/null·페이지, 실제 PostgreSQL의 필터·거리/차량 기준 정렬·인증/폐기·상세/과거/비활성·기존 난이도 동일성·로그 제외·후보 초과와 3000개 추가 fixture에서 실제 후보 SQL의 EXPLAIN을 포함한다. 실측 정확도·실제 도로거리·SDK/배포 검증으로 보고하지 않는다.
 
-develop 머지 직후 Wiki Home의 API 준비 현황·날짜/#8/머지 PR 기록과 검색·상세 가이드를 갱신하고 기존 Parking Lot Data/Difficulty의 후속 표현을 맞춘다. 실제 반영 전 Wiki 항목은 완료로 체크하지 않는다. D-01/D-02/D-03/D-04/D-06의 운영 결정은 그대로 남는다.
+PR #27 develop 통합 뒤 Wiki Home과 [Lot Search](https://github.com/we-self-sufficiency/parksical-server/wiki/Lot-Search)에 API/예제·검증 상태를 반영하고 기존 주차장/난이도 안내를 맞췄다. S-08 리뷰 opt-in·집계 metadata의 Wiki 반영은 해당 PR 머지 후 수행한다. D-01/D-02/D-03/D-04/D-06의 운영 결정은 그대로 남는다.
+
+S-08에서 난이도 요약/상세의 reviewAggregation을 추가했다. 기본 비활성은 기존 계산을 유지하고 명시적 합성 리뷰 opt-in·원자 집계/표본/버전 변경은 [reviews.md](reviews.md)를 따른다. 후보의 리뷰 집계 버전 변경도 SEARCH_CHANGED를 일으킨다.

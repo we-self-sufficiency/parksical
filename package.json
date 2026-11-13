@@ -18,7 +18,8 @@
     "seed:synthetic": "node dist/lots/seed.js",
     "test": "tsc -p tsconfig.test.json && node --test test-build/test/unit/*.test.js",
     "test:integration": "tsc -p tsconfig.test.json && node test-build/test/run-db-tests.js",
-    "verify": "npm run generate && npm run lint && npm run typecheck && npm test && npm run build"
+    "verify": "npm run generate && npm run lint && npm run typecheck && npm test && npm run build",
+    "seed:review-visit": "node dist/reviews/visit-seed.js"
   },
   "dependencies": {
     "@nestjs/common": "12.5.0",

@@ -27,7 +27,7 @@ const hash=(v:unknown)=>createHash('sha256').update(JSON.stringify(v)).digest('h
 export function queryFingerprint(q:LotSearchQuery,year:number) {
   return hash({latitude:q.latitude,longitude:q.longitude,bounds:searchBounds(q),limit:q.limit??20,sort:q.sort??'DISTANCE',ownership:q.ownership??null,partnered:q.partnered??null,discountCode:q.discountCode??null,vehicleStatus:q.vehicleStatus??null,vehicleLengthMm:q.vehicleLengthMm??null,vehicleWidthMm:q.vehicleWidthMm??null,asOfYear:year,ruleVersion:q.ruleVersion??'difficulty-v1'});
 }
-export function pageItems<T extends {id:string;version:number;distanceM:number;difficulty:{unroundedScore:number|null}}>(items:T[],q:LotSearchQuery,year:number) {
+export function pageItems<T extends {id:string;version:number;distanceM:number;difficulty:{unroundedScore:number|null;reviewAggregation?:{version:number|null}}}>(items:T[],q:LotSearchQuery,year:number) {
   items.sort((a,b)=>{
     const av=a.difficulty.unroundedScore,bv=b.difficulty.unroundedScore;
     if(q.sort==='EASIEST' && av!==bv) {
@@ -36,7 +36,7 @@ export function pageItems<T extends {id:string;version:number;distanceM:number;d
     }
     return a.distanceM-b.distanceM || (a.id<b.id?-1:a.id>b.id?1:0);
   });
-  const query=queryFingerprint(q,year),catalog=hash(items.map(x=>[x.id,x.version]));let offset=0;
+  const query=queryFingerprint(q,year),catalog=hash(items.map(x=>[x.id,x.version,x.difficulty.reviewAggregation?.version??null]));let offset=0;
   if(q.cursor!==undefined) {
     let cursor: {query:string;catalog:string;offset:number};
     try {

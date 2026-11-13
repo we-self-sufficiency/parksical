@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<title>주차장 상세 난이도</title>
+<script src="d1f7bebf-9b49-4cd1-938b-b79e0d952149"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;family=Do+Hyeon&amp;family=Press+Start+2P&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4C9BFF}a:hover{color:#7DB6FF}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; background: #0E1013; color: #F2F4F6; font-family: 'Noto Sans KR', sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+  <header style="height: 72px; box-sizing: border-box; padding: 0 24px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #262A31; background: #121418">
+    <a href="Main.dc.html" aria-label="뒤로" style="width: 44px; height: 44px; border-radius: 12px; background: #1C2026; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" sc-camel-view-box="0 0 20 20" aria-hidden="true"><path d="M12 4l-6 6 6 6" fill="none" stroke="#F2F4F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 20px; font-weight: 700">다온빌딩 부설주차장</h1>
+    <span style="font-size: 14px; color: #A9B0BA">목적지 건물 내 · 지하 1~4층</span>
+  </header>
+
+  <div style="flex: 1; display: flex; gap: 24px; padding: 24px; box-sizing: border-box; min-height: 0">
+
+    <section style="width: 520px; display: flex; flex-direction: column; gap: 16px">
+      <div style="height: 240px; border-radius: 16px; background: #1A1D22; border: 1px dashed #3A404A; display: flex; align-items: center; justify-content: center; color: #A9B0BA; font-size: 14px">[주차장 진입로 사진]</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <div style="padding: 16px; border-radius: 14px; background: #1A1D22"><div style="font-size: 13px; color: #A9B0BA">요금</div><div style="margin-top: 6px; font-size: 18px; font-weight: 700">30분 2,500원</div></div>
+        <div style="padding: 16px; border-radius: 14px; background: #1A1D22"><div style="font-size: 13px; color: #A9B0BA">운영</div><div style="margin-top: 6px; font-size: 18px; font-weight: 700">07:00–22:00</div></div>
+        <div style="padding: 16px; border-radius: 14px; background: #1A1D22"><div style="font-size: 13px; color: #A9B0BA">준공</div><div style="margin-top: 6px; font-size: 18px; font-weight: 700">1998년</div></div>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: auto">
+        <button type="button" style="flex: 1; height: 64px; border: 0; border-radius: 14px; background: #4C9BFF; color: #0E1013; font: inherit; font-size: 18px; font-weight: 700">길안내 시작</button>
+        <button type="button" style="flex: 1; height: 64px; border: 1px solid #3A404A; border-radius: 14px; background: transparent; color: #F2F4F6; font: inherit; font-size: 18px; font-weight: 500">더 쉬운 주차장 보기</button>
+      </div>
+    </section>
+
+    <section style="flex: 1; display: flex; flex-direction: column; gap: 16px">
+      <div style="padding: 24px; border-radius: 16px; background: #1A1D22; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <div>
+            <div style="font-size: 14px; color: #A9B0BA">내 차 기준 주차 난이도</div>
+            <div style="margin-top: 4px; display: flex; align-items: baseline; gap: 10px">
+              <span style="font-size: 44px; font-weight: 700; color: #FF8A3D">★ 4.5</span>
+              <span style="font-size: 16px; color: #C9CED6">/ 5 · 어려움</span>
+            </div>
+          </div>
+          <div style="padding: 12px 16px; border-radius: 12px; background: #22262D; font-size: 13px; color: #C9CED6; line-height: 20px">
+            내 차(대형 세단) ★4.5<br>
+            소형차 기준 ★3.5
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <sc-for list="{{factors}}" as="f" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 150px 1fr 48px; align-items: center; gap: 14px">
+              <span style="font-size: 15px">{{f.label}}</span>
+              <div style="height: 10px; border-radius: 5px; background: #2C313A; overflow: hidden"><div style="height: 10px; border-radius: 5px; background: #FF8A3D; width: {{f.width}}"></div></div>
+              <span style="font-size: 15px; font-weight: 700; text-align: right">{{f.score}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <span style="padding: 6px 10px; border-radius: 8px; background: #22262D; color: #C9CED6; font-size: 13px">나선 경사로 2바퀴</span>
+          <span style="padding: 6px 10px; border-radius: 8px; background: #22262D; color: #C9CED6; font-size: 13px">진입로 폭 좁음</span>
+          <span style="padding: 6px 10px; border-radius: 8px; background: #22262D; color: #C9CED6; font-size: 13px">평균 전후진 전환 4.2회</span>
+          <span style="padding: 6px 10px; border-radius: 8px; background: #22262D; color: #C9CED6; font-size: 13px">리뷰 128건</span>
+        </div>
+      </div>
+
+      <a href="Confirm1.dc.html" style="display: flex; align-items: center; gap: 20px; padding: 20px 24px; background: #1B120C; border: 4px solid #FF8A3D; box-shadow: 6px 6px 0 #7A3A10; color: #F2F4F6; text-decoration: none">
+        <svg width="56" height="56" sc-camel-view-box="0 0 14 14" aria-hidden="true" shape-rendering="crispEdges">
+          <rect x="2" y="1" width="10" height="12" fill="#F2E3C6"></rect><rect x="2" y="1" width="10" height="1" fill="#C9A86A"></rect><rect x="2" y="12" width="10" height="1" fill="#C9A86A"></rect>
+          <rect x="4" y="4" width="6" height="1" fill="#7A3A10"></rect><rect x="4" y="6" width="6" height="1" fill="#7A3A10"></rect><rect x="4" y="8" width="4" height="1" fill="#7A3A10"></rect>
+          <rect x="9" y="9" width="3" height="3" fill="#D9412B"></rect>
+        </svg>
+        <div style="flex: 1">
+          <div style="font-family: 'Do Hyeon', sans-serif; font-size: 26px; color: #FFB27F">도전장이 도착했습니다</div>
+          <div style="margin-top: 4px; font-size: 14px; color: #C9CED6">고수 모드 개방 · 매주 토 22:30–02:00 · 미션 3개</div>
+        </div>
+        <span style="font-family: 'Press Start 2P', monospace; font-size: 14px; color: #0E1013; background: #FF8A3D; padding: 14px 16px">GO ▶</span>
+      </a>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:800}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      factors: [
+        { label: '주차장 구조', score: '4.8', width: '96%' },
+        { label: '이용자 리뷰', score: '4.3', width: '86%' },
+        { label: '주행 데이터 집계', score: '4.5', width: '90%' },
+        { label: '건물 연식', score: '4.0', width: '80%' }
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>

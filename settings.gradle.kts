@@ -19,6 +19,9 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://nexus-playground.pleos.ai/repository/maven-releases/")
         }
+        maven {
+            url = uri("https://repository.map.naver.com/archive/maven")
+        }
     }
 }
 

@@ -4250,6 +4250,14 @@
               "$ref": "#/components/schemas/LotPillar"
             },
             "description": "Omitted = not mapped; [] = mapped but none. COMPLETE requires explicit arrays and at least one parking space. Whole JSON request remains limited to 64KiB."
+          },
+          "driveAisles": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/DriveAisle"
+            },
+            "description": "Explicit free-space drive corridors. COMPLETE requires connected aisles and approach geometry for every space."
           }
         },
         "required": [
@@ -4280,7 +4288,7 @@
           "entrances",
           "ramps"
         ],
-        "description": "Versioned lot structure, including parking spaces and rectangular pillars. Layout containment and interior overlaps are validated per floor. Boundary touching is allowed. active means administratively enabled, never FREE/OCCUPIED. COMPLETE requires known geometry for every space/pillar."
+        "description": "Versioned structure with individual bays, protected pillar islands, connected drive aisles and unobstructed approach rectangles. Checks are planar geometric checks, not car-specific swept-path, building-code or ramp design approval."
       },
       "AdminLotCreate": {
         "type": "object",
@@ -4521,6 +4529,16 @@
                 "type": "null"
               }
             ]
+          },
+          "approach": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpaceApproach"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -4605,6 +4623,30 @@
                 "type": "null"
               }
             ]
+          },
+          "islandWidthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "islandDepthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 20000
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -4615,6 +4657,102 @@
           "widthMm",
           "depthMm",
           "rotationDegrees"
+        ]
+      },
+      "SpaceApproach": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "aisleId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "FRONT",
+              "REAR"
+            ]
+          },
+          "depthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 20000
+          },
+          "lateralClearanceMm": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3000
+          }
+        },
+        "required": [
+          "aisleId",
+          "side",
+          "depthMm",
+          "lateralClearanceMm"
+        ],
+        "description": "Clear rectangular approach from the specified bay edge, not a collision-free vehicle trajectory. Depth must be at least the referenced aisle width. Entire area must avoid other bays/pillar islands, enter the same-floor/zone aisle and remain inside the zone."
+      },
+      "DriveAisle": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "floorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "zoneId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "center": {
+            "$ref": "#/components/schemas/LotPoint"
+          },
+          "widthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 20000
+          },
+          "lengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 100000
+          },
+          "headingDegrees": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 359.99,
+            "multipleOf": 0.01
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "TWO_WAY",
+              "ONE_WAY"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "zoneId",
+          "center",
+          "widthMm",
+          "lengthMm",
+          "headingDegrees",
+          "direction"
         ]
       }
     },

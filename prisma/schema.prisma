@@ -231,6 +231,7 @@ model LotZone {
   rampsTo   LotRamp[] @relation("RampToZone")
   parkingSpaces ParkingSpace[]
   pillars LotPillar[]
+  driveAisles LotDriveAisle[]
   @@id([lotId, version, id])
   @@unique([lotId, version, floorId, id])
 }
@@ -280,7 +281,9 @@ model ParkingSpace {
   label   String @db.VarChar(32)
   type    String @db.VarChar(16)
   active  Boolean
+  aisleId String? @db.VarChar(32)
   zone LotZone @relation(fields: [lotId, version, floorId, zoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
+  aisle LotDriveAisle? @relation(fields: [lotId, version, floorId, zoneId, aisleId], references: [lotId, version, floorId, zoneId, id], onDelete: Restrict)
   @@id([lotId, version, id])
   @@unique([lotId, version, floorId, label])
   @@unique([lotId, version, floorId, zoneId, id])
@@ -294,4 +297,16 @@ model LotPillar {
   zoneId  String @db.VarChar(32)
   zone LotZone @relation(fields: [lotId, version, floorId, zoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
   @@id([lotId, version, id])
+}
+
+model LotDriveAisle {
+  lotId String @db.Uuid
+  version Int
+  id String @db.VarChar(32)
+  floorId String @db.VarChar(32)
+  zoneId String @db.VarChar(32)
+  zone LotZone @relation(fields: [lotId, version, floorId, zoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
+  spaces ParkingSpace[]
+  @@id([lotId, version, id])
+  @@unique([lotId, version, floorId, zoneId, id])
 }

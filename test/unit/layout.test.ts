@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fitsZone, footprintsOverlap, pillarFootprint, spaceFootprint } from '../../src/lots/layout.js';
+import { approachFootprint, fitsZone, footprintsOverlap, pillarFootprint, spaceFootprint } from '../../src/lots/layout.js';
 import type { ParkingSpaceDto, PillarDto } from '../../src/lots/dto.js';
 
 const rectangle=(x:number,y:number,w:number,h:number)=>[{x,y},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h}];
@@ -25,4 +25,12 @@ test('containment checks concave boundaries between corners, not just bounding b
   assert.equal(fitsZone(rectangle(1,1,8,8),zone),false,'narrow notch intersects rectangle away from its midpoint');
   assert.equal(fitsZone(rectangle(1,1,4,8),zone),true);
   assert.equal(fitsZone(rectangle(-1,1,2,2),zone),false);
+});
+test('a pillar can block maneuvering even when it does not overlap the parking bay',()=>{
+  const p={center:{x:10,y:8.6},widthMm:2600,lengthMm:5200,headingDegrees:90,approach:{aisleId:'main',side:'FRONT',depthMm:6800,lateralClearanceMm:500}} as ParkingSpaceDto;
+  const pillar=rectangle(9.7,11.3,.6,.6);
+  assert.equal(footprintsOverlap(spaceFootprint(p)!,pillar),false,'old bay-only check misses this obstruction');
+  assert.equal(footprintsOverlap(approachFootprint(p)!,pillar),true,'maneuvering area must stay empty');
+  const box=approachFootprint(p)!;
+  assert.ok(Math.abs(Math.max(...box.map(x=>x.y))-18)<1e-8);
 });

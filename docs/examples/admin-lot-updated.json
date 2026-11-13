@@ -182,12 +182,18 @@
         "type": "ACCESSIBLE",
         "active": true,
         "center": {
-          "x": 3.0,
-          "y": 5.5
+          "x": 8.15,
+          "y": 8.6
         },
-        "widthMm": 3200,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s02",
@@ -197,27 +203,39 @@
         "type": "EV",
         "active": true,
         "center": {
-          "x": 5.9,
-          "y": 5.5
+          "x": 11.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s03",
         "floorId": "ground",
         "zoneId": "ground-a",
         "label": "1F-A03",
-        "type": "EV",
+        "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 8.8,
-          "y": 5.5
+          "x": 15.6,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s04",
@@ -227,12 +245,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 11.7,
-          "y": 5.5
+          "x": 18.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s05",
@@ -242,12 +266,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 14.6,
-          "y": 5.5
+          "x": 22.6,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s06",
@@ -257,12 +287,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 17.5,
-          "y": 5.5
+          "x": 25.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s07",
@@ -272,12 +308,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 20.4,
-          "y": 5.5
+          "x": 29.6,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s08",
@@ -287,42 +329,60 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 23.3,
-          "y": 5.5
+          "x": 32.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s09",
         "floorId": "ground",
         "zoneId": "ground-a",
         "label": "1F-A09",
-        "type": "GENERAL",
+        "type": "ACCESSIBLE",
         "active": true,
         "center": {
-          "x": 26.2,
-          "y": 5.5
+          "x": 8.15,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s10",
         "floorId": "ground",
         "zoneId": "ground-a",
         "label": "1F-A10",
-        "type": "GENERAL",
+        "type": "EV",
         "active": true,
         "center": {
-          "x": 29.1,
-          "y": 5.5
+          "x": 11.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s11",
@@ -332,12 +392,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 32.0,
-          "y": 5.5
+          "x": 15.6,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s12",
@@ -347,12 +413,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 34.9,
-          "y": 5.5
+          "x": 18.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s13",
@@ -362,12 +434,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 3.0,
-          "y": 24.5
+          "x": 22.6,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s14",
@@ -377,12 +455,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 5.9,
-          "y": 24.5
+          "x": 25.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s15",
@@ -392,12 +476,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 8.8,
-          "y": 24.5
+          "x": 29.6,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "ground-s16",
@@ -407,132 +497,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 11.7,
-          "y": 24.5
+          "x": 32.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s17",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A17",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 14.6,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s18",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A18",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 17.5,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s19",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A19",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 20.4,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s20",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A20",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 23.3,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s21",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A21",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 26.2,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s22",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A22",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 29.1,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s23",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A23",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 32.0,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "ground-s24",
-        "floorId": "ground",
-        "zoneId": "ground-a",
-        "label": "1F-A24",
-        "type": "COMPACT",
-        "active": true,
-        "center": {
-          "x": 34.9,
-          "y": 24.5
-        },
-        "widthMm": 2200,
-        "lengthMm": 4500,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s01",
@@ -542,12 +518,18 @@
         "type": "ACCESSIBLE",
         "active": true,
         "center": {
-          "x": 3.0,
-          "y": 5.5
+          "x": 8.15,
+          "y": 8.6
         },
-        "widthMm": 3200,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s02",
@@ -557,27 +539,39 @@
         "type": "EV",
         "active": true,
         "center": {
-          "x": 5.9,
-          "y": 5.5
+          "x": 11.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s03",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "label": "B1-A03",
-        "type": "EV",
+        "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 8.8,
-          "y": 5.5
+          "x": 15.6,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s04",
@@ -587,12 +581,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 11.7,
-          "y": 5.5
+          "x": 18.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s05",
@@ -602,12 +602,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 14.6,
-          "y": 5.5
+          "x": 22.6,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s06",
@@ -617,12 +623,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 17.5,
-          "y": 5.5
+          "x": 25.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s07",
@@ -632,12 +644,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 20.4,
-          "y": 5.5
+          "x": 29.6,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s08",
@@ -647,42 +665,60 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 23.3,
-          "y": 5.5
+          "x": 32.2,
+          "y": 8.6
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s09",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "label": "B1-A09",
-        "type": "GENERAL",
+        "type": "ACCESSIBLE",
         "active": true,
         "center": {
-          "x": 26.2,
-          "y": 5.5
+          "x": 8.15,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s10",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "label": "B1-A10",
-        "type": "GENERAL",
+        "type": "EV",
         "active": true,
         "center": {
-          "x": 29.1,
-          "y": 5.5
+          "x": 11.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s11",
@@ -692,12 +728,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 32.0,
-          "y": 5.5
+          "x": 15.6,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s12",
@@ -707,12 +749,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 34.9,
-          "y": 5.5
+          "x": 18.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 90
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s13",
@@ -722,12 +770,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 3.0,
-          "y": 24.5
+          "x": 22.6,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s14",
@@ -737,12 +791,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 5.9,
-          "y": 24.5
+          "x": 25.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s15",
@@ -752,12 +812,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 8.8,
-          "y": 24.5
+          "x": 29.6,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       },
       {
         "id": "basement1-s16",
@@ -767,132 +833,18 @@
         "type": "GENERAL",
         "active": true,
         "center": {
-          "x": 11.7,
-          "y": 24.5
+          "x": 32.2,
+          "y": 21.4
         },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s17",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A17",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 14.6,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s18",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A18",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 17.5,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s19",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A19",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 20.4,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s20",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A20",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 23.3,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s21",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A21",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 26.2,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s22",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A22",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 29.1,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s23",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A23",
-        "type": "GENERAL",
-        "active": true,
-        "center": {
-          "x": 32.0,
-          "y": 24.5
-        },
-        "widthMm": 2500,
-        "lengthMm": 5000,
-        "headingDegrees": 270
-      },
-      {
-        "id": "basement1-s24",
-        "floorId": "basement1",
-        "zoneId": "basement-a",
-        "label": "B1-A24",
-        "type": "COMPACT",
-        "active": true,
-        "center": {
-          "x": 34.9,
-          "y": 24.5
-        },
-        "widthMm": 2200,
-        "lengthMm": 4500,
-        "headingDegrees": 270
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
       }
     ],
     "pillars": [
@@ -901,144 +853,300 @@
         "floorId": "ground",
         "zoneId": "ground-a",
         "center": {
-          "x": 10,
-          "y": 10
+          "x": 13.4,
+          "y": 8.6
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "ground-p02",
         "floorId": "ground",
         "zoneId": "ground-a",
         "center": {
-          "x": 20,
-          "y": 10
+          "x": 20.4,
+          "y": 8.6
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "ground-p03",
         "floorId": "ground",
         "zoneId": "ground-a",
         "center": {
-          "x": 30,
-          "y": 10
+          "x": 27.4,
+          "y": 8.6
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "ground-p04",
         "floorId": "ground",
         "zoneId": "ground-a",
         "center": {
-          "x": 10,
-          "y": 20
+          "x": 13.4,
+          "y": 21.4
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "ground-p05",
         "floorId": "ground",
         "zoneId": "ground-a",
         "center": {
-          "x": 20,
-          "y": 20
+          "x": 20.4,
+          "y": 21.4
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "ground-p06",
         "floorId": "ground",
         "zoneId": "ground-a",
         "center": {
-          "x": 30,
-          "y": 20
+          "x": 27.4,
+          "y": 21.4
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "basement1-p01",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "center": {
-          "x": 10,
-          "y": 10
+          "x": 13.4,
+          "y": 8.6
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "basement1-p02",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "center": {
-          "x": 20,
-          "y": 10
+          "x": 20.4,
+          "y": 8.6
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "basement1-p03",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "center": {
-          "x": 30,
-          "y": 10
+          "x": 27.4,
+          "y": 8.6
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "basement1-p04",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "center": {
-          "x": 10,
-          "y": 20
+          "x": 13.4,
+          "y": 21.4
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "basement1-p05",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "center": {
-          "x": 20,
-          "y": 20
+          "x": 20.4,
+          "y": 21.4
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
       },
       {
         "id": "basement1-p06",
         "floorId": "basement1",
         "zoneId": "basement-a",
         "center": {
-          "x": 30,
-          "y": 20
+          "x": 27.4,
+          "y": 21.4
         },
         "widthMm": 600,
         "depthMm": 600,
-        "rotationDegrees": 0
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      }
+    ],
+    "driveAisles": [
+      {
+        "id": "ground-central",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-west",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 3,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-east",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 37,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-south",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20,
+          "y": 3
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-north",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20,
+          "y": 27
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-central",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-west",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 3,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-east",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 37,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-south",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20,
+          "y": 3
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-north",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20,
+          "y": 27
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
       }
     ]
   }

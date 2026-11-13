@@ -1,4 +1,4 @@
-import type { ParkingSpaceDto, PillarDto, PointDto } from './dto.js';
+import type { DriveAisleDto, ParkingSpaceDto, PillarDto, PointDto } from './dto.js';
 
 const EPS = 1e-8;
 const cross = (a: PointDto, b: PointDto) => a.x * b.y - a.y * b.x;
@@ -18,6 +18,19 @@ export function pillarFootprint(p: PillarDto) {
   return p.center !== null && p.widthMm !== null && p.depthMm !== null && p.rotationDegrees !== null
     ? rectangle(p.center, p.widthMm, p.depthMm, p.rotationDegrees) : null;
 }
+export function pillarIslandFootprint(p: PillarDto) {
+  return p.center !== null && p.rotationDegrees !== null && p.islandWidthMm != null && p.islandDepthMm != null
+    ? rectangle(p.center,p.islandWidthMm,p.islandDepthMm,p.rotationDegrees) : pillarFootprint(p);
+}
+export function aisleFootprint(p: DriveAisleDto) { return rectangle(p.center,p.widthMm,p.lengthMm,p.headingDegrees-90); }
+export function approachFootprint(p: ParkingSpaceDto) {
+  if (!p.approach || p.center === null || p.headingDegrees === null || p.lengthMm === null || p.widthMm === null) return null;
+  const heading=p.headingDegrees+(p.approach.side==='REAR'?180:0),t=heading*Math.PI/180;
+  const offset=(p.lengthMm+p.approach.depthMm)/2000;
+  return rectangle({x:p.center.x+Math.cos(t)*offset,y:p.center.y+Math.sin(t)*offset},p.widthMm+2*p.approach.lateralClearanceMm,p.approach.depthMm,heading-90);
+}
+export function pointInPolygon(p: PointDto, polygon: PointDto[]) { return inside(p,polygon); }
+export const closePolygon = (p: PointDto[]) => [...p,p[0]!];
 function inside(p: PointDto, polygon: PointDto[]) {
   let result = false;
   for (let i = 0; i < polygon.length - 1; i++) {

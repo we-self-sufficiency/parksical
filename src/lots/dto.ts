@@ -33,6 +33,22 @@ export class RampDto {
   @ValidateIf(o => o.widthMm !== null) @IsInt() @Min(500) @Max(30000) widthMm!: number | null;
   @ValidateIf(o => o.slopePercent !== null) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(100) slopePercent!: number | null;
 }
+export class SpaceApproachDto {
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) aisleId!: string;
+  @IsIn(['FRONT', 'REAR']) side!: 'FRONT' | 'REAR';
+  @IsInt() @Min(1000) @Max(20000) depthMm!: number;
+  @IsInt() @Min(0) @Max(3000) lateralClearanceMm!: number;
+}
+export class DriveAisleDto {
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) id!: string;
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) floorId!: string;
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) zoneId!: string;
+  @IsDefined() @IsObject() @ValidateNested() @Type(() => PointDto) center!: PointDto;
+  @IsInt() @Min(1000) @Max(20000) widthMm!: number;
+  @IsInt() @Min(1000) @Max(100000) lengthMm!: number;
+  @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(359.99) headingDegrees!: number;
+  @IsIn(['TWO_WAY', 'ONE_WAY']) direction!: string;
+}
 export class ParkingSpaceDto {
   @Matches(/^[A-Za-z0-9_-]{1,32}$/) id!: string;
   @Matches(/^[A-Za-z0-9_-]{1,32}$/) floorId!: string;
@@ -44,6 +60,7 @@ export class ParkingSpaceDto {
   @ValidateIf(o => o.widthMm !== null) @IsInt() @Min(1000) @Max(10000) widthMm!: number | null;
   @ValidateIf(o => o.lengthMm !== null) @IsInt() @Min(1000) @Max(20000) lengthMm!: number | null;
   @ValidateIf(o => o.headingDegrees !== null) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(359.99) headingDegrees!: number | null;
+  @ValidateIf(o => o.approach !== undefined && o.approach !== null) @IsObject() @ValidateNested() @Type(() => SpaceApproachDto) approach?: SpaceApproachDto | null;
 }
 export class PillarDto {
   @Matches(/^[A-Za-z0-9_-]{1,32}$/) id!: string;
@@ -53,6 +70,8 @@ export class PillarDto {
   @ValidateIf(o => o.widthMm !== null) @IsInt() @Min(100) @Max(10000) widthMm!: number | null;
   @ValidateIf(o => o.depthMm !== null) @IsInt() @Min(100) @Max(10000) depthMm!: number | null;
   @ValidateIf(o => o.rotationDegrees !== null) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(359.99) rotationDegrees!: number | null;
+  @ValidateIf(o => o.islandWidthMm !== undefined && o.islandWidthMm !== null) @IsInt() @Min(100) @Max(10000) islandWidthMm?: number | null;
+  @ValidateIf(o => o.islandDepthMm !== undefined && o.islandDepthMm !== null) @IsInt() @Min(100) @Max(20000) islandDepthMm?: number | null;
 }
 export class HoursDto {
   @IsInt() @Min(1) @Max(7) day!: number;
@@ -110,6 +129,7 @@ export class LotSnapshotDto {
   // Omitted = not mapped. [] = mapped, none. COMPLETE requires explicit arrays and at least one space.
   @ValidateIf(o => o.parkingSpaces !== undefined) @IsArray() @ArrayMaxSize(200) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => ParkingSpaceDto) parkingSpaces?: ParkingSpaceDto[];
   @ValidateIf(o => o.pillars !== undefined) @IsArray() @ArrayMaxSize(100) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => PillarDto) pillars?: PillarDto[];
+  @ValidateIf(o => o.driveAisles !== undefined) @IsArray() @ArrayMaxSize(50) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => DriveAisleDto) driveAisles?: DriveAisleDto[];
 }
 export class LotCreateDto {
   @Matches(/^[a-z0-9][a-z0-9_-]{0,63}$/) code!: string;

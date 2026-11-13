@@ -100,7 +100,7 @@ for operation in operations.values():
 for case in MANIFEST['negativeCases']:
     invalid = copy.deepcopy(load_example(case['baseExample']))
     invalid.update(case.get('set', {}))
-    # Nested mutations avoid duplicating the entire 48-space fixture for one invalid field.
+    # Nested mutations avoid duplicating the entire layout fixture for one invalid field.
     for path, value in case.get('setPaths', {}).items():
         parts = path.split('.')
         target = invalid

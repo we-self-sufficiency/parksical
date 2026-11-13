@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.4.0",
-    "description": "Mixed implemented/design contract. S-03 development authentication, S-04 capability/close metadata ingestion and S-05 ADMIN+WEB synthetic parking lot/revision management are implemented. Public lot search/detail and difficulty remain design. Login D-01, driving data D-02 and real sources D-03 remain pending; no production deployment or actual SDK validation is claimed."
+    "version": "0.5.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management and S-07 authenticated difficulty read are implemented. Public search/detail remain design. No production deployment, real sources, actual SDK validation or physical parkability assessment is claimed."
   },
   "servers": [
     {
@@ -2311,6 +2311,260 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminLot"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/lots/{lotId}/difficulty": {
+      "get": {
+        "operationId": "getLotDifficulty",
+        "description": "Authenticated WEB or VEHICLE read of an active synthetic lot. Weighted-factor heuristic from authored structure score and built year; missing/insufficient aggregates excluded. Minimum weight 40%, correction and final clipping/rounding are versioned. No geometry-derived structure grade, raw signals, sample fabrication, parkability claim or production activation. Cache-Control: no-store.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "AUTHENTICATED_ACTIVE_CATALOG",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "vehicleLengthMm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 10000
+            },
+            "description": "Both dimensions must be supplied together as decimal integer query strings. Request claims, not verified SDK data."
+          },
+          {
+            "name": "vehicleWidthMm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 500,
+              "maximum": 4000
+            },
+            "description": "Body width in mm. Unknown/unsupported dimensions use explicit reference fallback; malformed dimensions return 400."
+          },
+          {
+            "name": "vehicleStatus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SUPPORTED",
+                "UNSUPPORTED",
+                "PERMISSION_DENIED",
+                "ERROR",
+                "UNKNOWN"
+              ]
+            },
+            "description": "If omitted: SUPPORTED when dimensions supplied, otherwise UNKNOWN. Non-SUPPORTED status forbids dimensions."
+          },
+          {
+            "name": "asOfYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2200
+            },
+            "description": "Year used for age calculation. Defaults to current server UTC year and is echoed; specify to reproduce results."
+          },
+          {
+            "name": "lotVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "description": "Defaults to current revision. Historical revision allowed only while both it and the current revision are active."
+          },
+          {
+            "name": "ruleVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "const": "difficulty-v1"
+            },
+            "description": "Pinned rule version; unsupported versions return 422 DIFFICULTY_RULE_UNSUPPORTED."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Score/evidence or explicit INSUFFICIENT_DATA with null scores.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DifficultyResponse"
+                },
+                "example": {
+                  "lotId": "66666666-6666-4666-8666-666666666666",
+                  "lotVersion": 1,
+                  "currentLotVersion": 1,
+                  "sourceUpdatedAt": "2026-11-13T12:00:00.000Z",
+                  "ruleVersion": "difficulty-v1",
+                  "asOfYear": 2026,
+                  "status": "SCORED",
+                  "score": 2.5,
+                  "unroundedScore": 2.254545,
+                  "baseScore": 2.254545,
+                  "dataSource": "SYNTHETIC",
+                  "coverage": {
+                    "availableWeight": 0.55,
+                    "minimumWeight": 0.4,
+                    "includedFactorCount": 2,
+                    "excludedFactors": [
+                      "review",
+                      "driving"
+                    ]
+                  },
+                  "vehicle": {
+                    "inputStatus": "UNKNOWN",
+                    "basis": "REFERENCE_DEFAULT",
+                    "dimensionsMm": {
+                      "lengthMm": 4800,
+                      "widthMm": 1850
+                    },
+                    "referenceMm": {
+                      "lengthMm": 4800,
+                      "widthMm": 1850
+                    },
+                    "rawAdjustment": 0,
+                    "appliedAdjustment": 0
+                  },
+                  "factors": [
+                    {
+                      "name": "structure",
+                      "score": 2.5,
+                      "source": "SYNTHETIC",
+                      "sampleCount": null,
+                      "origin": "AUTHORED",
+                      "status": "INCLUDED",
+                      "nominalWeight": 0.4,
+                      "normalizedWeight": 0.7272727272727273,
+                      "contribution": 1.818182
+                    },
+                    {
+                      "name": "review",
+                      "score": null,
+                      "source": "SYNTHETIC",
+                      "sampleCount": null,
+                      "origin": "AGGREGATE",
+                      "status": "MISSING_SCORE",
+                      "nominalWeight": 0.25,
+                      "normalizedWeight": 0,
+                      "contribution": null
+                    },
+                    {
+                      "name": "driving",
+                      "score": null,
+                      "source": "SYNTHETIC",
+                      "sampleCount": null,
+                      "origin": "AGGREGATE",
+                      "status": "MISSING_SCORE",
+                      "nominalWeight": 0.2,
+                      "normalizedWeight": 0,
+                      "contribution": null
+                    },
+                    {
+                      "name": "age",
+                      "score": 1.6,
+                      "source": "SYNTHETIC",
+                      "sampleCount": null,
+                      "origin": "DERIVED_BUILT_YEAR",
+                      "status": "INCLUDED",
+                      "nominalWeight": 0.15,
+                      "normalizedWeight": 0.2727272727272727,
+                      "contribution": 0.436364
+                    }
+                  ],
+                  "rule": {
+                    "version": "difficulty-v1",
+                    "weights": {
+                      "structure": 40,
+                      "review": 25,
+                      "driving": 20,
+                      "age": 15
+                    },
+                    "minimumSamples": {
+                      "review": 5,
+                      "driving": 20
+                    },
+                    "minimumCoverageWeight": 40,
+                    "referenceVehicle": {
+                      "lengthMm": 4800,
+                      "widthMm": 1850
+                    },
+                    "vehicleCorrection": {
+                      "lengthPointsPerMetre": 0.8,
+                      "widthPointsPerMetre": 1.6,
+                      "maximumAbsolutePoints": 1.5
+                    },
+                    "age": {
+                      "pointsPerYear": 0.1,
+                      "maximumYears": 40
+                    },
+                    "score": {
+                      "minimum": 1,
+                      "maximum": 5,
+                      "displayStep": 0.5,
+                      "calculationDecimals": 6
+                    }
+                  },
+                  "caveats": [
+                    "NOT_A_PARKABILITY_ASSESSMENT",
+                    "SYNTHETIC_DATA",
+                    "PARTIAL_DATA",
+                    "REFERENCE_VEHICLE_USED"
+                  ]
                 }
               }
             }
@@ -4753,6 +5007,709 @@
           "lengthMm",
           "headingDegrees",
           "direction"
+        ]
+      },
+      "DifficultyQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vehicleLengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 10000
+          },
+          "vehicleWidthMm": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 4000
+          },
+          "vehicleStatus": {
+            "type": "string",
+            "enum": [
+              "SUPPORTED",
+              "UNSUPPORTED",
+              "PERMISSION_DENIED",
+              "ERROR",
+              "UNKNOWN"
+            ]
+          },
+          "asOfYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2200
+          },
+          "lotVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "const": "difficulty-v1"
+          }
+        },
+        "required": [],
+        "dependentRequired": {
+          "vehicleLengthMm": [
+            "vehicleWidthMm"
+          ],
+          "vehicleWidthMm": [
+            "vehicleLengthMm"
+          ]
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "vehicleStatus": {
+                  "const": "SUPPORTED"
+                }
+              },
+              "required": [
+                "vehicleStatus"
+              ]
+            },
+            "then": {
+              "required": [
+                "vehicleLengthMm",
+                "vehicleWidthMm"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "vehicleStatus": {
+                  "type": "string",
+                  "enum": [
+                    "UNSUPPORTED",
+                    "PERMISSION_DENIED",
+                    "ERROR",
+                    "UNKNOWN"
+                  ]
+                }
+              },
+              "required": [
+                "vehicleStatus"
+              ]
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "vehicleLengthMm"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "vehicleWidthMm"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "DifficultyFactor": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "structure",
+              "review",
+              "driving",
+              "age"
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "SYNTHETIC",
+              "OBSERVED",
+              "UNKNOWN"
+            ]
+          },
+          "sampleCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "AUTHORED",
+              "AGGREGATE",
+              "DERIVED_BUILT_YEAR"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "INCLUDED",
+              "MISSING_SCORE",
+              "UNVERIFIED_SOURCE",
+              "SAMPLE_COUNT_UNKNOWN",
+              "INSUFFICIENT_SAMPLES",
+              "BUILT_YEAR_UNKNOWN",
+              "FUTURE_BUILT_YEAR"
+            ]
+          },
+          "nominalWeight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "normalizedWeight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "contribution": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "score",
+          "source",
+          "sampleCount",
+          "origin",
+          "status",
+          "nominalWeight",
+          "normalizedWeight",
+          "contribution"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "INCLUDED"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "score": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "contribution": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 5
+                },
+                "normalizedWeight": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "contribution": {
+                  "type": "null"
+                },
+                "normalizedWeight": {
+                  "const": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DifficultyVehicle": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "inputStatus": {
+            "type": "string",
+            "enum": [
+              "SUPPORTED",
+              "UNSUPPORTED",
+              "PERMISSION_DENIED",
+              "ERROR",
+              "UNKNOWN"
+            ]
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "PROVIDED_DIMENSIONS",
+              "REFERENCE_DEFAULT"
+            ]
+          },
+          "dimensionsMm": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lengthMm": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 10000
+              },
+              "widthMm": {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 4000
+              }
+            },
+            "required": [
+              "lengthMm",
+              "widthMm"
+            ]
+          },
+          "referenceMm": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lengthMm": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 10000
+              },
+              "widthMm": {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 4000
+              }
+            },
+            "required": [
+              "lengthMm",
+              "widthMm"
+            ]
+          },
+          "rawAdjustment": {
+            "type": "number"
+          },
+          "appliedAdjustment": {
+            "type": "number",
+            "minimum": -1.5,
+            "maximum": 1.5
+          }
+        },
+        "required": [
+          "inputStatus",
+          "basis",
+          "dimensionsMm",
+          "referenceMm",
+          "rawAdjustment",
+          "appliedAdjustment"
+        ]
+      },
+      "DifficultyCoverage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "availableWeight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "minimumWeight": {
+            "type": "number",
+            "const": 0.4
+          },
+          "includedFactorCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "excludedFactors": {
+            "type": "array",
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "structure",
+                "review",
+                "driving",
+                "age"
+              ]
+            }
+          }
+        },
+        "required": [
+          "availableWeight",
+          "minimumWeight",
+          "includedFactorCount",
+          "excludedFactors"
+        ]
+      },
+      "DifficultyRule": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "difficulty-v1"
+          },
+          "weights": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "structure": {
+                "type": "integer",
+                "const": 40
+              },
+              "review": {
+                "type": "integer",
+                "const": 25
+              },
+              "driving": {
+                "type": "integer",
+                "const": 20
+              },
+              "age": {
+                "type": "integer",
+                "const": 15
+              }
+            },
+            "required": [
+              "structure",
+              "review",
+              "driving",
+              "age"
+            ]
+          },
+          "minimumSamples": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "review": {
+                "type": "integer",
+                "const": 5
+              },
+              "driving": {
+                "type": "integer",
+                "const": 20
+              }
+            },
+            "required": [
+              "review",
+              "driving"
+            ]
+          },
+          "minimumCoverageWeight": {
+            "type": "integer",
+            "const": 40
+          },
+          "referenceVehicle": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lengthMm": {
+                "type": "integer",
+                "const": 4800
+              },
+              "widthMm": {
+                "type": "integer",
+                "const": 1850
+              }
+            },
+            "required": [
+              "lengthMm",
+              "widthMm"
+            ]
+          },
+          "vehicleCorrection": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lengthPointsPerMetre": {
+                "type": "number",
+                "const": 0.8
+              },
+              "widthPointsPerMetre": {
+                "type": "number",
+                "const": 1.6
+              },
+              "maximumAbsolutePoints": {
+                "type": "number",
+                "const": 1.5
+              }
+            },
+            "required": [
+              "lengthPointsPerMetre",
+              "widthPointsPerMetre",
+              "maximumAbsolutePoints"
+            ]
+          },
+          "age": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "pointsPerYear": {
+                "type": "number",
+                "const": 0.1
+              },
+              "maximumYears": {
+                "type": "integer",
+                "const": 40
+              }
+            },
+            "required": [
+              "pointsPerYear",
+              "maximumYears"
+            ]
+          },
+          "score": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "minimum": {
+                "type": "integer",
+                "const": 1
+              },
+              "maximum": {
+                "type": "integer",
+                "const": 5
+              },
+              "displayStep": {
+                "type": "number",
+                "const": 0.5
+              },
+              "calculationDecimals": {
+                "type": "integer",
+                "const": 6
+              }
+            },
+            "required": [
+              "minimum",
+              "maximum",
+              "displayStep",
+              "calculationDecimals"
+            ]
+          }
+        },
+        "required": [
+          "version",
+          "weights",
+          "minimumSamples",
+          "minimumCoverageWeight",
+          "referenceVehicle",
+          "vehicleCorrection",
+          "age",
+          "score"
+        ],
+        "description": "Immutable difficulty-v1 development heuristic. Rule weights/minimum coverage use percent; result normalized weights use fractions. Uncalibrated, not a safety or parkability assessment."
+      },
+      "DifficultyResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "currentLotVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "sourceUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "ruleVersion": {
+            "type": "string",
+            "const": "difficulty-v1"
+          },
+          "asOfYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2200
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCORED",
+              "INSUFFICIENT_DATA"
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5,
+                "multipleOf": 0.5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unroundedScore": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5,
+                "multipleOf": 1e-06
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baseScore": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5,
+                "multipleOf": 1e-06
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataSource": {
+            "type": "string",
+            "enum": [
+              "SYNTHETIC",
+              "OBSERVED",
+              "UNKNOWN",
+              "MIXED"
+            ]
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/DifficultyCoverage"
+          },
+          "vehicle": {
+            "$ref": "#/components/schemas/DifficultyVehicle"
+          },
+          "factors": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/components/schemas/DifficultyFactor"
+            }
+          },
+          "rule": {
+            "$ref": "#/components/schemas/DifficultyRule"
+          },
+          "caveats": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "NOT_A_PARKABILITY_ASSESSMENT",
+                "SYNTHETIC_DATA",
+                "PARTIAL_DATA",
+                "BELOW_MINIMUM_COVERAGE",
+                "STRUCTURE_FACTOR_MISSING",
+                "REFERENCE_VEHICLE_USED"
+              ]
+            }
+          }
+        },
+        "required": [
+          "lotId",
+          "lotVersion",
+          "currentLotVersion",
+          "sourceUpdatedAt",
+          "ruleVersion",
+          "asOfYear",
+          "status",
+          "score",
+          "unroundedScore",
+          "baseScore",
+          "dataSource",
+          "coverage",
+          "vehicle",
+          "factors",
+          "rule",
+          "caveats"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "INSUFFICIENT_DATA"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "score": {
+                  "type": "null"
+                },
+                "unroundedScore": {
+                  "type": "null"
+                },
+                "baseScore": {
+                  "type": "null"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "score": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5,
+                  "multipleOf": 0.5
+                },
+                "unroundedScore": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "baseScore": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5
+                }
+              }
+            }
+          }
         ]
       }
     },

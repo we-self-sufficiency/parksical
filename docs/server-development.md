@@ -32,7 +32,9 @@ PostgreSQL 준비 → 일회 migration 성공 → API 순서다. migration 실�
 
 ## 설계와 구현
 
-구현한 경로는 health, 계약 문서, S-03 인증/차량 연결, S-04 capability/종료 메타데이터 수신, S-05 ADMIN+WEB 주차장·버전별 구조 관리다. [가상 주차장 1곳의 시드](parking-lots.md)는 migration/build 뒤 비운영에서 명시적으로 실행한다. OpenAPI는 설계와 구현을 함께 담아 `X-Contract-Status: mixed`와 연산별 구현 상태를 제공한다. SDK용 공개 주차장 검색/상세·난이도·원본 주행 신호·개인 위치 등 업무 API는 후속/미정 범위다. [수신·재전송 안내](vehicle-ingestion.md)를 따른다.
+구현한 경로는 health, 계약 문서, S-03 인증/차량 연결, S-04 capability/종료 메타데이터 수신, S-05 ADMIN+WEB 주차장·버전별 구조 관리, S-07 인증된 차량 크기별 난이도 조회다. [가상 주차장 1곳의 시드](parking-lots.md)는 migration/build 뒤 비운영에서 명시적으로 실행한다. OpenAPI는 설계와 구현을 함께 담아 `X-Contract-Status: mixed`와 연산별 구현 상태를 제공한다. 공개 주차장 검색/상세·원본 주행 신호·개인 위치 등 업무 API는 후속/미정 범위다. [수신·재전송 안내](vehicle-ingestion.md)를 따른다.
+
+S-07의 인증된 `GET /lots/{lotId}/difficulty`는 [난이도 안내](difficulty.md)에 따라 구조/연식과 차량 크기를 계산한다. 현재 합성 자료만 사용하며 리뷰/주행 표본을 만들지 않는다. 공개 검색/상세는 계속 #8 후속이며 실제 SDK/실차 주차 가능 검증은 아니다. 이 단계에는 새 DB migration이 없다.
 
 공통 기반은 요청 ID·오류 envelope·JSON 64KiB 제한·ValidationPipe의 미지 필드 거절이다. HTTP 로그는 event/requestId/method/status/durationMs만 기록한다. URL·query·header·body·예외 원문을 기록하지 않아 QR 토큰/위치/자격 증명이 기본 로그에 남지 않는다. 시작 오류도 비밀을 포함할 수 있는 객체/stack을 출력하지 않는다.
 

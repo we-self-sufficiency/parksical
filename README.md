@@ -7,6 +7,7 @@ P지컬 차량 앱과 통신하는 서비스 백엔드입니다.
 - 인증·차량 연결: [개발 인증과 운영 미정 범위](docs/authentication.md)
 - 이벤트 수신·재전송: [계약과 합성 시나리오](docs/vehicle-ingestion.md)
 - 주차장·구조 관리: [가상 주차장 1곳과 관리 API](docs/parking-lots.md)
+- 차량 크기별 난이도: [버전 고정 계산·결측 처리·조회 API](docs/difficulty.md)
 - 개발 통합 브랜치: `develop`
 - 서버 작업지시서: [develop의 Agent.md](https://github.com/we-self-sufficiency/parksical-server/blob/develop/Agent.md)
 

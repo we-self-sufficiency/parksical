@@ -12,7 +12,7 @@ export function requestContext(sink: LogSink) {
     const requestId = incoming && /^[A-Za-z0-9_.-]{1,64}$/.test(incoming) ? incoming : randomUUID();
     response.locals.requestId = requestId;
     response.setHeader('X-Request-Id', requestId);
-    if (request.path.startsWith('/api/v1/auth/') || request.path.startsWith('/api/v1/vehicle-sessions') || request.path.startsWith('/api/v1/admin/') || request.path === '/api/v1/me') response.setHeader('Cache-Control', 'no-store');
+    if (request.path.startsWith('/api/v1/auth/') || request.path.startsWith('/api/v1/vehicle-sessions') || request.path.startsWith('/api/v1/admin/') || (request.path.startsWith('/api/v1/lots/') && request.path.endsWith('/difficulty')) || request.path === '/api/v1/me') response.setHeader('Cache-Control', 'no-store');
     const start = performance.now();
     response.on('finish', () => {
       // Allowlisted only: no URL/path (QR tokens), query, headers, body, error message or stack.

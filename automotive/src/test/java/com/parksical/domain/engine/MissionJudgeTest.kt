@@ -75,7 +75,7 @@ class MissionJudgeTest {
         drive(61f)
         feed(Gear.DRIVE, 7.2f, steering = 0f)
         feed(Gear.DRIVE, 7.2f, steering = 50f) // 500 deg/s
-        feed(Gear.DRIVE, 7.2f, steering = 50f) // steady in between
+        repeat(5) { feed(Gear.DRIVE, 7.2f, steering = 50f) } // steady in between
         feed(Gear.DRIVE, 7.2f, steering = 0f) // 500 deg/s back, second sharp event
         feed(Gear.DRIVE, 7.2f, steering = 0f)
         drive(51f)
@@ -83,6 +83,24 @@ class MissionJudgeTest {
         val rec = (judge.status.value as RunStatus.Finished).record
         assertEquals(2, rec.events.count { it.type == TraceEventType.SHARP_STEER })
         assertEquals(1, rec.stageResults[1].stars)
+    }
+
+    @Test fun splitSpeedAndSteeringEventsAreNotSharpOrHardBrake() {
+        // Emulator: speed and steering arrive as separate events 1-6 ms apart (15 deg / 250 ms = 60 deg/s).
+        begin()
+        feed(Gear.DRIVE, 8f)
+        drive(61f)
+        var a = 0f
+        repeat(40) { i ->
+            feed(Gear.DRIVE, if (i % 2 == 0) 8f else 7.98f, dtMs = 248, steering = a)
+            a += if (i < 20) 15f else -15f
+            feed(Gear.DRIVE, 8f, dtMs = 2, steering = a)
+        }
+        drive(51f)
+        feed(Gear.PARK, 0f)
+        val rec = (judge.status.value as RunStatus.Finished).record
+        assertEquals(0, rec.events.count { it.type == TraceEventType.SHARP_STEER || it.type == TraceEventType.HARD_BRAKE })
+        assertEquals(3, rec.stageResults[1].stars)
     }
 
     @Test fun reverseGearShiftsRated() {

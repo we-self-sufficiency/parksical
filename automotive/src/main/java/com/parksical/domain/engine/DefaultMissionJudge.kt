@@ -56,6 +56,7 @@ class DefaultMissionJudge : MissionJudge {
 
     private val results = mutableListOf<StageResult>()
     private val trace = mutableListOf<TracePoint>()
+    private val recent = ArrayDeque<VehicleState>()
     private val events = mutableListOf<TraceEvent>()
 
     override fun start(dungeon: Dungeon, mode: RunMode, capabilities: VehicleCapabilities, nowMs: Long) {
@@ -71,7 +72,7 @@ class DefaultMissionJudge : MissionJudge {
         dungeon = null; begun = false; done = false; distanceM = 0f; stage = 0; stageStartM = 0f
         overMs = 0; stoppedMs = 0; stopCounted = false; sharpActive = false; brakeActive = false
         totalShifts = 0; lastTraceMs = Long.MIN_VALUE; last = VehicleState()
-        results.clear(); trace.clear(); events.clear(); resetStageCounters()
+        results.clear(); trace.clear(); events.clear(); recent.clear(); resetStageCounters()
         _status.value = RunStatus.Idle
     }
 
@@ -80,7 +81,7 @@ class DefaultMissionJudge : MissionJudge {
         if (done) return
         if (!begun) {
             if (s.gear == Gear.PARK) return
-            begun = true; t0 = s.timestampMs; lastTs = s.timestampMs; last = s
+            begun = true; t0 = s.timestampMs; lastTs = s.timestampMs; last = s; recent.addLast(s)
             record(s)
             _status.value = running(0)
             return
@@ -99,11 +100,17 @@ class DefaultMissionJudge : MissionJudge {
             event(s, TraceEventType.GEAR_CHANGE)
             if (s.gear != Gear.PARK && last.gear != Gear.PARK) { gearShifts++; totalShifts++ }
         }
+        // Speed and steering arrive as separate events ms apart, so rates use the newest sample >= RATE_WINDOW_MS old.
+        recent.addLast(s)
+        while (recent.size > 1 && s.timestampMs - recent[1].timestampMs >= RATE_WINDOW_MS) recent.removeFirst()
+        val ref = recent.first()
+        val win = s.timestampMs - ref.timestampMs
+        val winSec = win / 1000f
         // Edge-triggered so one sustained maneuver counts once.
-        val sharp = rawDt <= MAX_DT_MS && abs(s.steeringDeg - last.steeringDeg) / dtSec > SHARP_DEG_PER_SEC
+        val sharp = win in RATE_WINDOW_MS..MAX_DT_MS && abs(s.steeringDeg - ref.steeringDeg) / winSec > SHARP_DEG_PER_SEC
         if (sharp && !sharpActive) { sharps++; event(s, TraceEventType.SHARP_STEER) }
         sharpActive = sharp
-        val hard = s.gear != Gear.PARK && (last.speedKmh - s.speedKmh) / dtSec > HARD_BRAKE_KMH_PER_SEC
+        val hard = s.gear != Gear.PARK && win >= RATE_WINDOW_MS && (ref.speedKmh - s.speedKmh) / winSec > HARD_BRAKE_KMH_PER_SEC
         if (hard && !brakeActive) { hardBrakes++; event(s, TraceEventType.HARD_BRAKE) }
         brakeActive = hard
 
@@ -197,6 +204,7 @@ class DefaultMissionJudge : MissionJudge {
     private companion object {
         const val MAX_DT_MS = 2000L
         const val TRACE_MS = 200L
+        const val RATE_WINDOW_MS = 200L
         const val STOP_KMH = 0.5f
         const val STOP_MS = 1000L
         const val SHARP_DEG_PER_SEC = 180f

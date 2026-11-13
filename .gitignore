@@ -1,0 +1,11 @@
+node_modules/
+dist/
+test-build/
+src/generated/
+.env
+.env.*
+!.env.example
+backups/
+*.dump
+__pycache__/
+.s01-base-Agent.md

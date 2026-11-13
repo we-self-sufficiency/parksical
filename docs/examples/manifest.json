@@ -19,7 +19,8 @@
     "auth-pair-start.json": "PairingStart",
     "auth-pair-response.json": "PairingGrant",
     "auth-pair-approved.json": "PairingApproved",
-    "auth-me-response.json": "Me"
+    "auth-me-response.json": "Me",
+    "session-closed-response.json": "Error"
   },
   "cases": [
     {
@@ -108,6 +109,20 @@
       "status": 200,
       "schema": "Me",
       "example": "auth-me-response.json"
+    },
+    {
+      "name": "new-event-after-close",
+      "operationId": "submitVehicleEvent",
+      "status": 409,
+      "schema": "Error",
+      "example": "session-closed-response.json"
+    },
+    {
+      "name": "current-vehicle-state",
+      "operationId": "getVehicleSession",
+      "status": 200,
+      "schema": "Session",
+      "example": "session-response.json"
     }
   ],
   "negativeCases": [
@@ -186,6 +201,30 @@
         "accessToken": "short"
       },
       "reason": "Token format"
+    },
+    {
+      "schema": "EventRequest",
+      "baseExample": "event-request.json",
+      "set": {
+        "sequence": 2147483648
+      },
+      "reason": "Sequence exceeds supported counter"
+    },
+    {
+      "schema": "SessionCreate",
+      "baseExample": "session-request.json",
+      "set": {
+        "capabilities": []
+      },
+      "reason": "Capabilities object required"
+    },
+    {
+      "schema": "EventRequest",
+      "baseExample": "event-request.json",
+      "set": {
+        "occurredAt": "20261113T120000Z"
+      },
+      "reason": "Compact ISO is not transport RFC3339"
     }
   ]
 }

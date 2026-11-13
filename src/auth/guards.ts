@@ -6,6 +6,7 @@ import { AuthService, type Principal } from './auth.service.js';
 
 export interface AuthRequest extends Request { principal: Principal; }
 export const WebOnly = () => SetMetadata('auth.webOnly', true);
+export const VehicleOnly = () => SetMetadata('auth.vehicleOnly', true);
 export const Roles = (...roles: ('USER' | 'ADMIN')[]) => SetMetadata('auth.roles', roles);
 
 @Injectable()
@@ -18,6 +19,7 @@ export class AuthGuard implements CanActivate {
     request.principal = await this.auth.authenticate(header.slice(7));
     const targets = [context.getHandler(), context.getClass()];
     if (this.reflector.getAllAndOverride<boolean>('auth.webOnly', targets) && request.principal.kind !== 'WEB') throw new ApiError(403, 'WEB_SESSION_REQUIRED');
+    if (this.reflector.getAllAndOverride<boolean>('auth.vehicleOnly', targets) && request.principal.kind !== 'VEHICLE') throw new ApiError(403, 'VEHICLE_SESSION_REQUIRED');
     const roles = this.reflector.getAllAndOverride<string[]>('auth.roles', targets);
     if (roles && !roles.includes(request.principal.role)) throw new ApiError(403, 'FORBIDDEN');
     return true;

@@ -1,6 +1,6 @@
 # S-01 서버·차량 앱 계약 v0.1
 
-상태: 구현 전 검토 계약. 연결 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
 기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.1.0, 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 실행 중이라는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
@@ -58,6 +58,8 @@ Capability는 `SUPPORTED / UNSUPPORTED / PERMISSION_DENIED / ERROR / UNKNOWN`과
 
 ## 중복·동시성·오프라인
 
+S-04의 구체적인 인증 세션 scope, 엄격한 UTC ms/sequence 범위, 종료·정규화·이벤트 순서는 [vehicle-ingestion.md](vehicle-ingestion.md)의 A-07을 적용한다. 인증 폐기 입력은 현재 S-03 guard의 401이며, 유효한 새 인증으로 이전 전송 세션을 지정하는 경우는 404다.
+
 개발 기본값은 아래와 같다. 가역적인 처리 규칙은 A-01/A-02에 기록하고 운영 데이터 보관 기한과 혼동하지 않는다.
 
 1. POST와 PATCH는 Idempotency-Key를 요구한다. 범위는 인증 사용자+설치 연결(차량 API)+HTTP method+정규화된 자원 경로+key다. 요청 본문의 의미상 정규 JSON을 비교하고 키 순서/공백 차이는 무시한다. 입력·권한 검증 후 원자적으로 결과와 중복 키를 저장한다.
@@ -105,7 +107,7 @@ QR 발급 경로와 24시간 expiresAt은 초안이다. D-07 전에는 POLICY_NO
 
 | 영역 | 예약 경로·후속 작업 | 미정 사항 |
 |---|---|---|
-| 인증 | `/auth/*`, `/me`, 차량 연결 승인/폐기: S-03 | 제공자 교환·갱신·연결 코드 방식 D-01. /me만 현재 OpenAPI에 정의 |
+| 인증 | `/auth/*`, `/me`, 차량 연결 승인/폐기: S-03 | 개발 구현은 제공됨. 운영 제공자·활성화 D-01은 미정 |
 | 구조·첨부·리뷰 | `/lots/{id}` 구조 확장, `/reviews`, 위치 첨부: S-05/08/09 | 구조·이용 권한 D-03, 파일 저장 D-06 |
 | 미션·기록 | `/missions`, `/runs`, 본인 리포트: S-12/13 | 구간·판정·신호 품질·수집 D-02/04 |
 | 예약 | `/reservations`, 슬롯/취소: S-14 | 수용량·견적·동의·만료 D-04/05 |

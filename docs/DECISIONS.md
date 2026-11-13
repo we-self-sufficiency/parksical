@@ -46,3 +46,9 @@ D-02의 익명화는 가명 ID나 hash 하나로 성립하지 않는다. 계정�
 A-06 제안: 제공자 인터페이스와 명시적 개발 키 어댑터, 서버 발급 설치 ID+별도 비밀 증명, 휴대폰 승인과 단일 교환을 구현한다. access 15분/refresh 절대 7일/연결 5분/12자리 hex code는 비운영 검증 기본값이다. credential API는 Idempotency-Key 성공 재생에서 제외하고 single-use/폐기를 적용한다. 상세는 [authentication.md](authentication.md).
 
 D-01은 계속 PENDING이다. 운영 제공자·로그인/콜백·장치 UX·인증 수명·분실 복구를 확정한 것이 아니다. 개발 로그인은 명시적으로 켜야 하며 production에서는 시작/토큰 재사용을 차단한다. D-02의 계정/인증 기록 보관·삭제 정책도 미정이다. 일반 주차/운전 기록의 수집 범위를 확장하지 않는다.
+
+## S-04 개발 계약 (2026-11-13)
+
+A-07 제안: 메타데이터 전송 세션을 원래 AuthSession/설치/사용자에 고정한다. 생성 중복 scope는 AuthSession+key, 이벤트는 전송 세션+eventId다. object/시각을 정규화하고 원래 201 영수증을 DB에 저장한다. capability는 sequence/occurredAt/개별 checkedAt을 뒤로 덮어쓰지 않으며 늦은 종료는 보수적으로 처리한다. sequence는 PostgreSQL Int 범위(최대 2,147,483,647), 시각은 UTC ms다. reportedSource는 자체 신고값이며 합성 자료는 SYNTHETIC으로 표시한다.
+
+상세와 인증 폐기/종료/중복 우선순위는 [vehicle-ingestion.md](vehicle-ingestion.md)를 따른다. D-01 실제 운영 로그인과 D-02 원본·개인 운전 요약·보관/삭제는 여전히 미정이다. 실제 SDK 연결을 검증한 것으로 표시하지 않는다.

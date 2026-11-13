@@ -32,7 +32,7 @@ PostgreSQL 준비 → 일회 migration 성공 → API 순서다. migration 실�
 
 ## 설계와 구현
 
-구현한 경로는 health, 계약 문서와 S-03 인증/차량 연결 API다. OpenAPI는 설계와 구현을 함께 담아 `X-Contract-Status: mixed`와 연산별 구현 상태를 제공한다. 주차장·운전 이벤트·개인 위치 등 업무 API는 후속 이슈에서 구현한다.
+구현한 경로는 health, 계약 문서, S-03 인증/차량 연결, S-04 capability/종료 메타데이터 수신이다. OpenAPI는 설계와 구현을 함께 담아 `X-Contract-Status: mixed`와 연산별 구현 상태를 제공한다. 주차장·원본 주행 신호·개인 위치 등 업무 API는 후속/미정 범위다. [수신·재전송 안내](vehicle-ingestion.md)를 따른다.
 
 공통 기반은 요청 ID·오류 envelope·JSON 64KiB 제한·ValidationPipe의 미지 필드 거절이다. HTTP 로그는 event/requestId/method/status/durationMs만 기록한다. URL·query·header·body·예외 원문을 기록하지 않아 QR 토큰/위치/자격 증명이 기본 로그에 남지 않는다. 시작 오류도 비밀을 포함할 수 있는 객체/stack을 출력하지 않는다.
 
@@ -52,6 +52,6 @@ verify는 generate → lint → typecheck → 단위 테스트 → build다. Pyt
 npm run test:integration
 ```
 
-통합 검증은 migration 적용/재적용, Prisma CRUD·독립 PG 클라이언트 대조, 클라이언트 재연결, DB 오류에서 live=200/ready=503을 확인한다. CI는 실제 DB 재시작·pg_dump/pg_restore와 Compose 이미지 빌드/중단/재연결도 검사한다. 운영 DB에서 테스트하지 않는다.
+통합 검증은 migration 적용/재적용, Prisma CRUD·독립 PG 클라이언트 대조, 인증/차량 연결, 중복·순서/시각·폐기와 별도 API 프로세스 재시작 뒤 receipt 재생을 확인한다. compiled API를 사용하는 수신 테스트 전에 `npm run build`가 필요하다(`verify`와 CI에 포함). CI는 실제 DB 재시작·pg_dump/pg_restore와 Compose 이미지 빌드/중단/재연결도 검사한다. 운영 DB에서 테스트하지 않는다.
 
 로컬에는 Docker가 없어 native PostgreSQL 18.6으로 실제 통합·프로세스 재시작 영속성을 확인했다. Docker/Compose 및 pg_dump/pg_restore의 실행 결과는 PR verify CI에서 확인한다. 미실행 검증을 통과로 기록하지 않는다. 실제 운영·차량 SDK는 후속 범위다.

@@ -1,0 +1,12 @@
+{
+  "kind": "SYNTHETIC",
+  "description": "Capability metadata only; no real SDK or driving samples",
+  "steps": [
+    { "eventId": "cap2", "sequence": 2, "type": "CAPABILITIES_REPORTED", "offsetMs": 0, "expectedStatus": 201 },
+    { "eventId": "cap1", "sequence": 1, "type": "CAPABILITIES_REPORTED", "offsetMs": -2000, "expectedStatus": 201 },
+    { "replayOf": "cap2", "expectedStatus": 201 },
+    { "eventId": "close3", "sequence": 3, "type": "SESSION_CLOSED", "offsetMs": 1000, "expectedStatus": 201 },
+    { "replayOf": "cap2", "expectedStatus": 201 },
+    { "eventId": "cap4", "sequence": 4, "type": "CAPABILITIES_REPORTED", "offsetMs": 2000, "expectedStatus": 409 }
+  ]
+}

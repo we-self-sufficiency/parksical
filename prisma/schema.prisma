@@ -41,6 +41,7 @@ model User {
   sessions      AuthSession[]
   installations Installation[]
   approvals     VehiclePairing[]
+  vehicleSessions VehicleSession[]
 }
 
 model AuthIdentity {
@@ -61,6 +62,7 @@ model Installation {
   createdAt      DateTime @default(now()) @db.Timestamptz(3)
   pairings       VehiclePairing[]
   sessions       AuthSession[]
+  vehicleSessions VehicleSession[]
   @@index([linkedUserId])
 }
 
@@ -78,6 +80,7 @@ model AuthSession {
   revokedAt        DateTime? @db.Timestamptz(3)
   createdAt        DateTime @default(now()) @db.Timestamptz(3)
   refreshes        RefreshCredential[]
+  vehicleSessions  VehicleSession[]
   @@index([userId])
   @@index([installationId])
 }
@@ -110,4 +113,65 @@ model AuthRateBucket {
   key         String @id @db.Char(64)
   windowStart DateTime @db.Timestamptz(3)
   count       Int
+}
+
+enum VehicleSessionState {
+  ACTIVE
+  CLOSED
+}
+
+enum VehicleEventType {
+  CAPABILITIES_REPORTED
+  SESSION_CLOSED
+}
+
+enum EventDisposition {
+  APPLIED
+  STORED_OUT_OF_ORDER
+}
+
+enum ReportedSource {
+  SYNTHETIC
+  APP_REPORTED
+}
+
+model VehicleSession {
+  id                    String @id @default(uuid()) @db.Uuid
+  userId                String @db.Uuid
+  user                  User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  installationId        String @db.Uuid
+  installation          Installation @relation(fields: [installationId], references: [id], onDelete: Restrict)
+  authSessionId         String @db.Uuid
+  authSession           AuthSession @relation(fields: [authSessionId], references: [id], onDelete: Restrict)
+  creationKey           String @db.VarChar(64)
+  requestHash           String @db.Char(64)
+  creationResponse      Json @db.JsonB
+  contractVersion       String @db.VarChar(16)
+  appVersion            String @db.VarChar(32)
+  reportedSource        ReportedSource
+  state                 VehicleSessionState @default(ACTIVE)
+  capabilities          Json @db.JsonB
+  lastAppliedSequence   Int @default(0)
+  lastAppliedOccurredAt DateTime? @db.Timestamptz(3)
+  createdAt             DateTime @default(now()) @db.Timestamptz(3)
+  closedAt              DateTime? @db.Timestamptz(3)
+  events                VehicleEvent[]
+  @@unique([authSessionId, creationKey])
+  @@index([userId, installationId])
+}
+
+model VehicleEvent {
+  sessionId    String @db.Uuid
+  session      VehicleSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  eventId      String @db.VarChar(64)
+  sequence     Int
+  type         VehicleEventType
+  payload      Json @db.JsonB
+  requestHash  String @db.Char(64)
+  occurredAt   DateTime @db.Timestamptz(3)
+  receivedAt   DateTime @db.Timestamptz(3)
+  disposition  EventDisposition
+  receipt      Json @db.JsonB
+  @@id([sessionId, eventId])
+  @@unique([sessionId, sequence])
 }

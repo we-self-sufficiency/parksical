@@ -1,6 +1,6 @@
 {
   "eventId": "evt_demo_2",
-  "sessionId": "session_demo_1",
+  "sessionId": "44444444-4444-4444-8444-444444444444",
   "receivedAt": "2026-11-13T11:00:00Z",
   "disposition": "APPLIED",
   "lastAppliedSequence": 2

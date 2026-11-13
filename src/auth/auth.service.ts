@@ -73,6 +73,15 @@ export class AuthService {
     return row.installationId ? 'installation:' + row.installationId : 'session:' + row.id;
   }
 
+  async forVehicle<T>(p: Principal, work: (tx: Tx) => Promise<T>): Promise<T> {
+    if (p.kind !== 'VEHICLE' || !p.installationId) throw new ApiError(403, 'VEHICLE_SESSION_REQUIRED');
+    return this.locked('installation:' + p.installationId, async tx => {
+      const row = await this.principal(tx, p);
+      if (row.kind !== 'VEHICLE' || row.installationId !== p.installationId) throw new ApiError(403, 'INSTALLATION_NOT_LINKED');
+      return work(tx);
+    });
+  }
+
   private async issue(tx: Tx, userId: string, kind: 'WEB' | 'VEHICLE', installationId: string | null = null) {
     const accessToken = secret(), refreshToken = secret();
     const accessExpiresAt = new Date(Date.now() + 15 * 60_000);

@@ -1,7 +1,7 @@
 {
   "contractVersion": "1.0",
   "appVersion": "0.1.0",
-  "installationId": "install_demo_1",
+  "installationId": "33333333-3333-4333-8333-333333333333",
   "capabilities": {
     "gear": {
       "status": "SUPPORTED",
@@ -31,5 +31,6 @@
       "status": "SUPPORTED",
       "checkedAt": "2026-11-13T11:00:00Z"
     }
-  }
+  },
+  "reportedSource": "SYNTHETIC"
 }

@@ -5,6 +5,7 @@ P지컬 차량 앱과 통신하는 서비스 백엔드입니다.
 - 기술: TypeScript, NestJS, PostgreSQL, Prisma
 - 실행·검증: [개발 안내](docs/server-development.md), [백업·복구](docs/operations.md)
 - 인증·차량 연결: [개발 인증과 운영 미정 범위](docs/authentication.md)
+- 이벤트 수신·재전송: [계약과 합성 시나리오](docs/vehicle-ingestion.md)
 - 개발 통합 브랜치: `develop`
 - 서버 작업지시서: [develop의 Agent.md](https://github.com/we-self-sufficiency/parksical-server/blob/develop/Agent.md)
 

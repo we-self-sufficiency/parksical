@@ -16,7 +16,7 @@ Node.js **24.22.1**, NestJS **12.5.0**, TypeScript **6.0.3**, Prisma CLI/Client/
 
 호스트 DATABASE_URL은 127.0.0.1, COMPOSE_DATABASE_URL은 내부 호스트 db를 사용한다. `.env`의 DB 사용자·암호·이름과 URL을 함께 변경한다. 기존 DB의 암호는 POSTGRES_PASSWORD 변경만으로 갱신되지 않는다.
 
-소스 변경 후 `npm run build`를 다시 실행한다. `start:dev`는 빌드 파일을 감시하며 소스를 자동 transpile하지 않는다. 잘못된 PORT/DATABASE_URL은 시작 실패다. 미구현 개발 인증·원본 신호·개인 운전 요약·실결제를 활성화하는 환경 설정도 거절한다.
+소스 변경 후 `npm run build`를 다시 실행한다. `start:dev`는 빌드 파일을 감시하며 소스를 자동 transpile하지 않는다. 잘못된 PORT/DATABASE_URL은 시작 실패다. 개발 인증은 [인증 안내](authentication.md)에 따라 비운영에서 키와 함께 명시적으로 켠다. 원본 신호·개인 운전 요약·실결제 활성화는 거절한다.
 
 ## 전체 Compose
 
@@ -32,7 +32,7 @@ PostgreSQL 준비 → 일회 migration 성공 → API 순서다. migration 실�
 
 ## 설계와 구현
 
-구현한 경로는 health 두 개와 `/api/v1/openapi.json`이다. OpenAPI는 S-01 설계 문서이며 `X-Contract-Status: design-only` 헤더를 제공한다. 사용자·차량·주차장 등 문서상의 API는 후속 이슈에서 구현한다.
+구현한 경로는 health, 계약 문서와 S-03 인증/차량 연결 API다. OpenAPI는 설계와 구현을 함께 담아 `X-Contract-Status: mixed`와 연산별 구현 상태를 제공한다. 주차장·운전 이벤트·개인 위치 등 업무 API는 후속 이슈에서 구현한다.
 
 공통 기반은 요청 ID·오류 envelope·JSON 64KiB 제한·ValidationPipe의 미지 필드 거절이다. HTTP 로그는 event/requestId/method/status/durationMs만 기록한다. URL·query·header·body·예외 원문을 기록하지 않아 QR 토큰/위치/자격 증명이 기본 로그에 남지 않는다. 시작 오류도 비밀을 포함할 수 있는 객체/stack을 출력하지 않는다.
 

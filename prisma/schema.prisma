@@ -14,3 +14,100 @@ model ServiceMetadata {
   value     String   @db.VarChar(256)
   updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(3)
 }
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum SessionKind {
+  WEB
+  VEHICLE
+}
+
+enum PairingStatus {
+  PENDING
+  APPROVED
+  CONSUMED
+  CANCELLED
+}
+
+model User {
+  id            String @id @default(uuid()) @db.Uuid
+  role          UserRole @default(USER)
+  rankingPublic Boolean @default(false)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  identities    AuthIdentity[]
+  sessions      AuthSession[]
+  installations Installation[]
+  approvals     VehiclePairing[]
+}
+
+model AuthIdentity {
+  id       String @id @default(uuid()) @db.Uuid
+  provider String @db.VarChar(32)
+  subject  String @db.VarChar(128)
+  userId   String @db.Uuid
+  user     User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@unique([provider, subject])
+}
+
+model Installation {
+  id             String @id @default(uuid()) @db.Uuid
+  secretHash     String @db.Char(64)
+  linkedUserId   String? @db.Uuid
+  linkedUser     User? @relation(fields: [linkedUserId], references: [id], onDelete: Restrict)
+  linkRevokedAt  DateTime? @db.Timestamptz(3)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  pairings       VehiclePairing[]
+  sessions       AuthSession[]
+  @@index([linkedUserId])
+}
+
+model AuthSession {
+  id               String @id @default(uuid()) @db.Uuid
+  userId           String @db.Uuid
+  user             User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  provider         String @db.VarChar(32)
+  kind             SessionKind
+  installationId   String? @db.Uuid
+  installation     Installation? @relation(fields: [installationId], references: [id], onDelete: Restrict)
+  accessHash       String @unique @db.Char(64)
+  accessExpiresAt  DateTime @db.Timestamptz(3)
+  refreshExpiresAt DateTime @db.Timestamptz(3)
+  revokedAt        DateTime? @db.Timestamptz(3)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  refreshes        RefreshCredential[]
+  @@index([userId])
+  @@index([installationId])
+}
+
+model RefreshCredential {
+  hash      String @id @db.Char(64)
+  sessionId String @db.Uuid
+  session   AuthSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@index([sessionId])
+}
+
+model VehiclePairing {
+  id              String @id @default(uuid()) @db.Uuid
+  installationId  String @db.Uuid
+  installation    Installation @relation(fields: [installationId], references: [id], onDelete: Restrict)
+  deviceCodeHash  String @unique @db.Char(64)
+  userCodeHash    String @unique @db.Char(64)
+  status          PairingStatus @default(PENDING)
+  approvedById    String? @db.Uuid
+  approvedBy      User? @relation(fields: [approvedById], references: [id], onDelete: Restrict)
+  expiresAt       DateTime @db.Timestamptz(3)
+  consumedAt      DateTime? @db.Timestamptz(3)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  @@index([installationId])
+}
+
+model AuthRateBucket {
+  key         String @id @db.Char(64)
+  windowStart DateTime @db.Timestamptz(3)
+  count       Int
+}

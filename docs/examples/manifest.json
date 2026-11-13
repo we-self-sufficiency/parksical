@@ -13,7 +13,13 @@
     "unsupported-version-response.json": "Error",
     "out-of-order-request.json": "EventRequest",
     "conflict-request.json": "EventRequest",
-    "location-response.json": "Location"
+    "location-response.json": "Location",
+    "auth-login-request.json": "DevelopmentLogin",
+    "auth-token-response.json": "TokenPair",
+    "auth-pair-start.json": "PairingStart",
+    "auth-pair-response.json": "PairingGrant",
+    "auth-pair-approved.json": "PairingApproved",
+    "auth-me-response.json": "Me"
   },
   "cases": [
     {
@@ -79,6 +85,29 @@
       "status": 422,
       "schema": "Error",
       "example": "unsupported-version-response.json"
+    },
+    {
+      "name": "development-login",
+      "operationId": "developmentLogin",
+      "status": 200,
+      "schema": "TokenPair",
+      "example": "auth-token-response.json",
+      "requestExample": "auth-login-request.json"
+    },
+    {
+      "name": "vehicle-pairing-grant",
+      "operationId": "startVehicleLink",
+      "status": 201,
+      "schema": "PairingGrant",
+      "example": "auth-pair-response.json",
+      "requestExample": "auth-pair-start.json"
+    },
+    {
+      "name": "authenticated-me",
+      "operationId": "getMe",
+      "status": 200,
+      "schema": "Me",
+      "example": "auth-me-response.json"
     }
   ],
   "negativeCases": [
@@ -133,6 +162,30 @@
         "occurredAt": "2026-11-13T11:00:00+09:00"
       },
       "reason": "UTC Z required"
+    },
+    {
+      "schema": "DevelopmentLogin",
+      "baseExample": "auth-login-request.json",
+      "set": {
+        "role": "ADMIN"
+      },
+      "reason": "No self role assignment"
+    },
+    {
+      "schema": "PairingStart",
+      "baseExample": "auth-pair-start.json",
+      "set": {
+        "installationId": "33333333-3333-4333-8333-333333333333"
+      },
+      "reason": "Installation proof required with ID"
+    },
+    {
+      "schema": "TokenPair",
+      "baseExample": "auth-token-response.json",
+      "set": {
+        "accessToken": "short"
+      },
+      "reason": "Token format"
     }
   ]
 }

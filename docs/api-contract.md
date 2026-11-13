@@ -19,6 +19,8 @@
 
 ## URL·버전·인증
 
+S-03의 구현된 인증 경로와 credential 중복 예외는 [authentication.md](authentication.md)를 따른다. OpenAPI의 `x-implementation-status`로 구현과 설계를 구분하며 제공 헤더는 `X-Contract-Status: mixed`다. S-01의 일반 POST/PATCH 중복 규칙을 원문 자격 증명의 재생 규칙으로 확대하지 않는다. 실제 로그인 제공자는 아직 미정이다.
+
 - 기본 경로는 `/api/v1`. OpenAPI의 `api.example.invalid`는 접속 대상이 아닌 D-06 대체용 주소다. `/p/{token}`은 기본 API 경로 밖의 휴대폰 웹이다.
 - 공개 주차장 조회 외 API는 사용자 bearer 자격 증명을 요구한다. 토큰 형식·제공자·만료/갱신 수명은 D-01/S-03에서 확정한다. 개발 인증은 운영에서 금지한다.
 - `/vehicle-sessions`와 이벤트 API에는 사용자 인증 외에도 승인된 앱 설치 연결이 필요하다. `installationId`는 앱 설치용 임의 ID이며 VIN·사용자 ID가 아니다. body에 적은 ID만으로 연결을 승인하지 않는다.

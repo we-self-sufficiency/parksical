@@ -8,6 +8,10 @@ import { APP_CONFIG, type AppConfig } from './config.js';
 import { DatabaseService } from './database.service.js';
 import { HealthController } from './health.controller.js';
 import { defaultLogSink, requestContext, SafeExceptionFilter, type LogSink } from './http.js';
+import { AuthController } from './auth/auth.controller.js';
+import { AuthService } from './auth/auth.service.js';
+import { AuthGuard } from './auth/guards.js';
+import { DevelopmentLoginProvider, LOGIN_PROVIDER } from './auth/provider.js';
 
 @Module({})
 class AppModule {}
@@ -15,8 +19,8 @@ class AppModule {}
 export async function createApp(config: AppConfig, sink: LogSink = defaultLogSink) {
   const app = await NestFactory.create({
     module: AppModule,
-    controllers: [HealthController],
-    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService],
+    controllers: [HealthController, AuthController],
+    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
   }, { logger: false, bodyParser: false, abortOnError: false });
   app.use(requestContext(sink));
   app.use(json({ limit: '64kb' }));
@@ -27,7 +31,7 @@ export async function createApp(config: AppConfig, sink: LogSink = defaultLogSin
   // This is the reviewed design contract, not Swagger generated from unimplemented controllers.
   const contract = await readFile(resolve('docs/openapi.json'), 'utf8');
   app.getHttpAdapter().get('/api/v1/openapi.json', (_req: unknown, res: import('express').Response) => {
-    res.setHeader('X-Contract-Status', 'design-only');
+    res.setHeader('X-Contract-Status', 'mixed');
     res.type('application/json').send(contract);
   });
   return app;

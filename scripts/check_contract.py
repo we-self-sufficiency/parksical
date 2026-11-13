@@ -60,9 +60,13 @@ for path, methods in DOC['paths'].items():
         assert all(p['required'] for p in operation.get('parameters', []) if p['in'] == 'path')
         assert {'400', '401', '403', '404', '409', '413', '422', '429', '503'} <= set(operation['responses'])
         if method in ('post', 'patch'):
-            assert any(p['name'] == 'Idempotency-Key' and p['required'] for p in operation['parameters'])
+            if operation.get('x-idempotency-policy') == 'credential-flow':
+                assert path.startswith('/auth/'), 'Credential exception must be scoped to authentication'
+            else:
+                assert any(p['name'] == 'Idempotency-Key' and p['required'] for p in operation['parameters'])
         if method != 'get':
-            assert operation.get('security', DOC['security']), 'Write without authentication'
+            if not operation.get('security', DOC['security']):
+                assert oid in {'refreshAuthentication', 'startVehicleLink', 'exchangeVehicleLink'}, 'Unapproved public write'
         for status, response in operation['responses'].items():
             response = resolve(response)
             if status == '204':

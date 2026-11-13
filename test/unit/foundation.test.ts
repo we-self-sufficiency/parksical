@@ -54,7 +54,7 @@ test('HTTP liveness/readiness, safe errors, request IDs, body limits and log all
     assert.equal(large.status, 413);
     const spec = await fetch(base + '/api/v1/openapi.json');
     assert.equal(spec.status, 200);
-    assert.equal(spec.headers.get('X-Contract-Status'), 'design-only');
+    assert.equal(spec.headers.get('X-Contract-Status'), 'mixed');
     assert.equal((await spec.json() as { openapi: string }).openapi, '3.1.1');
     assert.ok(records.length >= 6);
     assert.ok(!JSON.stringify(records).includes(secret));

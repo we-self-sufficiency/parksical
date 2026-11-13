@@ -1,0 +1,144 @@
+{
+  "items": [
+    {
+      "name": "P지컬 가상 주차장 1",
+      "address": "가상 데이터 — 실제 주소 없음",
+      "latitude": 0,
+      "longitude": 0,
+      "ownership": "PRIVATE",
+      "parkingType": "SELF_PARK",
+      "partnered": false,
+      "builtYear": 2020,
+      "source": "SYNTHETIC",
+      "sourceUpdatedAt": "2026-11-13T12:00:00.000Z",
+      "structureStatus": "COMPLETE",
+      "timezone": "Asia/Seoul",
+      "operatingHours": [
+        {
+          "day": 1,
+          "openMinute": 0,
+          "closeMinute": 1440
+        },
+        {
+          "day": 2,
+          "openMinute": 0,
+          "closeMinute": 1440
+        },
+        {
+          "day": 3,
+          "openMinute": 0,
+          "closeMinute": 1440
+        },
+        {
+          "day": 4,
+          "openMinute": 0,
+          "closeMinute": 1440
+        },
+        {
+          "day": 5,
+          "openMinute": 0,
+          "closeMinute": 1440
+        },
+        {
+          "day": 6,
+          "openMinute": 0,
+          "closeMinute": 1440
+        },
+        {
+          "day": 7,
+          "openMinute": 0,
+          "closeMinute": 1440
+        }
+      ],
+      "fees": {
+        "currency": "KRW",
+        "baseMinutes": 30,
+        "baseAmount": 1000,
+        "additionalMinutes": 10,
+        "additionalAmount": 500,
+        "dailyMaxAmount": 15000
+      },
+      "tags": [
+        "SYNTHETIC",
+        "실제 방문 금지",
+        "지하1층",
+        "연동 테스트"
+      ],
+      "id": "66666666-6666-4666-8666-666666666666",
+      "code": "parksical-synthetic-001",
+      "version": 1,
+      "distanceM": 0,
+      "discounts": null,
+      "difficulty": {
+        "status": "SCORED",
+        "score": 2.5,
+        "unroundedScore": 2.254545,
+        "baseScore": 2.254545,
+        "ruleVersion": "difficulty-v1",
+        "asOfYear": 2026,
+        "vehicle": {
+          "inputStatus": "UNKNOWN",
+          "basis": "REFERENCE_DEFAULT",
+          "dimensionsMm": {
+            "lengthMm": 4800,
+            "widthMm": 1850
+          },
+          "referenceMm": {
+            "lengthMm": 4800,
+            "widthMm": 1850
+          },
+          "rawAdjustment": 0,
+          "appliedAdjustment": 0
+        },
+        "coverage": {
+          "availableWeight": 0.55,
+          "minimumWeight": 0.4,
+          "includedFactorCount": 2,
+          "excludedFactors": [
+            "review",
+            "driving"
+          ]
+        },
+        "caveats": [
+          "NOT_A_PARKABILITY_ASSESSMENT",
+          "SYNTHETIC_DATA",
+          "PARTIAL_DATA",
+          "REFERENCE_VEHICLE_USED"
+        ]
+      },
+      "navigation": {
+        "latitude": 0,
+        "longitude": 0,
+        "coordinateSystem": "WGS84",
+        "usable": false,
+        "reason": "SYNTHETIC_COORDINATE"
+      },
+      "challenge": {
+        "available": false,
+        "status": "NOT_CONFIGURED"
+      }
+    }
+  ],
+  "nextCursor": null,
+  "search": {
+    "mode": "RADIUS",
+    "origin": {
+      "latitude": 0,
+      "longitude": 0
+    },
+    "bounds": {
+      "mode": "RADIUS",
+      "south": -0.026979610911736143,
+      "north": 0.026979610911736143,
+      "west": -0.02697961091171619,
+      "east": 0.02697961091171619,
+      "radiusM": 3000
+    },
+    "distanceMethod": "HAVERSINE_SPHERE",
+    "earthRadiusM": 6371008.8,
+    "sort": "DISTANCE",
+    "asOfYear": 2026,
+    "ruleVersion": "difficulty-v1",
+    "candidateLimit": 1000
+  }
+}

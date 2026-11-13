@@ -2,7 +2,7 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management and S-07 authenticated difficulty read are implemented. Public search/detail remain design. No production deployment, real sources, actual SDK validation or physical parkability assessment is claimed."
   },
   "servers": [
@@ -381,7 +381,7 @@
     "/lots": {
       "get": {
         "operationId": "listLots",
-        "description": "Both car-size fields or neither; one is 422. Great-circle distance, stable (sortValue,id) ordering. No destination geocoding.",
+        "description": "WEB or VEHICLE bearer; active SYNTHETIC catalog only. No occupancy, geocoding, verified discount eligibility or MAX availability. Synthetic navigation coordinates have usable=false. No-store; session limit 300 reads/5 min. See docs/lot-search.md. Radius defaults to 3000m (1..20000), or all four bounds (non-wrapping, diagonal <=40km and each axis <=1 degree). Origin latitude/longitude always required. Distance is unrounded spherical Haversine metres, R=6371008.8. EASIEST uses difficulty-v1 unroundedScore null-last, ties by distance then UUID. At most 1000 matching current lots; excess returns 422 SEARCH_TOO_BROAD. Cursor binds normalized query/year and catalog versions; changed catalog returns 409 SEARCH_CHANGED. Unknown fields/malformed pairs are 400. Listed discounts are conditions, not eligibility.",
         "responses": {
           "200": {
             "description": "Success",
@@ -395,11 +395,11 @@
                   "pattern": "^[A-Za-z0-9_.-]+$"
                 }
               },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
+              "Cache-Control": {
                 "schema": {
-                  "type": "boolean"
-                }
+                  "const": "no-store"
+                },
+                "description": "No cache for location/vehicle query responses."
               }
             },
             "content": {
@@ -440,7 +440,7 @@
         },
         "parameters": [
           {
-            "name": "lat",
+            "name": "latitude",
             "in": "query",
             "required": true,
             "schema": {
@@ -450,7 +450,7 @@
             }
           },
           {
-            "name": "lng",
+            "name": "longitude",
             "in": "query",
             "required": true,
             "schema": {
@@ -462,11 +462,52 @@
           {
             "name": "radiusM",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 100,
-              "maximum": 20000
+              "minimum": 1,
+              "maximum": 20000,
+              "default": 3000
+            }
+          },
+          {
+            "name": "south",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "north",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "west",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "east",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
             }
           },
           {
@@ -476,7 +517,7 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 100,
+              "maximum": 50,
               "default": 20
             }
           },
@@ -487,7 +528,8 @@
             "schema": {
               "type": "string",
               "minLength": 1,
-              "maxLength": 2048
+              "maxLength": 512,
+              "pattern": "^[A-Za-z0-9_-]+$"
             }
           },
           {
@@ -498,12 +540,26 @@
               "type": "string",
               "enum": [
                 "DISTANCE",
-                "DIFFICULTY"
+                "EASIEST"
+              ],
+              "default": "DISTANCE"
+            }
+          },
+          {
+            "name": "ownership",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLIC",
+                "PRIVATE",
+                "UNKNOWN"
               ]
             }
           },
           {
-            "name": "partner",
+            "name": "partnered",
             "in": "query",
             "required": false,
             "schema": {
@@ -511,34 +567,89 @@
             }
           },
           {
-            "name": "lengthMm",
+            "name": "discountCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[A-Z0-9_]+$"
+            }
+          },
+          {
+            "name": "vehicleLengthMm",
             "in": "query",
             "required": false,
             "schema": {
               "type": "integer",
               "minimum": 1000,
               "maximum": 10000
-            }
+            },
+            "description": "Both dimensions must be supplied together as decimal integer query strings. Request claims, not verified SDK data."
           },
           {
-            "name": "widthMm",
+            "name": "vehicleWidthMm",
             "in": "query",
             "required": false,
             "schema": {
               "type": "integer",
               "minimum": 500,
               "maximum": 4000
-            }
+            },
+            "description": "Body width in mm. Unknown/unsupported dimensions use explicit reference fallback; malformed dimensions return 400."
+          },
+          {
+            "name": "vehicleStatus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SUPPORTED",
+                "UNSUPPORTED",
+                "PERMISSION_DENIED",
+                "ERROR",
+                "UNKNOWN"
+              ]
+            },
+            "description": "If omitted: SUPPORTED when dimensions supplied, otherwise UNKNOWN. Non-SUPPORTED status forbids dimensions."
+          },
+          {
+            "name": "asOfYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2200
+            },
+            "description": "Year used for age calculation. Defaults to current server UTC year and is echoed; specify to reproduce results."
+          },
+          {
+            "name": "ruleVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "const": "difficulty-v1"
+            },
+            "description": "Pinned rule version; unsupported versions return 422 DIFFICULTY_RULE_UNSUPPORTED."
           }
         ],
-        "security": [],
-        "x-implementation-status": "design"
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "AUTHENTICATED_ACTIVE_CATALOG"
       }
     },
     "/lots/{lotId}": {
       "get": {
         "operationId": "getLot",
-        "description": "",
+        "description": "WEB or VEHICLE bearer; active SYNTHETIC catalog only. No occupancy, geocoding, verified discount eligibility or MAX availability. Synthetic navigation coordinates have usable=false. No-store; session limit 300 reads/5 min. See docs/lot-search.md. Current or historical active revision; both current and requested must remain active. Full versioned geometry, source/rights, fees/hours/photos and identical S-07 calculation evidence.",
         "responses": {
           "200": {
             "description": "Success",
@@ -552,11 +663,11 @@
                   "pattern": "^[A-Za-z0-9_.-]+$"
                 }
               },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
+              "Cache-Control": {
                 "schema": {
-                  "type": "boolean"
-                }
+                  "const": "no-store"
+                },
+                "description": "No cache for location/vehicle query responses."
               }
             },
             "content": {
@@ -602,34 +713,87 @@
             "required": true,
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_.-]+$"
+              "format": "uuid"
             }
           },
           {
-            "name": "lengthMm",
+            "name": "vehicleLengthMm",
             "in": "query",
             "required": false,
             "schema": {
               "type": "integer",
               "minimum": 1000,
               "maximum": 10000
-            }
+            },
+            "description": "Both dimensions must be supplied together as decimal integer query strings. Request claims, not verified SDK data."
           },
           {
-            "name": "widthMm",
+            "name": "vehicleWidthMm",
             "in": "query",
             "required": false,
             "schema": {
               "type": "integer",
               "minimum": 500,
               "maximum": 4000
-            }
+            },
+            "description": "Body width in mm. Unknown/unsupported dimensions use explicit reference fallback; malformed dimensions return 400."
+          },
+          {
+            "name": "vehicleStatus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SUPPORTED",
+                "UNSUPPORTED",
+                "PERMISSION_DENIED",
+                "ERROR",
+                "UNKNOWN"
+              ]
+            },
+            "description": "If omitted: SUPPORTED when dimensions supplied, otherwise UNKNOWN. Non-SUPPORTED status forbids dimensions."
+          },
+          {
+            "name": "asOfYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2200
+            },
+            "description": "Year used for age calculation. Defaults to current server UTC year and is echoed; specify to reproduce results."
+          },
+          {
+            "name": "lotVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "description": "Defaults to current revision. Historical revision allowed only while both it and the current revision are active."
+          },
+          {
+            "name": "ruleVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "const": "difficulty-v1"
+            },
+            "description": "Pinned rule version; unsupported versions return 422 DIFFICULTY_RULE_UNSUPPORTED."
           }
         ],
-        "security": [],
-        "x-implementation-status": "design"
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "AUTHENTICATED_ACTIVE_CATALOG"
       }
     },
     "/parked-locations": {
@@ -3050,40 +3214,142 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_.-]+$"
-          },
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 128
+            "maxLength": 120
           },
-          "lat": {
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "latitude": {
             "type": "number",
             "minimum": -90,
             "maximum": 90
           },
-          "lng": {
+          "longitude": {
             "type": "number",
             "minimum": -180,
             "maximum": 180
           },
-          "partner": {
+          "ownership": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "UNKNOWN"
+            ]
+          },
+          "parkingType": {
+            "type": "string",
+            "enum": [
+              "SELF_PARK",
+              "MECHANICAL",
+              "MIXED",
+              "UNKNOWN"
+            ]
+          },
+          "partnered": {
             "type": "boolean"
           },
-          "synthetic": {
-            "type": "boolean"
-          },
-          "structureVersion": {
+          "builtYear": {
             "anyOf": [
               {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
+                "type": "integer",
+                "minimum": 1800,
+                "maximum": 2200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "type": "string",
+            "const": "SYNTHETIC"
+          },
+          "sourceUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "structureStatus": {
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "DRAFT",
+              "COMPLETE"
+            ]
+          },
+          "timezone": {
+            "type": "string",
+            "const": "Asia/Seoul"
+          },
+          "operatingHours": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LotHours"
+                },
+                "minItems": 0,
+                "maxItems": 28
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fees": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotFees"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "minItems": 0,
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "distanceM": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 21000000
+          },
+          "discounts": {
+            "anyOf": [
+              {
+                "type": "array",
+                "maxItems": 20,
+                "items": {
+                  "$ref": "#/components/schemas/LotDiscount"
+                }
               },
               {
                 "type": "null"
@@ -3091,29 +3357,39 @@
             ]
           },
           "difficulty": {
-            "$ref": "#/components/schemas/Difficulty"
+            "$ref": "#/components/schemas/LotDifficultySummary"
           },
-          "distanceM": {
-            "type": "number",
-            "minimum": 0
+          "navigation": {
+            "$ref": "#/components/schemas/LotNavigation"
           },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "Z$"
+          "challenge": {
+            "$ref": "#/components/schemas/LotChallenge"
           }
         },
         "required": [
-          "id",
           "name",
-          "lat",
-          "lng",
-          "partner",
-          "synthetic",
-          "structureVersion",
-          "difficulty",
+          "address",
+          "latitude",
+          "longitude",
+          "ownership",
+          "parkingType",
+          "partnered",
+          "builtYear",
+          "source",
+          "sourceUpdatedAt",
+          "structureStatus",
+          "timezone",
+          "operatingHours",
+          "fees",
+          "tags",
+          "id",
+          "code",
+          "version",
           "distanceM",
-          "updatedAt"
+          "discounts",
+          "difficulty",
+          "navigation",
+          "challenge"
         ]
       },
       "LotPage": {
@@ -3122,6 +3398,7 @@
         "properties": {
           "items": {
             "type": "array",
+            "maxItems": 50,
             "items": {
               "$ref": "#/components/schemas/Lot"
             }
@@ -3131,108 +3408,90 @@
               {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 2048
+                "maxLength": 512,
+                "pattern": "^[A-Za-z0-9_-]+$"
               },
               {
                 "type": "null"
               }
             ]
+          },
+          "search": {
+            "$ref": "#/components/schemas/LotSearchContext"
           }
         },
         "required": [
           "items",
-          "nextCursor"
+          "nextCursor",
+          "search"
         ]
       },
       "LotDetail": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "lot": {
-            "$ref": "#/components/schemas/Lot"
+          "id": {
+            "type": "string",
+            "format": "uuid"
           },
-          "navigationDestination": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "lat": {
-                "type": "number",
-                "minimum": -90,
-                "maximum": 90
-              },
-              "lng": {
-                "type": "number",
-                "minimum": -180,
-                "maximum": 180
-              }
-            },
-            "required": [
-              "lat",
-              "lng"
-            ]
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
           },
-          "structure": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "currentVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "sourceUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/AdminLotSnapshot"
+          },
+          "discounts": {
             "anyOf": [
               {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "version": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 64,
-                    "pattern": "^[A-Za-z0-9_.-]+$"
-                  },
-                  "floors": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 64,
-                          "pattern": "^[A-Za-z0-9_.-]+$"
-                        },
-                        "label": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 32
-                        },
-                        "zoneIds": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 64,
-                            "pattern": "^[A-Za-z0-9_.-]+$"
-                          }
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "label",
-                        "zoneIds"
-                      ]
-                    }
-                  }
-                },
-                "required": [
-                  "version",
-                  "floors"
-                ]
+                "type": "array",
+                "maxItems": 20,
+                "items": {
+                  "$ref": "#/components/schemas/LotDiscount"
+                }
               },
               {
                 "type": "null"
               }
             ]
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/DifficultyResponse"
+          },
+          "navigation": {
+            "$ref": "#/components/schemas/LotNavigation"
+          },
+          "challenge": {
+            "$ref": "#/components/schemas/LotChallenge"
           }
         },
         "required": [
-          "lot",
-          "navigationDestination",
-          "structure"
+          "id",
+          "code",
+          "version",
+          "currentVersion",
+          "sourceUpdatedAt",
+          "snapshot",
+          "discounts",
+          "difficulty",
+          "navigation",
+          "challenge"
         ]
       },
       "LocationCreate": {
@@ -4512,6 +4771,20 @@
               "$ref": "#/components/schemas/DriveAisle"
             },
             "description": "Explicit free-space drive corridors. COMPLETE requires connected aisles and approach geometry for every space."
+          },
+          "discounts": {
+            "anyOf": [
+              {
+                "type": "array",
+                "maxItems": 20,
+                "items": {
+                  "$ref": "#/components/schemas/LotDiscount"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -5710,6 +5983,451 @@
               }
             }
           }
+        ]
+      },
+      "LotDiscount": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Z0-9_]+$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "conditions": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "code",
+          "label",
+          "conditions"
+        ]
+      },
+      "LotNavigation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "coordinateSystem": {
+            "const": "WGS84"
+          },
+          "usable": {
+            "const": false
+          },
+          "reason": {
+            "const": "SYNTHETIC_COORDINATE"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "coordinateSystem",
+          "usable",
+          "reason"
+        ]
+      },
+      "LotChallenge": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "const": false
+          },
+          "status": {
+            "const": "NOT_CONFIGURED"
+          }
+        },
+        "required": [
+          "available",
+          "status"
+        ]
+      },
+      "LotDifficultySummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCORED",
+              "INSUFFICIENT_DATA"
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5,
+                "multipleOf": 0.5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unroundedScore": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5,
+                "multipleOf": 1e-06
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baseScore": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5,
+                "multipleOf": 1e-06
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ruleVersion": {
+            "type": "string",
+            "const": "difficulty-v1"
+          },
+          "asOfYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2200
+          },
+          "vehicle": {
+            "$ref": "#/components/schemas/DifficultyVehicle"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/DifficultyCoverage"
+          },
+          "caveats": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "NOT_A_PARKABILITY_ASSESSMENT",
+                "SYNTHETIC_DATA",
+                "PARTIAL_DATA",
+                "BELOW_MINIMUM_COVERAGE",
+                "STRUCTURE_FACTOR_MISSING",
+                "REFERENCE_VEHICLE_USED"
+              ]
+            }
+          }
+        },
+        "required": [
+          "status",
+          "score",
+          "unroundedScore",
+          "baseScore",
+          "ruleVersion",
+          "asOfYear",
+          "vehicle",
+          "coverage",
+          "caveats"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "INSUFFICIENT_DATA"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "score": {
+                  "type": "null"
+                },
+                "unroundedScore": {
+                  "type": "null"
+                },
+                "baseScore": {
+                  "type": "null"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "score": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5,
+                  "multipleOf": 0.5
+                },
+                "unroundedScore": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "baseScore": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 5
+                }
+              }
+            }
+          }
+        ]
+      },
+      "LotSearchContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "RADIUS",
+              "BOUNDS"
+            ]
+          },
+          "origin": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ]
+          },
+          "bounds": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "RADIUS",
+                  "BOUNDS"
+                ]
+              },
+              "south": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "north": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "west": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "east": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "radiusM": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "mode",
+              "south",
+              "north",
+              "west",
+              "east",
+              "radiusM"
+            ]
+          },
+          "distanceMethod": {
+            "const": "HAVERSINE_SPHERE"
+          },
+          "earthRadiusM": {
+            "const": 6371008.8
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "DISTANCE",
+              "EASIEST"
+            ]
+          },
+          "asOfYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2200
+          },
+          "ruleVersion": {
+            "const": "difficulty-v1"
+          },
+          "candidateLimit": {
+            "const": 1000
+          }
+        },
+        "required": [
+          "mode",
+          "origin",
+          "bounds",
+          "distanceMethod",
+          "earthRadiusM",
+          "sort",
+          "asOfYear",
+          "ruleVersion",
+          "candidateLimit"
+        ]
+      },
+      "LotSearchQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "radiusM": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20000,
+            "default": 3000
+          },
+          "south": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "north": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "west": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "east": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "DISTANCE",
+              "EASIEST"
+            ],
+            "default": "DISTANCE"
+          },
+          "ownership": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "UNKNOWN"
+            ]
+          },
+          "partnered": {
+            "type": "boolean"
+          },
+          "discountCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Z0-9_]+$"
+          },
+          "vehicleLengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 10000
+          },
+          "vehicleWidthMm": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 4000
+          },
+          "vehicleStatus": {
+            "type": "string",
+            "enum": [
+              "SUPPORTED",
+              "UNSUPPORTED",
+              "PERMISSION_DENIED",
+              "ERROR",
+              "UNKNOWN"
+            ]
+          },
+          "asOfYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2200
+          },
+          "ruleVersion": {
+            "type": "string",
+            "const": "difficulty-v1"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
         ]
       }
     },

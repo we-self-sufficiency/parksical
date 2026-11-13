@@ -201,11 +201,14 @@ model LotRevision {
   source          String @db.VarChar(16)
   sourceUpdatedAt DateTime @db.Timestamptz(3)
   structureStatus String @db.VarChar(16)
+  discountCodes   String[] @default([])
   challengeAllowed Boolean @default(false)
   snapshot        Json @db.JsonB
   createdAt       DateTime @default(now()) @db.Timestamptz(3)
   floors          LotFloor[]
   @@id([lotId, version])
+  @@index([source, active, latitude, longitude])
+  @@index([discountCodes], type: Gin)
 }
 
 model LotFloor {

@@ -97,6 +97,11 @@ export class PhotoDto {
   @IsString() @MinLength(1) @MaxLength(200) caption!: string;
   @IsString() @MinLength(1) @MaxLength(500) rightsNote!: string;
 }
+export class DiscountDto {
+  @Matches(/^[A-Z0-9_]{1,32}$/) code!: string;
+  @IsString() @MinLength(1) @MaxLength(80) label!: string;
+  @IsString() @MinLength(1) @MaxLength(500) conditions!: string;
+}
 export class LotSnapshotDto {
   @IsString() @MinLength(1) @MaxLength(120) name!: string;
   @IsString() @MinLength(1) @MaxLength(240) address!: string;
@@ -120,6 +125,8 @@ export class LotSnapshotDto {
   @ValidateIf(o => o.fees !== null) @IsObject() @ValidateNested() @Type(() => FeesDto) fees!: FeesDto | null;
   @IsArray() @ArrayMaxSize(20) @ArrayUnique() @IsString({ each: true }) @MinLength(1, { each: true }) @MaxLength(40, { each: true }) tags!: string[];
   @IsArray() @ArrayMaxSize(10) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => PhotoDto) photos!: PhotoDto[];
+  // Omitted/null = unknown; [] = confirmed no listed discounts. Not an eligibility decision.
+  @ValidateIf(o => o.discounts !== undefined && o.discounts !== null) @IsArray() @ArrayMaxSize(20) @ArrayUnique((d: DiscountDto | null) => d?.code) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => DiscountDto) discounts?: DiscountDto[] | null;
   @IsDefined() @IsObject() @ValidateNested() @Type(() => ScoresDto) factorScores!: ScoresDto;
   @IsIn([false]) challengeAllowed!: false;
   @IsArray() @ArrayMaxSize(50) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => FloorDto) floors!: FloorDto[];

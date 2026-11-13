@@ -1,6 +1,7 @@
 package com.parksical.domain.engine
 
 import com.parksical.domain.model.DifficultyBreakdown
+import com.parksical.domain.model.DifficultyFactor
 import com.parksical.domain.model.LotStructure
 import com.parksical.domain.model.ParkingLot
 import com.parksical.domain.model.RampType
@@ -15,17 +16,30 @@ import kotlin.math.roundToInt
 class DefaultDifficultyCalculator(private val currentYear: Int = 2026) : DifficultyCalculator {
 
     override fun calculate(lot: ParkingLot, size: VehicleSize): DifficultyBreakdown {
-        val structure = structureScore(lot.structure)
-        val review = lot.reviewDifficulty.coerceIn(1f, 5f)
-        // Gear shifts and park seconds weigh equally.
-        val driving = (lerp(lot.avgGearShifts, 1f, 5.4f) + lerp(lot.avgParkSeconds.toFloat(), 30f, 170f)) / 2f
-        val age = (1f + (currentYear - lot.builtYear) / 11f).coerceIn(1f, 5f)
-        val base = 0.40f * structure + 0.25f * review + 0.20f * driving + 0.15f * age
+        lot.serverDifficulty?.let {
+            return DifficultyBreakdown(null, null, null, null, it.score, it.score, size, it.missingFactors, fromServer = true)
+        }
+        val structure = lot.structure?.let(::structureScore)
+        val review = lot.reviewDifficulty?.coerceIn(1f, 5f)
+        // Gear shifts and park seconds weigh equally; use whichever is known.
+        val driving = listOfNotNull(
+            lot.avgGearShifts?.let { lerp(it, 1f, 5.4f) },
+            lot.avgParkSeconds?.let { lerp(it.toFloat(), 30f, 170f) },
+        ).takeIf { it.isNotEmpty() }?.average()?.toFloat()
+        val age = lot.builtYear?.let { (1f + (currentYear - it) / 11f).coerceIn(1f, 5f) }
 
-        val maxSize = lot.structure.maxSize
+        val known = listOf(
+            Triple(DifficultyFactor.STRUCTURE, structure, 0.40f), Triple(DifficultyFactor.REVIEW, review, 0.25f),
+            Triple(DifficultyFactor.DRIVING_STATS, driving, 0.20f), Triple(DifficultyFactor.BUILDING_AGE, age, 0.15f),
+        )
+        val missing = known.filter { it.second == null }.map { it.first }
+        val weight = known.sumOf { if (it.second != null) it.third.toDouble() else 0.0 }.toFloat()
+        val base = if (weight == 0f) 3f else known.sumOf { ((it.second ?: 0f) * it.third).toDouble() }.toFloat() / weight
+
+        val maxSize = lot.structure?.maxSize
         val stars = if (maxSize != null && size > maxSize) 5f else {
-            // Size matters only on narrow lots: 0 at structure 2, full at structure >= 4.3.
-            val narrow = ((structure - 2f) / 2.3f).coerceIn(0f, 1f)
+            // Size matters only on narrow lots: 0 at structure 2, full at structure >= 4.3; unknown structure = no scaling.
+            val narrow = if (structure == null) 0f else ((structure - 2f) / 2.3f).coerceIn(0f, 1f)
             val delta = when (size) {
                 VehicleSize.COMPACT -> -0.75f
                 VehicleSize.MIDSIZE -> 0f
@@ -34,7 +48,7 @@ class DefaultDifficultyCalculator(private val currentYear: Int = 2026) : Difficu
             }
             ((base + delta * narrow) * 2).roundToInt() / 2f
         }.coerceIn(1f, 5f)
-        return DifficultyBreakdown(structure, review, driving, age, base, stars, size)
+        return DifficultyBreakdown(structure, review, driving, age, base, stars, size, missing)
     }
 
     override fun sizeOf(dimensions: VehicleDimensions) = when {

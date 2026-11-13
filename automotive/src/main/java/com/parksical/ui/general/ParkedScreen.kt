@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.parksical.LocalAppContainer
+import com.parksical.domain.model.SyncState
 import com.parksical.ui.theme.GeneralColors
 import java.util.Random
 
@@ -51,8 +52,12 @@ fun ParkedScreen(onDone: () -> Unit) {
             }
             return@Box
         }
-        val layout = c.parking.lot(s.lotId)?.layout
-        val zones = layout?.floors?.firstOrNull { it.label == s.floor }?.zones.orEmpty()
+        val lot = c.parking.lot(s.lotId)
+        // (label, zones) per floor: server structure first, else the local layout.
+        val floors = lot?.serverStructure?.floors?.map { it.label to it.zoneIds }
+            ?: lot?.layout?.floors?.map { it.label to it.zones }.orEmpty()
+        val zones = floors.firstOrNull { it.first == s.floor }?.second.orEmpty()
+        fun edit(floor: String, zone: String) = c.drive.correctSpot(s.copy(floor = floor, zone = zone, confidence = 1f, userEdited = true))
 
         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(40.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -61,19 +66,27 @@ fun ParkedScreen(onDone: () -> Unit) {
                     if (s.confidence >= 1f) "직접 확인한 위치" else "추정 위치 · 정확도 ${(s.confidence * 100).toInt()}%",
                     color = if (s.confidence >= 1f) GeneralColors.Link else GeneralColors.AccentSoft, fontSize = 20.sp,
                 )
-                if (layout != null) {
+                Text(
+                    when (s.sync) {
+                        SyncState.SYNCED -> "서버에 저장됨"
+                        SyncState.SYNCING -> "저장 중…"
+                        SyncState.FAILED -> "서버 저장 실패 · 기기에 저장됨"
+                        SyncState.LOCAL_ONLY -> "기기에 저장됨"
+                    },
+                    color = if (s.sync == SyncState.FAILED) GeneralColors.Accent else GeneralColors.TextSub, fontSize = 16.sp,
+                )
+                if (floors.isNotEmpty()) {
                     Text("층이 달라요?", color = GeneralColors.TextSub, fontSize = 16.sp)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        layout.floors.forEach { f ->
-                            Pill(f.label, f.label == s.floor, {
-                                val z = if (s.zone in f.zones) s.zone else f.zones.first()
-                                c.session.savedSpot.value = s.copy(floor = f.label, zone = z, confidence = 1f)
+                        floors.forEach { (label, fz) ->
+                            Pill(label, label == s.floor, {
+                                edit(label, if (s.zone in fz) s.zone else fz.firstOrNull() ?: s.zone)
                             })
                         }
                     }
                     Text("구역이 달라요?", color = GeneralColors.TextSub, fontSize = 16.sp)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        zones.forEach { z -> Pill("${z}구역", z == s.zone, { c.session.savedSpot.value = s.copy(zone = z, confidence = 1f) }) }
+                        zones.forEach { z -> Pill("${z}구역", z == s.zone, { edit(s.floor, z) }) }
                     }
                 }
                 Text("오늘 주차 어땠나요?", color = GeneralColors.Text, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp))

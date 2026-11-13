@@ -42,8 +42,8 @@ class DefaultParkingSpotEstimator : ParkingSpotEstimator {
     override fun estimate(nowMs: Long): ParkingSpotEstimate? {
         val lot = lot ?: return null
         val layout = lot.layout ?: return null
-        val perFloor = lot.structure.rampTurnsPerFloor
-        val floorPos = if (perFloor > 0f) headingRad / (2 * PI.toFloat()) / perFloor else 0f
+        val perFloor = lot.structure?.rampTurnsPerFloor
+        val floorPos = if (perFloor != null && perFloor > 0f) headingRad / (2 * PI.toFloat()) / perFloor else 0f
         val floor = layout.floors[floorPos.roundToInt().coerceIn(0, layout.floors.lastIndex)]
 
         val onFloorM = (distanceM - layout.entranceToRampM - rampM).coerceAtLeast(0f)
@@ -55,6 +55,8 @@ class DefaultParkingSpotEstimator : ParkingSpotEstimator {
         val zoneAmb = abs(2 * (zonePos - zonePos.toInt()) - 1)
         var confidence = 0.9f - 0.4f * floorAmb - 0.2f * zoneAmb
         if (!steeringSeen && layout.floors.size > 1) confidence = minOf(confidence, 0.3f)
+        // Floor can not be derived without ramp geometry.
+        if (perFloor == null && layout.floors.size > 1) confidence = minOf(confidence, 0.3f)
         return ParkingSpotEstimate(lot.id, floor.label, zone, confidence.coerceIn(0.1f, 0.9f), nowMs)
     }
 

@@ -20,7 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +49,9 @@ private val Chip = Color(0xFF22262D)
 fun LotDetailScreen(lotId: String, onBack: () -> Unit, onOpenMaxEntry: (lotId: String) -> Unit) {
     val c = LocalAppContainer.current
     val parked = LocalVehicleState.current.isParked
-    val lot = remember(lotId) { c.parking.lot(lotId) }
+    var loaded by remember(lotId) { mutableStateOf(c.parking.lot(lotId)) }
+    LaunchedEffect(lotId) { loaded = c.parking.loadDetail(lotId, c.session.vehicleDimensions.value) ?: loaded }
+    val lot = loaded
     val (size, picked) = mySize()
 
     Column(Modifier.fillMaxSize().background(GeneralColors.Bg)) {
@@ -57,28 +63,29 @@ fun LotDetailScreen(lotId: String, onBack: () -> Unit, onOpenMaxEntry: (lotId: S
                 Text("‹", color = GeneralColors.Text, fontSize = 30.sp)
             }
             Text(lot?.name ?: "주차장을 찾을 수 없어요", color = GeneralColors.Text, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            if (lot != null) Text(lot.subtitle, color = GeneralColors.TextSub, fontSize = 16.sp)
+            lot?.subtitle?.let { Text(it, color = GeneralColors.TextSub, fontSize = 16.sp) }
         }
         if (lot == null) return@Column
 
         val mine = remember(lot, size) { c.difficulty.calculate(lot, size) }
         val compact = remember(lot) { c.difficulty.calculate(lot, VehicleSize.COMPACT) }
+        val none = "정보 없음"
 
         Row(Modifier.fillMaxSize().padding(28.dp), horizontalArrangement = Arrangement.spacedBy(28.dp)) {
             // left: photo placeholder, info, actions
             Column(Modifier.weight(0.4f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 EntrancePlaceholder(Modifier.fillMaxWidth().height(300.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Info("요금", "30분 %,d원".format(lot.fee30MinWon), Modifier.weight(1f))
-                    Info("운영", lot.hours, Modifier.weight(1f))
-                    Info("준공", "${lot.builtYear}년", Modifier.weight(1f))
+                    Info("요금", lot.fee30MinWon?.let { "30분 %,d원".format(it) } ?: none, Modifier.weight(1f))
+                    Info("운영", lot.hours ?: none, Modifier.weight(1f))
+                    Info("준공", lot.builtYear?.let { "${it}년" } ?: none, Modifier.weight(1f))
                 }
                 Column(Modifier.weight(1f)) {}
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(
                         Modifier.weight(1f).height(72.dp).clip(RoundedCornerShape(14.dp)).background(GeneralColors.Link).clickable {
                             c.session.navigatingLotId.value = lot.id
-                            c.navi.requestRoute(lot.name, lot.lat, lot.lng)
+                            c.navi.requestRoute(lot.name, lot.navigationLat ?: lot.lat, lot.navigationLng ?: lot.lng)
                         },
                         Alignment.Center,
                     ) { Text("길안내 시작", color = GeneralColors.Bg, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
@@ -100,20 +107,27 @@ fun LotDetailScreen(lotId: String, onBack: () -> Unit, onOpenMaxEntry: (lotId: S
                             }
                         }
                         Text(
-                            "내 차(${size.label}${if (picked) "" else " · 차급 선택 필요"}) ★${fmt(mine.forMyCar)}\n소형차 기준 ★${fmt(compact.forMyCar)}",
+                            if (mine.fromServer) {
+                                (if (lot.serverDifficulty?.vehicleAdjusted == true) "내 차 기준" else "기준 차체(4,800×1,850mm) 기준") + "\n서버 산정"
+                            } else "내 차(${size.label}${if (picked) "" else " · 차급 선택 필요"}) ★${fmt(mine.forMyCar)}\n소형차 기준 ★${fmt(compact.forMyCar)}",
                             color = GeneralColors.Muted, fontSize = 16.sp, lineHeight = 24.sp,
                             modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(Chip).padding(16.dp, 12.dp),
                         )
                     }
                     if (!picked) SizePicker()
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Factor("주차장 구조 40%", mine.structure)
-                        Factor("이용자 리뷰 25%", mine.review)
-                        Factor("주행 데이터 집계 20%", mine.driving)
-                        Factor("건물 연식 15%", mine.age)
+                        if (mine.fromServer) {
+                            Text("요소별 점수는 서버에서 아직 제공하지 않아요", color = GeneralColors.TextSub, fontSize = 16.sp)
+                            if (mine.missing.isNotEmpty()) Text("부족한 정보: " + mine.missing.joinToString { it.label }, color = GeneralColors.Muted, fontSize = 15.sp)
+                        } else {
+                            Factor("주차장 구조 40%", mine.structure)
+                            Factor("이용자 리뷰 25%", mine.review)
+                            Factor("주행 데이터 집계 20%", mine.driving)
+                            Factor("건물 연식 15%", mine.age)
+                        }
                     }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        (lot.tags + "평균 전후진 전환 ${fmt(lot.avgGearShifts)}회" + "리뷰 ${lot.reviewCount}건").forEach {
+                        (lot.tags + listOfNotNull(lot.avgGearShifts?.let { "평균 전후진 전환 ${fmt(it)}회" }, if (lot.reviewCount > 0) "리뷰 ${lot.reviewCount}건" else null)).forEach {
                             Text(it, color = GeneralColors.Muted, fontSize = 15.sp, modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Chip).padding(10.dp, 6.dp))
                         }
                     }
@@ -133,13 +147,13 @@ private fun Info(label: String, value: String, modifier: Modifier) {
 }
 
 @Composable
-private fun Factor(label: String, score: Float) {
+private fun Factor(label: String, score: Float?) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(label, color = GeneralColors.Text, fontSize = 17.sp, modifier = Modifier.width(200.dp))
         Box(Modifier.weight(1f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(Color(0xFF2C313A))) {
-            Box(Modifier.fillMaxWidth((score / 5f).coerceIn(0f, 1f)).height(10.dp).clip(RoundedCornerShape(5.dp)).background(GeneralColors.Accent))
+            if (score != null) Box(Modifier.fillMaxWidth((score / 5f).coerceIn(0f, 1f)).height(10.dp).clip(RoundedCornerShape(5.dp)).background(GeneralColors.Accent))
         }
-        Text(fmt(score), color = GeneralColors.Text, fontSize = 17.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(48.dp))
+        Text(score?.let(::fmt) ?: "정보 없음", color = if (score == null) GeneralColors.Muted else GeneralColors.Text, fontSize = if (score == null) 14.sp else 17.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(72.dp))
     }
 }
 

@@ -22,6 +22,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.parksical.data.LotsStatus
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,9 +56,18 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
     var sort by remember { mutableStateOf(Sort.EASY) }
     var partnerOnly by remember { mutableStateOf(false) }
 
-    val rows = remember(size) { c.parking.lots().map { it to c.difficulty.calculate(it, size).forMyCar } }
+    val lots by c.parking.lots.collectAsStateWithLifecycle()
+    val status by c.parking.status.collectAsStateWithLifecycle()
+    val dims by c.session.vehicleDimensions.collectAsStateWithLifecycle()
+    // Re-query when the car changes (VEHICLE_ADJUSTED score); skipped for the initial value, the repo loads itself.
+    var firstSize by remember { mutableStateOf(true) }
+    LaunchedEffect(dims) {
+        if (firstSize) firstSize = false else c.parking.refresh(dims)
+    }
+
+    val rows = remember(lots, size) { lots.map { it to c.difficulty.calculate(it, size).forMyCar } }
     // shortcut: flat-earth distance (fine at city scale), swap for a real geo lib if lots span regions
-    fun dist(l: ParkingLot) = hypot(
+    fun dist(l: ParkingLot) = l.distanceM?.toDouble() ?: hypot(
         (l.lat - c.parking.destinationLat) * 111_000.0,
         (l.lng - c.parking.destinationLng) * 111_000.0 * cos(Math.toRadians(l.lat)),
     )
@@ -124,7 +136,16 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                    Text("목적지 주변 ${shown.size}곳", color = GeneralColors.Text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("목적지 주변 ${shown.size}곳", color = GeneralColors.Text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        val st = status
+                        val (txt, col) = when (st) {
+                            LotsStatus.Loading -> "불러오는 중…" to GeneralColors.Muted
+                            LotsStatus.Server -> "서버 데이터" to GeneralColors.Link
+                            is LotsStatus.Fallback -> "목업 데이터 · ${st.reason}" to GeneralColors.Accent
+                        }
+                        Text(txt, color = col, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFF22262D)).padding(10.dp, 3.dp))
+                    }
                     Text(if (picked) "내 차(${size.label}) 기준" else "차급 선택 필요", color = if (picked) GeneralColors.TextSub else GeneralColors.Accent, fontSize = 16.sp)
                 }
                 if (!picked) SizePicker()
@@ -165,11 +186,16 @@ private fun LotCard(lot: ParkingLot, stars: Float, onOpen: (String) -> Unit, onC
                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(starColor(stars)).padding(horizontal = 10.dp, vertical = 4.dp),
             )
         }
-        val walk = if (lot.walkMinutes == 0) "건물 내" else "도보 ${lot.walkMinutes}분"
-        val disc = if (lot.prepayDiscountPercent > 0) " · 제휴 사전결제" else ""
-        Text("$walk · 30분 %,d원$disc".format(lot.fee30MinWon), color = GeneralColors.TextSub, fontSize = 16.sp)
+        val meta = listOfNotNull(
+            lot.distanceM?.let { if (it >= 1000) "%.1fkm".format(it / 1000) else "${it.toInt()}m" },
+            lot.walkMinutes?.let { if (it == 0) "건물 내" else "도보 ${it}분" },
+            lot.fee30MinWon?.let { "30분 %,d원".format(it) },
+            lot.hours,
+            if (lot.prepayDiscountPercent > 0) "제휴 사전결제" else null,
+        ).joinToString(" · ")
+        if (meta.isNotEmpty()) Text(meta, color = GeneralColors.TextSub, fontSize = 16.sp)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            lot.tags.forEach {
+            (if (lot.synthetic) lot.tags + "합성" else lot.tags).forEach {
                 Text(it, color = GeneralColors.Muted, fontSize = 14.sp, modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(Color(0xFF22262D)).padding(8.dp, 3.dp))
             }
             if (lot.challengeOpen) {

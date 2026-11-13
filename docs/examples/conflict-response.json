@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "IDEMPOTENCY_CONFLICT",
+    "message": "Synthetic contract example",
+    "requestId": "req_demo_1",
+    "retryable": false,
+    "details": []
+  }
+}

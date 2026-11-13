@@ -1,0 +1,35 @@
+{
+  "contractVersion": "1.0",
+  "appVersion": "0.1.0",
+  "installationId": "install_demo_1",
+  "capabilities": {
+    "gear": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "speed": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "steeringAngle": {
+      "status": "UNSUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "brake": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "safetyWarnings": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "carProfile": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "navigation": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    }
+  }
+}

@@ -1,0 +1,2400 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Parksical API contract",
+    "version": "0.1.0",
+    "description": "S-01 design contract, not an implemented server. Core DTOs are reviewable; production policies D-01..D-07 remain pending."
+  },
+  "servers": [
+    {
+      "url": "https://api.example.invalid/api/v1",
+      "description": "Placeholder only; D-06 selects the real host."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/me": {
+      "get": {
+        "operationId": "getMe",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        }
+      }
+    },
+    "/vehicle-sessions": {
+      "post": {
+        "operationId": "createVehicleSession",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                },
+                "example": {
+                  "id": "session_demo_1",
+                  "status": "ACTIVE",
+                  "createdAt": "2026-11-13T11:00:00Z",
+                  "contractVersion": "1.0",
+                  "capabilities": {
+                    "gear": {
+                      "status": "SUPPORTED",
+                      "checkedAt": "2026-11-13T11:00:00Z"
+                    },
+                    "speed": {
+                      "status": "SUPPORTED",
+                      "checkedAt": "2026-11-13T11:00:00Z"
+                    },
+                    "steeringAngle": {
+                      "status": "UNSUPPORTED",
+                      "checkedAt": "2026-11-13T11:00:00Z"
+                    },
+                    "brake": {
+                      "status": "SUPPORTED",
+                      "checkedAt": "2026-11-13T11:00:00Z"
+                    },
+                    "safetyWarnings": {
+                      "status": "SUPPORTED",
+                      "checkedAt": "2026-11-13T11:00:00Z"
+                    },
+                    "carProfile": {
+                      "status": "SUPPORTED",
+                      "checkedAt": "2026-11-13T11:00:00Z"
+                    },
+                    "navigation": {
+                      "status": "SUPPORTED",
+                      "checkedAt": "2026-11-13T11:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreate"
+              },
+              "example": {
+                "contractVersion": "1.0",
+                "appVersion": "0.1.0",
+                "installationId": "install_demo_1",
+                "capabilities": {
+                  "gear": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "speed": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "steeringAngle": {
+                    "status": "UNSUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "brake": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "safetyWarnings": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "carProfile": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "navigation": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/vehicle-sessions/{sessionId}/events": {
+      "post": {
+        "operationId": "submitVehicleEvent",
+        "description": "Metadata events only. Body eventId must equal Idempotency-Key. No position/run mutations here.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventReceipt"
+                },
+                "example": {
+                  "eventId": "evt_demo_2",
+                  "sessionId": "session_demo_1",
+                  "receivedAt": "2026-11-13T11:00:00Z",
+                  "disposition": "APPLIED",
+                  "lastAppliedSequence": 2
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRequest"
+              },
+              "example": {
+                "contractVersion": "1.0",
+                "eventId": "evt_demo_2",
+                "sequence": 2,
+                "occurredAt": "2026-11-13T11:00:00Z",
+                "type": "CAPABILITIES_REPORTED",
+                "payload": {
+                  "gear": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "speed": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "steeringAngle": {
+                    "status": "UNSUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "brake": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "safetyWarnings": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "carProfile": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  },
+                  "navigation": {
+                    "status": "SUPPORTED",
+                    "checkedAt": "2026-11-13T11:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/lots": {
+      "get": {
+        "operationId": "listLots",
+        "description": "Both car-size fields or neither; one is 422. Great-circle distance, stable (sortValue,id) ordering. No destination geocoding.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "radiusM",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 20000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DISTANCE",
+                "DIFFICULTY"
+              ]
+            }
+          },
+          {
+            "name": "partner",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "lengthMm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "widthMm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 500,
+              "maximum": 4000
+            }
+          }
+        ],
+        "security": []
+      }
+    },
+    "/lots/{lotId}": {
+      "get": {
+        "operationId": "getLot",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          {
+            "name": "lengthMm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "widthMm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 500,
+              "maximum": 4000
+            }
+          }
+        ],
+        "security": []
+      }
+    },
+    "/parked-locations": {
+      "post": {
+        "operationId": "createParkedLocation",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                },
+                "example": {
+                  "id": "parked_demo_1",
+                  "clientRecordId": "local_demo_1",
+                  "lotId": "lot_synthetic_1",
+                  "floorId": null,
+                  "zoneId": null,
+                  "confidence": "LOW",
+                  "distanceM": 120.5,
+                  "occurredAt": "2026-11-13T11:00:00Z",
+                  "structureVersion": null,
+                  "version": 1,
+                  "userEdited": false,
+                  "createdAt": "2026-11-13T11:00:00Z",
+                  "updatedAt": "2026-11-13T11:00:00Z",
+                  "note": null
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationCreate"
+              },
+              "example": {
+                "clientRecordId": "local_demo_1",
+                "lotId": "lot_synthetic_1",
+                "floorId": null,
+                "zoneId": null,
+                "confidence": "LOW",
+                "distanceM": 120.5,
+                "occurredAt": "2026-11-13T11:00:00Z",
+                "structureVersion": null
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ]
+      },
+      "get": {
+        "operationId": "listMyParkedLocations",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          }
+        ]
+      }
+    },
+    "/parked-locations/{locationId}": {
+      "get": {
+        "operationId": "getMyParkedLocation",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                },
+                "example": {
+                  "id": "parked_demo_1",
+                  "clientRecordId": "local_demo_1",
+                  "lotId": "lot_synthetic_1",
+                  "floorId": null,
+                  "zoneId": null,
+                  "confidence": "LOW",
+                  "distanceM": 120.5,
+                  "occurredAt": "2026-11-13T11:00:00Z",
+                  "structureVersion": null,
+                  "version": 1,
+                  "userEdited": false,
+                  "createdAt": "2026-11-13T11:00:00Z",
+                  "updatedAt": "2026-11-13T11:00:00Z",
+                  "note": null
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchMyParkedLocation",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationPatch"
+              },
+              "example": {
+                "expectedVersion": 1,
+                "floorId": null,
+                "zoneId": null,
+                "note": "입구 근처, 층 확인 필요"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteMyParkedLocation",
+        "description": "",
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "204": {
+            "description": "Deleted; no response body",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/parked-locations/{locationId}/qr-tokens": {
+      "post": {
+        "operationId": "issueQrGrant",
+        "description": "Provisional D-07 token flow; disabled until D-07 and D-06 are configured. Not an implemented endpoint.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Server request correlation ID",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present and true on successful idempotent replay only",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrGrant"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "User session. Vehicle routes additionally require the authenticated installation binding (S-03)."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "requestId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "reason"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "requestId",
+              "retryable",
+              "details"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Capability": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUPPORTED",
+              "UNSUPPORTED",
+              "PERMISSION_DENIED",
+              "ERROR",
+              "UNKNOWN"
+            ]
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          }
+        },
+        "required": [
+          "status",
+          "checkedAt"
+        ]
+      },
+      "Capabilities": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "gear": {
+            "$ref": "#/components/schemas/Capability"
+          },
+          "speed": {
+            "$ref": "#/components/schemas/Capability"
+          },
+          "steeringAngle": {
+            "$ref": "#/components/schemas/Capability"
+          },
+          "brake": {
+            "$ref": "#/components/schemas/Capability"
+          },
+          "safetyWarnings": {
+            "$ref": "#/components/schemas/Capability"
+          },
+          "carProfile": {
+            "$ref": "#/components/schemas/Capability"
+          },
+          "navigation": {
+            "$ref": "#/components/schemas/Capability"
+          }
+        },
+        "required": [
+          "gear",
+          "speed",
+          "steeringAngle",
+          "brake",
+          "safetyWarnings",
+          "carProfile",
+          "navigation"
+        ]
+      },
+      "SessionCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contractVersion": {
+            "const": "1.0"
+          },
+          "appVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "installationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/Capabilities"
+          }
+        },
+        "required": [
+          "contractVersion",
+          "appVersion",
+          "installationId",
+          "capabilities"
+        ]
+      },
+      "Session": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CLOSED",
+              "REVOKED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "contractVersion": {
+            "const": "1.0"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/Capabilities"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "createdAt",
+          "contractVersion",
+          "capabilities"
+        ]
+      },
+      "CapabilityEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contractVersion": {
+            "const": "1.0"
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "type": {
+            "const": "CAPABILITIES_REPORTED"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/Capabilities"
+          }
+        },
+        "required": [
+          "contractVersion",
+          "eventId",
+          "sequence",
+          "occurredAt",
+          "type",
+          "payload"
+        ]
+      },
+      "CloseEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contractVersion": {
+            "const": "1.0"
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "type": {
+            "const": "SESSION_CLOSED"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "USER_ENDED",
+                  "APP_STOPPED"
+                ]
+              }
+            },
+            "required": [
+              "reason"
+            ]
+          }
+        },
+        "required": [
+          "contractVersion",
+          "eventId",
+          "sequence",
+          "occurredAt",
+          "type",
+          "payload"
+        ]
+      },
+      "EventRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CapabilityEvent"
+          },
+          {
+            "$ref": "#/components/schemas/CloseEvent"
+          }
+        ]
+      },
+      "EventReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "sessionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "APPLIED",
+              "STORED_OUT_OF_ORDER"
+            ]
+          },
+          "lastAppliedSequence": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "eventId",
+          "sessionId",
+          "receivedAt",
+          "disposition",
+          "lastAppliedSequence"
+        ]
+      },
+      "CarSize": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 10000
+          },
+          "widthMm": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 4000
+          }
+        },
+        "required": [
+          "lengthMm",
+          "widthMm"
+        ]
+      },
+      "Difficulty": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5,
+            "multipleOf": 0.5
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "VEHICLE_ADJUSTED",
+              "BASELINE"
+            ]
+          },
+          "ruleVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "missingFactors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "STRUCTURE",
+                "REVIEW",
+                "DRIVING_STATS",
+                "BUILDING_AGE"
+              ]
+            }
+          },
+          "sampleCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "score",
+          "basis",
+          "ruleVersion",
+          "missingFactors",
+          "sampleCount"
+        ]
+      },
+      "Lot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "partner": {
+            "type": "boolean"
+          },
+          "synthetic": {
+            "type": "boolean"
+          },
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/Difficulty"
+          },
+          "distanceM": {
+            "type": "number",
+            "minimum": 0
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "lat",
+          "lng",
+          "partner",
+          "synthetic",
+          "structureVersion",
+          "difficulty",
+          "distanceM",
+          "updatedAt"
+        ]
+      },
+      "LotPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Lot"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "LotDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot": {
+            "$ref": "#/components/schemas/Lot"
+          },
+          "navigationDestination": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "lat",
+              "lng"
+            ]
+          },
+          "structure": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64,
+                    "pattern": "^[A-Za-z0-9_.-]+$"
+                  },
+                  "floors": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64,
+                          "pattern": "^[A-Za-z0-9_.-]+$"
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 32
+                        },
+                        "zoneIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64,
+                            "pattern": "^[A-Za-z0-9_.-]+$"
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "label",
+                        "zoneIds"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "version",
+                  "floors"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lot",
+          "navigationDestination",
+          "structure"
+        ]
+      },
+      "LocationCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "clientRecordId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "lotId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "floorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW",
+              "UNKNOWN"
+            ]
+          },
+          "distanceM": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "clientRecordId",
+          "lotId",
+          "floorId",
+          "zoneId",
+          "confidence",
+          "distanceM",
+          "occurredAt",
+          "structureVersion"
+        ]
+      },
+      "LocationPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "floorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "floorId"
+            ]
+          },
+          {
+            "required": [
+              "zoneId"
+            ]
+          },
+          {
+            "required": [
+              "note"
+            ]
+          }
+        ]
+      },
+      "Location": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "clientRecordId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "lotId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "floorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW",
+              "UNKNOWN"
+            ]
+          },
+          "distanceM": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "userEdited": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "clientRecordId",
+          "lotId",
+          "floorId",
+          "zoneId",
+          "confidence",
+          "distanceM",
+          "occurredAt",
+          "structureVersion",
+          "version",
+          "userEdited",
+          "createdAt",
+          "updatedAt",
+          "note"
+        ]
+      },
+      "LocationPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "QrGrant": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "policyStatus": {
+            "const": "PROVISIONAL_D07"
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt",
+          "policyStatus"
+        ]
+      },
+      "Me": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_.-]+$"
+          },
+          "rankingPublic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "rankingPublic"
+        ]
+      },
+      "PolicyError": {
+        "$ref": "#/components/schemas/Error"
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Invalid syntax or schema",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "Missing or invalid credentials",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Insufficient scope or policy disabled",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Resource unavailable to this principal",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Payload, version or state conflict",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Retry-After": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Present for REQUEST_IN_PROGRESS only"
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error422": {
+        "description": "Semantically invalid or stale input",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Request limit; Retry-After header",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Retry-After": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Seconds before retry"
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Temporary dependency failure",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Retry-After": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Seconds before retry"
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error413": {
+        "description": "JSON body exceeds 64KiB limit",
+        "headers": {
+          "X-Request-Id": {
+            "description": "Server request correlation ID",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          },
+          "Idempotency-Replayed": {
+            "description": "Present and true on successful idempotent replay only",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

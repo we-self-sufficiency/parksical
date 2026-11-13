@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "CONTRACT_VERSION_UNSUPPORTED",
+    "message": "Synthetic contract example",
+    "requestId": "req_demo_1",
+    "retryable": false,
+    "details": []
+  }
+}

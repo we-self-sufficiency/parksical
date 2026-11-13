@@ -1,0 +1,37 @@
+{
+  "contractVersion": "1.0",
+  "eventId": "evt_demo_1",
+  "sequence": 1,
+  "occurredAt": "2026-11-13T11:00:00Z",
+  "type": "CAPABILITIES_REPORTED",
+  "payload": {
+    "gear": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "speed": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "steeringAngle": {
+      "status": "UNSUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "brake": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "safetyWarnings": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "carProfile": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    },
+    "navigation": {
+      "status": "SUPPORTED",
+      "checkedAt": "2026-11-13T11:00:00Z"
+    }
+  }
+}

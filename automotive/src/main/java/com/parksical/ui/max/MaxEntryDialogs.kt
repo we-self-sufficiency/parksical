@@ -51,7 +51,7 @@ import kotlin.math.roundToInt
 @Composable
 fun MaxEntryDialogs(lotId: String?, onDismiss: () -> Unit, onConfirmed: (Reservation) -> Unit) {
     val c = LocalAppContainer.current
-    val lots = remember { c.parking.lots().mapNotNull { l -> c.parking.dungeon(l.id)?.let { l to it } } }
+    val lots = remember { c.parking.lots.value.mapNotNull { l -> c.parking.dungeon(l.id)?.let { l to it } } }
     MaxEntryContent(lots, lotId, onDismiss, onConfirmed)
 }
 
@@ -179,7 +179,7 @@ private fun ReservationPanel(
     val mult = if (mode == RunMode.CHALLENGE) dungeon.challengeMultiplier else dungeon.practiceMultiplier
     val slots = sel.sorted().map { dungeon.openSlots[it] }
     val range = if (slots.isEmpty()) "-" else slots.first().substringBefore("–") + "–" + slots.last().substringAfter("–")
-    val fee = feeWon(lot.fee30MinWon, mult, sel.size)
+    val fee = feeWon(lot.fee30MinWon ?: 0, mult, sel.size)
     val ready = sel.isNotEmpty() && checks.all { it } && !paying
     val date = remember { LocalDate.now().plusDays(1).let { "${it.monthValue}월 ${it.dayOfMonth}일 (${it.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)})" } }
 
@@ -225,7 +225,7 @@ private fun ReservationPanel(
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 PixelPanel(Modifier.weight(1f), bg = PixelColors.Bg, padding = 18.dp) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        KV("일반 주차비", "30분 ${won(lot.fee30MinWon)}")
+                        KV("일반 주차비", lot.fee30MinWon?.let { "30분 ${won(it)}" } ?: "정보 없음")
                         KV("P지컬 MAX 프리미엄", "× $mult")
                         KV("선택 시간", if (sel.isEmpty()) "-" else "$range (${sel.size * 30}분)")
                         Box(Modifier.fillMaxWidth().height(3.dp).background(PixelColors.PanelBorder))

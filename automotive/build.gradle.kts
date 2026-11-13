@@ -25,10 +25,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Empty when not issued yet: build still works, the map area shows a placeholder.
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProps.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
+        // 10.0.2.2 = host machine from the Android emulator (parksical-server on :3000).
+        buildConfigField("String", "PARKSICAL_API_BASE_URL", "\"${localProps.getProperty("PARKSICAL_API_BASE_URL", "http://10.0.2.2:3000/api/v1")}\"")
     }
 
     buildTypes {
+        debug {
+            // Dev-only: lets the debug build pair itself via POST /auth/development/login (server DEV_AUTH_SECRET).
+            buildConfigField("String", "PARKSICAL_DEV_AUTH_KEY", "\"${localProps.getProperty("PARKSICAL_DEV_AUTH_KEY", "")}\"")
+        }
         release {
+            buildConfigField("String", "PARKSICAL_DEV_AUTH_KEY", "\"\"")
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

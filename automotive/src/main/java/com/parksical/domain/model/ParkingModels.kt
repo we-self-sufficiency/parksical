@@ -37,44 +37,83 @@ data class FloorLayout(
     val laneLengthM: Float,
 )
 
+/**
+ * A lot as the app shows it. Fields the server contract (parksical-server docs/openapi.json, `Lot`/`LotDetail`)
+ * does not provide are nullable: null means "unknown", never 0. UI must show "정보 없음" instead of inventing values.
+ */
 data class ParkingLot(
     val id: String,
     val name: String,
-    val subtitle: String,
+    val subtitle: String? = null,
     val lat: Double,
     val lng: Double,
-    val walkMinutes: Int,
-    val fee30MinWon: Int,
-    val hours: String,
-    val builtYear: Int,
-    val isPublic: Boolean,
+    val walkMinutes: Int? = null,
+    val fee30MinWon: Int? = null,
+    val hours: String? = null,
+    val builtYear: Int? = null,
+    val isPublic: Boolean? = null,
     val isPartner: Boolean,
-    val prepayDiscountPercent: Int,
-    val tags: List<String>,
-    val structure: LotStructure,
+    val prepayDiscountPercent: Int = 0,
+    val tags: List<String> = emptyList(),
+    val structure: LotStructure? = null,
     /** User review difficulty, 1..5 (25% factor). */
-    val reviewDifficulty: Float,
-    val reviewCount: Int,
+    val reviewDifficulty: Float? = null,
+    val reviewCount: Int = 0,
     /** Aggregated driving data (20% factor). */
-    val avgGearShifts: Float,
-    val avgParkSeconds: Int,
+    val avgGearShifts: Float? = null,
+    val avgParkSeconds: Int? = null,
+    /** Lane lengths for local spot estimation. Only the mock partner lot has one. */
     val layout: LotLayout? = null,
     /** "도전장": partner lot with MAX challenge hours open. */
     val challengeOpen: Boolean = false,
     val challengeHours: String? = null,
+    // ---- server contract fields ----
+    val source: LotSource = LotSource.MOCK,
+    /** Server marks seed/demo data; UI shows a "합성 데이터" tag. */
+    val synthetic: Boolean = false,
+    /** Great-circle distance from the search point (server `distanceM`). */
+    val distanceM: Float? = null,
+    /** Score computed by the server; when present the UI shows it instead of the local calculator. */
+    val serverDifficulty: ServerDifficulty? = null,
+    /** From `GET /lots/{id}`: floor/zone ids used when uploading a parked location. */
+    val serverStructure: ServerStructure? = null,
+    val navigationLat: Double? = null,
+    val navigationLng: Double? = null,
 )
 
-/** Result of the difficulty index. All scores are 1..5 stars, higher = harder. */
+enum class LotSource { SERVER, MOCK }
+
+data class ServerDifficulty(
+    val score: Float,
+    /** basis == VEHICLE_ADJUSTED (car size was sent) vs BASELINE. */
+    val vehicleAdjusted: Boolean,
+    val ruleVersion: String,
+    val missingFactors: List<DifficultyFactor>,
+    val sampleCount: Int,
+)
+
+enum class DifficultyFactor(val label: String) {
+    STRUCTURE("주차장 구조"), REVIEW("이용자 리뷰"), DRIVING_STATS("주행 데이터 집계"), BUILDING_AGE("건물 연식")
+}
+
+data class ServerStructure(val version: String, val floors: List<ServerFloor>)
+
+data class ServerFloor(val id: String, val label: String, val zoneIds: List<String>)
+
+/** Result of the difficulty index. All scores are 1..5 stars, higher = harder. Null factor = unknown input. */
 data class DifficultyBreakdown(
-    val structure: Float,
-    val review: Float,
-    val driving: Float,
-    val age: Float,
-    /** Weighted 40/25/20/15 before the car-size correction. */
+    val structure: Float?,
+    val review: Float?,
+    val driving: Float?,
+    val age: Float?,
+    /** Weighted 40/25/20/15 over known factors (weights renormalised) before the car-size correction. */
     val base: Float,
     /** Final "내 차 기준" score, rounded to 0.5. */
     val forMyCar: Float,
     val size: VehicleSize,
+    val missing: List<DifficultyFactor> = emptyList(),
+    /** True when [forMyCar] came from the server (`ServerDifficulty`), factor bars are then unknown. */
+    val fromServer: Boolean = false,
 ) {
     val level: DifficultyLevel get() = DifficultyLevel.of(forMyCar)
 }
@@ -91,6 +130,8 @@ enum class DifficultyLevel(val label: String) {
     }
 }
 
+enum class SyncState { LOCAL_ONLY, SYNCING, SYNCED, FAILED }
+
 /** Estimated parking spot shown after P is engaged. */
 data class ParkingSpotEstimate(
     val lotId: String,
@@ -100,6 +141,15 @@ data class ParkingSpotEstimate(
     val confidence: Float,
     val savedAtMs: Long,
     val memo: String? = null,
+    /** Local record id = server `clientRecordId` (stable across re-sends). */
+    val clientRecordId: String = "spot_" + savedAtMs,
+    /** Wall-clock time of P engagement, for server `occurredAt` (RFC3339 UTC). */
+    val occurredAtEpochMs: Long = System.currentTimeMillis(),
+    val userEdited: Boolean = false,
+    /** Server `Location.id` / `version` once uploaded. */
+    val serverId: String? = null,
+    val serverVersion: Int? = null,
+    val sync: SyncState = SyncState.LOCAL_ONLY,
 ) {
     val label: String get() = "$floor · ${zone}구역 부근"
 }

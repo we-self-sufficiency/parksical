@@ -1,5 +1,6 @@
 package com.parksical
 
+import com.parksical.data.ParkedLocationSync
 import com.parksical.data.ParkingRepository
 import com.parksical.data.SessionStore
 import com.parksical.domain.engine.DifficultyCalculator
@@ -29,6 +30,7 @@ class DriveCoordinator(
     private val difficulty: DifficultyCalculator,
     private val judge: MissionJudge,
     private val spotEstimator: ParkingSpotEstimator,
+    private val parkedSync: ParkedLocationSync,
 ) {
     sealed interface Event {
         data object Parked : Event
@@ -45,9 +47,12 @@ class DriveCoordinator(
         vehicle.start()
         navi.start()
         scope.launch {
-            if (session.vehicleSize.value == null) {
-                vehicle.readDimensions()?.let { session.vehicleSize.value = difficulty.sizeOf(it) }
+            val dims = vehicle.readDimensions()
+            if (dims != null) {
+                session.vehicleDimensions.value = dims
+                if (session.vehicleSize.value == null) session.vehicleSize.value = difficulty.sizeOf(dims)
             }
+            parking.refresh(dims)
         }
         scope.launch {
             navi.arrivals.collect { arrival ->
@@ -65,9 +70,14 @@ class DriveCoordinator(
                     spotEstimator.onSample(s)
                     if (s.gear == Gear.PARK && lastGear != null && lastGear != Gear.PARK) {
                         estimating = false
-                        spotEstimator.estimate(s.timestampMs)?.let {
-                            session.savedSpot.value = it
+                        spotEstimator.estimate(s.timestampMs)?.let { spot ->
+                            session.savedSpot.value = spot
                             _events.tryEmit(Event.Parked)
+                            // Local save first; upload never blocks or undoes it.
+                            scope.launch {
+                                val synced = parkedSync.upload(spot, parking.lot(spot.lotId))
+                                if (session.savedSpot.value?.clientRecordId == synced.clientRecordId) session.savedSpot.value = synced
+                            }
                         }
                     }
                 }
@@ -84,6 +94,15 @@ class DriveCoordinator(
                     _events.tryEmit(Event.RunEnded(st))
                 }
             }
+        }
+    }
+
+    /** Called by ParkedScreen after the user fixes floor/zone (confidence 1.0, userEdited = true). */
+    fun correctSpot(spot: com.parksical.domain.model.ParkingSpotEstimate) {
+        session.savedSpot.value = spot
+        scope.launch {
+            val synced = parkedSync.correct(spot, parking.lot(spot.lotId))
+            if (session.savedSpot.value?.clientRecordId == synced.clientRecordId) session.savedSpot.value = synced
         }
     }
 

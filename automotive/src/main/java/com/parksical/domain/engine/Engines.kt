@@ -14,7 +14,11 @@ import kotlinx.coroutines.flow.StateFlow
 
 /** Pure Kotlin, no Android. Implementations live next to this file and have unit tests. */
 interface DifficultyCalculator {
-    /** 40% structure, 25% reviews, 20% driving data, 15% building age, then corrected for [size]. */
+    /**
+     * 40% structure, 25% reviews, 20% driving data, 15% building age, then corrected for [size].
+     * Unknown (null) factors are skipped and listed in `missing`, weights renormalised over known ones.
+     * If `lot.serverDifficulty` is present its score is used as-is (`fromServer = true`).
+     */
     fun calculate(lot: ParkingLot, size: VehicleSize): DifficultyBreakdown
 
     fun sizeOf(dimensions: VehicleDimensions): VehicleSize

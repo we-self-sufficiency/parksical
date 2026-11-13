@@ -6,18 +6,49 @@ import com.parksical.domain.model.ParkingSpotEstimate
 import com.parksical.domain.model.Reservation
 import com.parksical.domain.model.RunRecord
 import com.parksical.domain.model.VehicleSize
+import com.parksical.vehicle.VehicleDimensions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-/** Server stand-in for the contest stage: lots, dungeons and the destination are mock data. */
+/**
+ * Lots near the destination. Real implementation: `ServerParkingRepository` (parksical-server `GET /lots`,
+ * `GET /lots/{id}`), falling back to [MockParkingRepository] data when the server is unreachable or the
+ * endpoint is not implemented yet. Dungeons have no server contract yet, so they always come from mock data.
+ */
 interface ParkingRepository {
     val destinationName: String
     val destinationLat: Double
     val destinationLng: Double
-    fun lots(): List<ParkingLot>
+
+    /** Current list for the map/list screens; collect this in UI. */
+    val lots: StateFlow<List<ParkingLot>>
+    val status: StateFlow<LotsStatus>
+
+    /** Re-query around the destination. [dimensions] = car size for the server's VEHICLE_ADJUSTED score. */
+    suspend fun refresh(dimensions: VehicleDimensions?)
+
+    /** Cached lot (from the last list or detail). */
     fun lot(id: String): ParkingLot?
+
+    /** Fetches `GET /lots/{id}` (structure, navigation point) and updates the cache; returns cached on failure. */
+    suspend fun loadDetail(id: String, dimensions: VehicleDimensions?): ParkingLot?
+
     fun dungeon(lotId: String): Dungeon?
+}
+
+sealed interface LotsStatus {
+    data object Loading : LotsStatus
+    data object Server : LotsStatus
+    /** Showing mock data; [reason] is short Korean text for a small banner, e.g. "서버 연결 안 됨". */
+    data class Fallback(val reason: String) : LotsStatus
+}
+
+/** Uploads the parked spot (`POST /parked-locations`) and user corrections (`PATCH`). Never throws. */
+interface ParkedLocationSync {
+    /** Returns the spot with serverId/serverVersion/sync filled in (sync=FAILED or LOCAL_ONLY on failure). */
+    suspend fun upload(spot: ParkingSpotEstimate, lot: ParkingLot?): ParkingSpotEstimate
+    suspend fun correct(spot: ParkingSpotEstimate, lot: ParkingLot?): ParkingSpotEstimate
 }
 
 /**
@@ -27,6 +58,8 @@ interface ParkingRepository {
 class SessionStore {
     /** Null until read from INFO_EXTERIOR_DIMENSIONS or picked by the user. */
     val vehicleSize = MutableStateFlow<VehicleSize?>(null)
+    /** Raw INFO_EXTERIOR_DIMENSIONS, sent to the server as lengthMm/widthMm. Null if unknown. */
+    val vehicleDimensions = MutableStateFlow<VehicleDimensions?>(null)
     val savedSpot = MutableStateFlow<ParkingSpotEstimate?>(null)
     val reservation = MutableStateFlow<Reservation?>(null)
 

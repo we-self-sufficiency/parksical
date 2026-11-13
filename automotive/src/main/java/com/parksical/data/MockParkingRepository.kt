@@ -9,14 +9,20 @@ import com.parksical.domain.model.ParkingLot
 import com.parksical.domain.model.RampType
 import com.parksical.domain.model.Stage
 import com.parksical.domain.model.VehicleSize
+import com.parksical.vehicle.VehicleDimensions
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-/** Data taken from docs/mockups (01 map home, 02 detail, 05 stage map). Destination: 테헤란로 거래처. */
+/**
+ * Synthetic demo data from docs/mockups (01 map home, 02 detail, 05 stage map). Destination: 테헤란로 거래처.
+ * Used directly when the server is unavailable and as the source of fields the server contract lacks.
+ */
 class MockParkingRepository : ParkingRepository {
     override val destinationName = "테헤란로 거래처 미팅"
     override val destinationLat = 37.5006
     override val destinationLng = 127.0364
 
-    private val lots = listOf(
+    private val seed = listOf(
         ParkingLot(
             id = "saesol", name = "새솔 공영주차장", subtitle = "공영 · 지상 평면",
             lat = 37.5021, lng = 127.0339, walkMinutes = 4, fee30MinWon = 1500, hours = "00:00–24:00",
@@ -75,7 +81,12 @@ class MockParkingRepository : ParkingRepository {
         ),
     )
 
-    override fun lots() = lots
-    override fun lot(id: String) = lots.find { it.id == id }
+    private val _lots = MutableStateFlow(seed.map { it.copy(synthetic = true) })
+    override val lots: StateFlow<List<ParkingLot>> = _lots
+    override val status: StateFlow<LotsStatus> = MutableStateFlow(LotsStatus.Fallback("목업 데이터"))
+
+    override suspend fun refresh(dimensions: VehicleDimensions?) {}
+    override fun lot(id: String) = _lots.value.find { it.id == id }
+    override suspend fun loadDetail(id: String, dimensions: VehicleDimensions?) = lot(id)
     override fun dungeon(lotId: String) = dungeons[lotId]
 }

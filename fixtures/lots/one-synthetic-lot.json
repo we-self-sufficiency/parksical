@@ -1,0 +1,1148 @@
+{
+  "code": "parksical-synthetic-001",
+  "snapshot": {
+    "name": "P지컬 가상 주차장 1",
+    "address": "가상 데이터 — 실제 주소 없음",
+    "active": true,
+    "latitude": 0,
+    "longitude": 0,
+    "ownership": "PRIVATE",
+    "parkingType": "SELF_PARK",
+    "partnered": false,
+    "builtYear": 2020,
+    "source": "SYNTHETIC",
+    "sourceReference": "fixtures/lots/one-synthetic-lot.json; invented for integration testing",
+    "rightsNote": "직접 작성한 가상 구조와 요금. 실제 주차장·측량·제휴·이용 권한 확인 자료가 아님.",
+    "sourceUpdatedAt": "2026-11-13T12:00:00.000Z",
+    "structureStatus": "COMPLETE",
+    "geometrySystem": "LOCAL_METERS",
+    "timezone": "Asia/Seoul",
+    "operatingHours": [
+      {
+        "day": 1,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 2,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 3,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 4,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 5,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 6,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 7,
+        "openMinute": 0,
+        "closeMinute": 1440
+      }
+    ],
+    "fees": {
+      "currency": "KRW",
+      "baseMinutes": 30,
+      "baseAmount": 1000,
+      "additionalMinutes": 10,
+      "additionalAmount": 500,
+      "dailyMaxAmount": 15000
+    },
+    "tags": [
+      "SYNTHETIC",
+      "실제 방문 금지",
+      "지하1층",
+      "연동 테스트"
+    ],
+    "photos": [],
+    "factorScores": {
+      "structure": 2.5,
+      "review": null,
+      "driving": null,
+      "age": null
+    },
+    "challengeAllowed": false,
+    "floors": [
+      {
+        "id": "ground",
+        "label": "1F (가상)",
+        "level": 0
+      },
+      {
+        "id": "basement1",
+        "label": "B1 (가상)",
+        "level": -1
+      }
+    ],
+    "zones": [
+      {
+        "id": "ground-a",
+        "floorId": "ground",
+        "label": "지상 A",
+        "polygon": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      },
+      {
+        "id": "basement-a",
+        "floorId": "basement1",
+        "label": "지하 A",
+        "polygon": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      }
+    ],
+    "entrances": [
+      {
+        "id": "gate-main",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "direction": "BOTH",
+        "point": {
+          "x": 0,
+          "y": 15
+        }
+      }
+    ],
+    "ramps": [
+      {
+        "id": "ramp-b1",
+        "fromFloorId": "ground",
+        "toFloorId": "basement1",
+        "fromZoneId": "ground-a",
+        "toZoneId": "basement-a",
+        "direction": "TWO_WAY",
+        "widthMm": 6000,
+        "slopePercent": 12
+      }
+    ],
+    "parkingSpaces": [
+      {
+        "id": "ground-s01",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A01",
+        "type": "ACCESSIBLE",
+        "active": true,
+        "center": {
+          "x": 8.15,
+          "y": 8.6
+        },
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s02",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A02",
+        "type": "EV",
+        "active": true,
+        "center": {
+          "x": 11.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s03",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A03",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 15.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s04",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A04",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 18.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s05",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A05",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 22.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s06",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A06",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 25.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s07",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A07",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 29.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s08",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A08",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 32.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s09",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A09",
+        "type": "ACCESSIBLE",
+        "active": true,
+        "center": {
+          "x": 8.15,
+          "y": 21.4
+        },
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s10",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A10",
+        "type": "EV",
+        "active": true,
+        "center": {
+          "x": 11.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s11",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A11",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 15.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s12",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A12",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 18.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s13",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A13",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 22.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s14",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A14",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 25.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s15",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A15",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 29.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "ground-s16",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "label": "1F-A16",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 32.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "ground-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s01",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A01",
+        "type": "ACCESSIBLE",
+        "active": true,
+        "center": {
+          "x": 8.15,
+          "y": 8.6
+        },
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s02",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A02",
+        "type": "EV",
+        "active": true,
+        "center": {
+          "x": 11.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s03",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A03",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 15.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s04",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A04",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 18.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s05",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A05",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 22.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s06",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A06",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 25.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s07",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A07",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 29.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s08",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A08",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 32.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s09",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A09",
+        "type": "ACCESSIBLE",
+        "active": true,
+        "center": {
+          "x": 8.15,
+          "y": 21.4
+        },
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s10",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A10",
+        "type": "EV",
+        "active": true,
+        "center": {
+          "x": 11.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s11",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A11",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 15.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s12",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A12",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 18.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s13",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A13",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 22.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s14",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A14",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 25.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s15",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A15",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 29.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      },
+      {
+        "id": "basement1-s16",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "label": "B1-A16",
+        "type": "GENERAL",
+        "active": true,
+        "center": {
+          "x": 32.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "approach": {
+          "aisleId": "basement1-central",
+          "side": "FRONT",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        }
+      }
+    ],
+    "pillars": [
+      {
+        "id": "ground-p01",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 13.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "ground-p02",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "ground-p03",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 27.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "ground-p04",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 13.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "ground-p05",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "ground-p06",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 27.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "basement1-p01",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 13.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "basement1-p02",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "basement1-p03",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 27.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "basement1-p04",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 13.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "basement1-p05",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      },
+      {
+        "id": "basement1-p06",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 27.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0,
+        "islandWidthMm": 1800,
+        "islandDepthMm": 5200
+      }
+    ],
+    "driveAisles": [
+      {
+        "id": "ground-central",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-west",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 3,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-east",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 37,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-south",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20,
+          "y": 3
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "ground-north",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "center": {
+          "x": 20,
+          "y": 27
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-central",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-west",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 3,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-east",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 37,
+          "y": 15
+        },
+        "widthMm": 6000,
+        "lengthMm": 30000,
+        "headingDegrees": 90,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-south",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20,
+          "y": 3
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      },
+      {
+        "id": "basement1-north",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "center": {
+          "x": 20,
+          "y": 27
+        },
+        "widthMm": 6000,
+        "lengthMm": 40000,
+        "headingDegrees": 0,
+        "direction": "TWO_WAY"
+      }
+    ]
+  }
+}

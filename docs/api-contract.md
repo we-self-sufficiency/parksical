@@ -1,8 +1,8 @@
-# S-01 서버·차량 앱 계약 v0.1
+# 서버·차량 앱 계약 v0.4
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.1.0, 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 실행 중이라는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.4.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -20,6 +20,8 @@
 ## URL·버전·인증
 
 S-03의 구현된 인증 경로와 credential 중복 예외는 [authentication.md](authentication.md)를 따른다. OpenAPI의 `x-implementation-status`로 구현과 설계를 구분하며 제공 헤더는 `X-Contract-Status: mixed`다. S-01의 일반 POST/PATCH 중복 규칙을 원문 자격 증명의 재생 규칙으로 확대하지 않는다. 실제 로그인 제공자는 아직 미정이다.
+
+S-05의 `/admin/lots`는 ADMIN+WEB 전용 합성 주차장/구조 관리다. POST와 PUT는 Idempotency-Key를 요구하며 PUT는 전체 snapshot+expectedVersion으로 새 revision을 생성한다. 안정된 lotId·code와 버전별 floor/zone/ramp를 구분한다. 미확인 값은 null, 좌표/요금/요소 점수는 SYNTHETIC으로 표시한다. 외부 API 없이 가상 주차장 한 곳을 시드한다. 공개 `/lots` 조회·검색과 최종 난이도는 후속 이슈이며 관리 API를 SDK용 공개 조회로 취급하지 않는다.
 
 - 기본 경로는 `/api/v1`. OpenAPI의 `api.example.invalid`는 접속 대상이 아닌 D-06 대체용 주소다. `/p/{token}`은 기본 API 경로 밖의 휴대폰 웹이다.
 - 공개 주차장 조회 외 API는 사용자 bearer 자격 증명을 요구한다. 토큰 형식·제공자·만료/갱신 수명은 D-01/S-03에서 확정한다. 개발 인증은 운영에서 금지한다.

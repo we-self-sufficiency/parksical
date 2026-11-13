@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.3.0",
-    "description": "Mixed implemented/design contract. S-03 development authentication and S-04 capability/close metadata ingestion are implemented. Login provider D-01 and driving data D-02 remain pending; other business APIs are design."
+    "version": "0.4.0",
+    "description": "Mixed implemented/design contract. S-03 development authentication, S-04 capability/close metadata ingestion and S-05 ADMIN+WEB synthetic parking lot/revision management are implemented. Public lot search/detail and difficulty remain design. Login D-01, driving data D-02 and real sources D-03 remain pending; no production deployment or actual SDK validation is claimed."
   },
   "servers": [
     {
@@ -1974,6 +1974,376 @@
           }
         }
       }
+    },
+    "/admin/lots": {
+      "post": {
+        "operationId": "createAdminLot",
+        "description": "Create synthetic lot and immutable revision 1. Idempotency scoped to original AuthSession+key; code globally unique. Real sources are not enabled.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB",
+        "responses": {
+          "201": {
+            "description": "Success; Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLot"
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "description": "true on replay of the original successful response",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLotCreate"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listAdminLots",
+        "description": "List synthetic lot summaries including disabled lots. Fixed page size 50, UUID ascending; pass nextCursor as after. No public search or distance ranking.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB",
+        "responses": {
+          "200": {
+            "description": "Success; Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLotList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/admin/lots/{lotId}": {
+      "get": {
+        "operationId": "getAdminLot",
+        "description": "Get current revision, including disabled lots.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB",
+        "responses": {
+          "200": {
+            "description": "Success; Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLot"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceAdminLot",
+        "description": "Full snapshot replacement with expectedVersion; concurrent stale writes return LOT_VERSION_CONFLICT. Disable via snapshot.active=false. Old revisions/child references retained. Idempotent replay returns original response, not current state.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            }
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB",
+        "responses": {
+          "200": {
+            "description": "Success; Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLot"
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "description": "true on replay of the original successful response",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLotReplace"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/lots/{lotId}/revisions/{version}": {
+      "get": {
+        "operationId": "getAdminLotRevision",
+        "description": "Read an immutable historical revision with the same lot/version-scoped child identifiers. currentVersion may be newer than version.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB",
+        "responses": {
+          "200": {
+            "description": "Success; Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLot"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3273,6 +3643,1117 @@
         "items": {
           "$ref": "#/components/schemas/LinkSummary"
         }
+      },
+      "LotPoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000,
+            "multipleOf": 0.001
+          },
+          "y": {
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000,
+            "multipleOf": 0.001
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ]
+      },
+      "LotFloor": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -30,
+                "maximum": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "level"
+        ]
+      },
+      "LotZone": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "floorId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "polygon": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LotPoint"
+                },
+                "minItems": 4,
+                "maxItems": 65
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "label",
+          "polygon"
+        ]
+      },
+      "LotEntrance": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "floorId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "ENTRY",
+              "EXIT",
+              "BOTH",
+              "UNKNOWN"
+            ]
+          },
+          "point": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "zoneId",
+          "direction",
+          "point"
+        ]
+      },
+      "LotRamp": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "fromFloorId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "toFloorId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "fromZoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toZoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "ONE_WAY",
+              "TWO_WAY",
+              "UNKNOWN"
+            ]
+          },
+          "widthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 30000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slopePercent": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "fromFloorId",
+          "toFloorId",
+          "fromZoneId",
+          "toZoneId",
+          "direction",
+          "widthMm",
+          "slopePercent"
+        ]
+      },
+      "LotHours": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "day": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7
+          },
+          "openMinute": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1439
+          },
+          "closeMinute": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          }
+        },
+        "required": [
+          "day",
+          "openMinute",
+          "closeMinute"
+        ]
+      },
+      "LotFees": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "type": "string",
+            "const": "KRW"
+          },
+          "baseMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "baseAmount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000000
+          },
+          "additionalMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "additionalAmount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000000
+          },
+          "dailyMaxAmount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "currency",
+          "baseMinutes",
+          "baseAmount",
+          "additionalMinutes",
+          "additionalAmount",
+          "dailyMaxAmount"
+        ]
+      },
+      "LotFactorScores": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "structure": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "review": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "driving": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "structure",
+          "review",
+          "driving",
+          "age"
+        ]
+      },
+      "LotPhoto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "rightsNote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "url",
+          "caption",
+          "rightsNote"
+        ]
+      },
+      "AdminLotSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "ownership": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "UNKNOWN"
+            ]
+          },
+          "parkingType": {
+            "type": "string",
+            "enum": [
+              "SELF_PARK",
+              "MECHANICAL",
+              "MIXED",
+              "UNKNOWN"
+            ]
+          },
+          "partnered": {
+            "type": "boolean"
+          },
+          "builtYear": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1800,
+                "maximum": 2200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "type": "string",
+            "const": "SYNTHETIC"
+          },
+          "sourceReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "rightsNote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "sourceUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "structureStatus": {
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "DRAFT",
+              "COMPLETE"
+            ]
+          },
+          "geometrySystem": {
+            "type": "string",
+            "const": "LOCAL_METERS"
+          },
+          "timezone": {
+            "type": "string",
+            "const": "Asia/Seoul"
+          },
+          "operatingHours": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LotHours"
+                },
+                "minItems": 0,
+                "maxItems": 28
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fees": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotFees"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "minItems": 0,
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LotPhoto"
+            },
+            "minItems": 0,
+            "maxItems": 10
+          },
+          "factorScores": {
+            "$ref": "#/components/schemas/LotFactorScores"
+          },
+          "challengeAllowed": {
+            "type": "boolean",
+            "const": false
+          },
+          "floors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LotFloor"
+            },
+            "minItems": 0,
+            "maxItems": 50
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LotZone"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "entrances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LotEntrance"
+            },
+            "minItems": 0,
+            "maxItems": 30
+          },
+          "ramps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LotRamp"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "parkingSpaces": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ParkingSpace"
+            },
+            "description": "Omitted = not mapped; [] = mapped but none. COMPLETE requires explicit arrays and at least one parking space. Whole JSON request remains limited to 64KiB."
+          },
+          "pillars": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/LotPillar"
+            },
+            "description": "Omitted = not mapped; [] = mapped but none. COMPLETE requires explicit arrays and at least one parking space. Whole JSON request remains limited to 64KiB."
+          },
+          "driveAisles": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/DriveAisle"
+            },
+            "description": "Explicit free-space drive corridors. COMPLETE requires connected aisles and approach geometry for every space."
+          }
+        },
+        "required": [
+          "name",
+          "address",
+          "active",
+          "latitude",
+          "longitude",
+          "ownership",
+          "parkingType",
+          "partnered",
+          "builtYear",
+          "source",
+          "sourceReference",
+          "rightsNote",
+          "sourceUpdatedAt",
+          "structureStatus",
+          "geometrySystem",
+          "timezone",
+          "operatingHours",
+          "fees",
+          "tags",
+          "photos",
+          "factorScores",
+          "challengeAllowed",
+          "floors",
+          "zones",
+          "entrances",
+          "ramps"
+        ],
+        "description": "Versioned structure with individual bays, protected pillar islands, connected drive aisles and unobstructed approach rectangles. Checks are planar geometric checks, not car-specific swept-path, building-code or ramp design approval."
+      },
+      "AdminLotCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/AdminLotSnapshot"
+          }
+        },
+        "required": [
+          "code",
+          "snapshot"
+        ]
+      },
+      "AdminLotReplace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/AdminLotSnapshot"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "snapshot"
+        ]
+      },
+      "AdminLot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "currentVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "revisionCreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/AdminLotSnapshot"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "version",
+          "currentVersion",
+          "createdAt",
+          "revisionCreatedAt",
+          "snapshot"
+        ]
+      },
+      "AdminLotSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "const": "SYNTHETIC"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "version",
+          "name",
+          "active",
+          "source"
+        ]
+      },
+      "AdminLotList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminLotSummary"
+            },
+            "minItems": 0,
+            "maxItems": 50
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "ParkingSpace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "floorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "zoneId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GENERAL",
+              "ACCESSIBLE",
+              "EV",
+              "COMPACT",
+              "UNKNOWN"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "center": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "widthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lengthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 20000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "headingDegrees": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 359.99,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approach": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpaceApproach"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "zoneId",
+          "label",
+          "type",
+          "active",
+          "center",
+          "widthMm",
+          "lengthMm",
+          "headingDegrees"
+        ],
+        "description": "Structural space, not sensed occupancy. Heading is counterclockwise from local +x toward vehicle front; units degrees. Dimensions are authored synthetic values, not legal/safety certification."
+      },
+      "LotPillar": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "floorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "zoneId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "center": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "widthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "depthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rotationDegrees": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 359.99,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "islandWidthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "islandDepthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 20000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "zoneId",
+          "center",
+          "widthMm",
+          "depthMm",
+          "rotationDegrees"
+        ]
+      },
+      "SpaceApproach": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "aisleId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "FRONT",
+              "REAR"
+            ]
+          },
+          "depthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 20000
+          },
+          "lateralClearanceMm": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3000
+          }
+        },
+        "required": [
+          "aisleId",
+          "side",
+          "depthMm",
+          "lateralClearanceMm"
+        ],
+        "description": "Clear rectangular approach from the specified bay edge, not a collision-free vehicle trajectory. Depth must be at least the referenced aisle width. Entire area must avoid other bays/pillar islands, enter the same-floor/zone aisle and remain inside the zone."
+      },
+      "DriveAisle": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "floorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "zoneId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "center": {
+            "$ref": "#/components/schemas/LotPoint"
+          },
+          "widthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 20000
+          },
+          "lengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 100000
+          },
+          "headingDegrees": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 359.99,
+            "multipleOf": 0.01
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "TWO_WAY",
+              "ONE_WAY"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "zoneId",
+          "center",
+          "widthMm",
+          "lengthMm",
+          "headingDegrees",
+          "direction"
+        ]
       }
     },
     "responses": {

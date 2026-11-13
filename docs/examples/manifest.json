@@ -20,7 +20,11 @@
     "auth-pair-response.json": "PairingGrant",
     "auth-pair-approved.json": "PairingApproved",
     "auth-me-response.json": "Me",
-    "session-closed-response.json": "Error"
+    "session-closed-response.json": "Error",
+    "admin-lot-create.json": "AdminLotCreate",
+    "admin-lot-response.json": "AdminLot",
+    "admin-lot-replace.json": "AdminLotReplace",
+    "admin-lot-updated.json": "AdminLot"
   },
   "cases": [
     {
@@ -123,6 +127,29 @@
       "status": 200,
       "schema": "Session",
       "example": "session-response.json"
+    },
+    {
+      "name": "synthetic-admin-create",
+      "operationId": "createAdminLot",
+      "status": 201,
+      "schema": "AdminLot",
+      "example": "admin-lot-response.json",
+      "requestExample": "admin-lot-create.json"
+    },
+    {
+      "name": "disable-retains-history",
+      "operationId": "replaceAdminLot",
+      "status": 200,
+      "schema": "AdminLot",
+      "example": "admin-lot-updated.json",
+      "requestExample": "admin-lot-replace.json"
+    },
+    {
+      "name": "admin-historical-read",
+      "operationId": "getAdminLotRevision",
+      "status": 200,
+      "schema": "AdminLot",
+      "example": "admin-lot-response.json"
     }
   ],
   "negativeCases": [
@@ -225,6 +252,54 @@
         "occurredAt": "20261113T120000Z"
       },
       "reason": "Compact ISO is not transport RFC3339"
+    },
+    {
+      "schema": "AdminLotReplace",
+      "baseExample": "admin-lot-replace.json",
+      "set": {
+        "expectedVersion": 0
+      },
+      "reason": "Positive expectedVersion required"
+    },
+    {
+      "schema": "AdminLotCreate",
+      "baseExample": "admin-lot-create.json",
+      "reason": "Real source not enabled",
+      "setPaths": {
+        "snapshot.source": "REAL"
+      }
+    },
+    {
+      "schema": "AdminLotCreate",
+      "baseExample": "admin-lot-create.json",
+      "reason": "Latitude out of range",
+      "setPaths": {
+        "snapshot.latitude": 91
+      }
+    },
+    {
+      "schema": "AdminLotCreate",
+      "baseExample": "admin-lot-create.json",
+      "reason": "Challenge activation not enabled",
+      "setPaths": {
+        "snapshot.challengeAllowed": true
+      }
+    },
+    {
+      "schema": "AdminLotCreate",
+      "baseExample": "admin-lot-create.json",
+      "set": {
+        "snapshot": []
+      },
+      "reason": "Snapshot object required"
+    },
+    {
+      "schema": "AdminLotCreate",
+      "baseExample": "admin-lot-create.json",
+      "reason": "Parking space dimensions must be positive and bounded",
+      "setPaths": {
+        "snapshot.parkingSpaces.0.widthMm": -1
+      }
     }
   ]
 }

@@ -2,17 +2,19 @@
 import copy
 import json
 import re
+from decimal import Decimal
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
-DOC = json.loads((ROOT / 'docs/openapi.json').read_text())
-MANIFEST = json.loads((ROOT / 'docs/examples/manifest.json').read_text())
+DOC = json.loads((ROOT / 'docs/openapi.json').read_text(), parse_float=Decimal)
+MANIFEST = json.loads((ROOT / 'docs/examples/manifest.json').read_text(), parse_float=Decimal)
 
 
 def load_example(name):
-    return json.loads((ROOT / 'docs/examples' / name).read_text())
+    # Preserve decimal precision: 11.7 is a valid multiple of 0.001 in the transport contract.
+    return json.loads((ROOT / 'docs/examples' / name).read_text(), parse_float=Decimal)
 
 
 def validator(name):
@@ -59,7 +61,7 @@ for path, methods in DOC['paths'].items():
         assert path_params == set(re.findall(r'\{([^}]+)\}', path)), path
         assert all(p['required'] for p in operation.get('parameters', []) if p['in'] == 'path')
         assert {'400', '401', '403', '404', '409', '413', '422', '429', '503'} <= set(operation['responses'])
-        if method in ('post', 'patch'):
+        if method in ('post', 'patch', 'put'):
             if operation.get('x-idempotency-policy') == 'credential-flow':
                 assert path.startswith('/auth/'), 'Credential exception must be scoped to authentication'
             else:
@@ -97,7 +99,14 @@ for operation in operations.values():
             validator(media['schema']['$ref'].split('/')[-1]).validate(media['example'])
 for case in MANIFEST['negativeCases']:
     invalid = copy.deepcopy(load_example(case['baseExample']))
-    invalid.update(case['set'])
+    invalid.update(case.get('set', {}))
+    # Nested mutations avoid duplicating the entire layout fixture for one invalid field.
+    for path, value in case.get('setPaths', {}).items():
+        parts = path.split('.')
+        target = invalid
+        for part in parts[:-1]:
+            target = target[int(part) if isinstance(target, list) else part]
+        target[int(parts[-1]) if isinstance(target, list) else parts[-1]] = value
     assert list(validator(case['schema']).iter_errors(invalid)), case['reason']
 
 contract = (ROOT / 'docs/api-contract.md').read_text()

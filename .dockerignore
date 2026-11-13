@@ -1,0 +1,12 @@
+node_modules
+dist
+test-build
+.git
+.env
+.env.*
+backups
+*.dump
+src/generated
+planning
+.s01-base-Agent.md
+**/__pycache__

@@ -1,0 +1,65 @@
+name: verify
+on:
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18-bookworm
+        env:
+          POSTGRES_USER: parksical
+          POSTGRES_PASSWORD: ci-only-not-production
+          POSTGRES_DB: parksical_test
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U parksical -d parksical_test" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://parksical:ci-only-not-production@127.0.0.1:5432/parksical_dev
+      TEST_DATABASE_URL: postgresql://parksical:ci-only-not-production@127.0.0.1:5432/parksical_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm run test:integration
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/contract-validation-requirements.txt
+      - run: python scripts/check_contract.py
+      - name: PostgreSQL restart and backup restore
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker exec "$PG_CONTAINER" psql -U parksical -d parksical_test -v ON_ERROR_STOP=1 -c 'INSERT INTO "ServiceMetadata" (key,value) VALUES ('"'"'backup_probe'"'"','"'"'persisted'"'"');'
+          docker exec "$PG_CONTAINER" pg_dump -U parksical -d parksical_test -Fc -f /tmp/foundation.dump
+          docker restart "$PG_CONTAINER"
+          for attempt in $(seq 1 30); do docker exec "$PG_CONTAINER" pg_isready -U parksical -d parksical_test && break; sleep 1; done
+          test "$(docker exec "$PG_CONTAINER" psql -U parksical -d parksical_test -Atc 'SELECT value FROM "ServiceMetadata" WHERE key='"'"'backup_probe'"'"';')" = persisted
+          docker exec "$PG_CONTAINER" createdb -U parksical parksical_restore_test
+          docker exec "$PG_CONTAINER" pg_restore -U parksical -d parksical_restore_test --no-owner --exit-on-error /tmp/foundation.dump
+          test "$(docker exec "$PG_CONTAINER" psql -U parksical -d parksical_restore_test -Atc 'SELECT value FROM "ServiceMetadata" WHERE key='"'"'backup_probe'"'"';')" = persisted
+      - name: Build and run Compose stack
+        run: |
+          cp .env.example .env
+          export POSTGRES_PORT=5433
+          trap 'docker compose down -v' EXIT
+          docker compose up -d --build --wait --wait-timeout 180
+          curl --fail http://127.0.0.1:3000/api/v1/health/ready
+          docker compose stop db
+          curl --fail http://127.0.0.1:3000/api/v1/health/live
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/v1/health/ready)" = 503
+          docker compose start db
+          for attempt in $(seq 1 30); do curl --fail http://127.0.0.1:3000/api/v1/health/ready && break; sleep 1; done
+          curl --fail http://127.0.0.1:3000/api/v1/health/ready

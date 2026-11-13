@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.5
+# 서버·차량 앱 계약 v0.6
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-07 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.5.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.6.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -21,10 +21,10 @@
 
 S-03의 구현된 인증 경로와 credential 중복 예외는 [authentication.md](authentication.md)를 따른다. OpenAPI의 `x-implementation-status`로 구현과 설계를 구분하며 제공 헤더는 `X-Contract-Status: mixed`다. S-01의 일반 POST/PATCH 중복 규칙을 원문 자격 증명의 재생 규칙으로 확대하지 않는다. 실제 로그인 제공자는 아직 미정이다.
 
-S-05의 `/admin/lots`는 ADMIN+WEB 전용 합성 주차장/구조 관리다. POST와 PUT는 Idempotency-Key를 요구하며 PUT는 전체 snapshot+expectedVersion으로 새 revision을 생성한다. 안정된 lotId·code와 버전별 floor/zone/ramp를 구분한다. 미확인 값은 null, 좌표/요금/요소 점수는 SYNTHETIC으로 표시한다. 외부 API 없이 가상 주차장 한 곳을 시드한다. 공개 `/lots` 조회·검색과 최종 난이도는 후속 이슈이며 관리 API를 SDK용 공개 조회로 취급하지 않는다.
+S-05의 `/admin/lots`는 ADMIN+WEB 전용 합성 주차장/구조 관리다. POST와 PUT는 Idempotency-Key를 요구하며 PUT는 전체 snapshot+expectedVersion으로 새 revision을 생성한다. 안정된 lotId·code와 버전별 floor/zone/ramp를 구분한다. 미확인 값은 null, 좌표/요금/요소 점수는 SYNTHETIC으로 표시한다. 외부 API 없이 가상 주차장 한 곳을 시드한다. 인증된 `/lots` 검색·상세는 S-06, 난이도 조회는 S-07에서 구현하며 관리 API와 구분한다. 상세·공간 범위·필터·차량별 정렬·페이지 조건은 [lot-search.md](lot-search.md)를 따른다.
 
 - 기본 경로는 `/api/v1`. OpenAPI의 `api.example.invalid`는 접속 대상이 아닌 D-06 대체용 주소다. `/p/{token}`은 기본 API 경로 밖의 휴대폰 웹이다.
-- 공개 주차장 조회 외 API는 사용자 bearer 자격 증명을 요구한다. 토큰 형식·제공자·만료/갱신 수명은 D-01/S-03에서 확정한다. 개발 인증은 운영에서 금지한다.
+- 주차장 카탈로그를 포함한 업무 API는 WEB 또는 VEHICLE bearer 자격 증명을 요구한다. 토큰 형식·제공자·만료/갱신 수명은 D-01/S-03에서 확정한다. 개발 인증은 운영에서 금지한다.
 - `/vehicle-sessions`와 이벤트 API에는 사용자 인증 외에도 승인된 앱 설치 연결이 필요하다. `installationId`는 앱 설치용 임의 ID이며 VIN·사용자 ID가 아니다. body에 적은 ID만으로 연결을 승인하지 않는다.
 - 계정 주체는 서버 인증 컨텍스트에서 결정한다. body의 userId, source, 차량 모델명은 권한·실차 인증의 근거가 아니다. SDK capability는 앱이 보고한 상태다.
 - 자원 조회·변경은 소유자를 검사한다. 인증 실패는 401, 기능/연결 권한 없음은 403, 타인/없는 개인 자원은 일관되게 404로 처리한다. 관리자 권한과 결제 webhook 인증은 별도다.
@@ -33,7 +33,7 @@ S-05의 `/admin/lots`는 ADMIN+WEB 전용 합성 주차장/구조 관리다. POS
 
 ## 단위·시각·품질
 
-S-07은 인증된 WEB/VEHICLE의 `GET /lots/{lotId}/difficulty`를 제공한다. 차체 쌍/미지원 상태·기준 연도·구조/룰 버전을 명시하며 응답의 null/결측 사유·합성 출처를 보존한다. 새 API는 주차 가능/실차 검증이 아니며 공개 검색·상세 #8을 구현한 것으로 표시하지 않는다. 상세는 [difficulty.md](difficulty.md)를 따른다.
+S-07은 인증된 WEB/VEHICLE의 `GET /lots/{lotId}/difficulty`를 제공한다. 차체 쌍/미지원 상태·기준 연도·구조/룰 버전을 명시하며 응답의 null/결측 사유·합성 출처를 보존한다. 난이도 자체는 주차 가능/실차 검증이 아니다. S-06 검색·상세는 같은 계산기를 재사용한다. 상세는 [difficulty.md](difficulty.md)를 따른다.
 
 | 항목 | 전송 계약 |
 |---|---|
@@ -80,12 +80,12 @@ S-04의 구체적인 인증 세션 scope, 엄격한 UTC ms/sequence 범위, 종�
 
 ## 검색·위치·커서
 
-- lat/lng/radiusM은 주변 검색의 필수 값이다. 반경 100~20,000m, limit 기본 20/최대 100은 A-03의 개발 기본값이다. 거리 기준은 입구 대표 좌표의 대권 직선거리이며 주행/보행 경로 거리나 층 이동거리가 아니다.
-- sort=DISTANCE(기본)는 (distanceM,id), DIFFICULTY는 (보정 score,distanceM,id)로 안정 정렬한다. lengthMm/widthMm는 둘 다 보내거나 둘 다 생략한다. 하나만 보내면 422 INCOMPLETE_CAR_SIZE다.
-- 커서는 불투명하며 사용자/공개 범위·검색 필터·sort·계산 룰 버전에 바인딩한다. 다른 질의나 무효 커서는 400 INVALID_CURSOR, 룰/데이터 스냅샷이 달라 재현 불가하면 409 CURSOR_EXPIRED 후 첫 페이지부터 재조회한다. 마지막 페이지 nextCursor는 null이다.
+- S-06 검색은 latitude/longitude 기준점과 반경(기본3000m, 1~20000m) 또는 south/north/west/east 지도 범위(대각40km·축1도 상한)를 받는다. 상세는 [lot-search.md](lot-search.md)의 인증·query/구조·미확인 상태를 따른다. 거리 기준은 주차장에 저장한 대표 좌표 사이의 Haversine 구면 직선거리(m)이며 도로/보행 거리나 실제 입구 확인을 뜻하지 않는다.
+- sort=DISTANCE(기본)는 distanceM→UUID, EASIEST는 같은 차량·연도·룰의 unroundedScore(null 뒤)→distanceM→UUID다. vehicleLengthMm/vehicleWidthMm 쌍·지원 상태는 S-07과 같으며 부정/불완전 입력은400이다.
+- 검색 후보 최대1000곳, 페이지 기본20/최대50이다. 다른 질의나 무효 cursor는400 INVALID_SEARCH_CURSOR, 후보·현재 버전이 달라지면409 SEARCH_CHANGED 후 cursor 없이 재검색한다. 마지막 nextCursor는 null이다. 과거 A-03의 미구현 설계 query/한도는 A-10으로 대체했다.
 - 개인 위치 목록은 본인 자료를 (occurredAt DESC,id DESC)로 조회한다. 커서에는 민감 원문을 넣지 않는다. 같은 스냅샷에서 중복 페이지를 만들지 않는다.
 - 구조 버전이 없으면 floorId/zoneId는 null이어야 한다. 알려진 층·구역은 해당 lot/structureVersion에 속하는지 검사하고, zone만 지정하고 floor가 없는 입력은 거부한다. 구조 버전이 폐기/불명확하면 임의 다른 구조에 매핑하지 않는다.
-- 난이도 score 1~5의 0.5 단위 표시와 요소·결측/표본 정책은 S-07에서 구현한다. 입력 미확인 시 BASELINE과 missingFactors를 반환하며 합성 여부를 유지한다.
+- 난이도 score 1~5의 0.5 단위 표시와 요소·결측/표본 정책은 S-07에서 구현했다. 입력 미확인 시 vehicle.basis=REFERENCE_DEFAULT와 상태/결측 근거를 반환하며 합성 출처를 유지한다.
 
 ## 오류·재시도·크기
 

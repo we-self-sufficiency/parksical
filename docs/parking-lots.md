@@ -1,6 +1,6 @@
 # S-05 주차장·구조 관리와 가상 데이터
 
-이슈 #6, F-01/F-02/F-06. 사용자의 2026-11-13 결정으로 원 기획의 4곳+연습용 1곳 대신 **직접 만든 가상 주차장 1곳**을 사용한다. 외부 주차장 API·지오코딩·구조도·사진은 연동하지 않는다. 이 문서는 S-05 PR의 구현 안내이며 SDK 공개 검색/상세 API는 후속 #8 범위다. 실제 호출 가능 상태는 [Wiki](https://github.com/we-self-sufficiency/parksical-server/wiki)의 develop 통합 현황으로 확인한다.
+이슈 #6, F-01/F-02/F-06. 사용자의 2026-11-13 결정으로 원 기획의 4곳+연습용 1곳 대신 **직접 만든 가상 주차장 1곳**을 사용한다. 외부 주차장 API·지오코딩·구조도·사진은 연동하지 않는다. 이 문서는 S-05 관리/구조 안내다. SDK의 인증된 검색/상세 API는 S-06 #8의 [검색 가이드](lot-search.md)를 따른다. 실제 호출 가능 상태는 [Wiki](https://github.com/we-self-sufficiency/parksical-server/wiki)의 develop 통합 현황으로 확인한다.
 
 ## 데이터와 출처
 
@@ -41,7 +41,7 @@
 | PUT | /admin/lots/{lotId} | `{expectedVersion,snapshot}` 전체 교체, 새 version, 200 |
 | GET | /admin/lots/{lotId}/revisions/{version} | 과거 revision 조회, 200 |
 
-목록의 nextCursor를 다음 요청의 `?after={nextCursor}`로 전달한다. 추가 필터/임의 query는 거절한다. 목록은 스냅샷 고정 조회가 아니므로 페이지 사이 새 등록은 다음 순회에서 확인할 수 있다. 공개 검색·거리/난이도 정렬은 #8에서 별도로 구현한다.
+목록의 nextCursor를 다음 요청의 `?after={nextCursor}`로 전달한다. 추가 필터/임의 query는 거절한다. 목록은 스냅샷 고정 조회가 아니므로 페이지 사이 새 등록은 다음 순회에서 확인할 수 있다. SDK 검색·거리/난이도 정렬의 별도 API와 페이지 계약은 [S-06](lot-search.md)을 따른다.
 
 POST/PUT는 `Idempotency-Key`(ASCII 영문/숫자/`_.-`, 1~64자)가 필수다. ADMIN 자격을 매번 재검사한 뒤 같은 인증 세션+키+동일 요청은 원래 응답과 `Idempotency-Replayed: true`를 재생한다. 새 상태가 필요하면 GET을 사용한다. 다른 경로/body로 같은 키를 쓰면 409 IDEMPOTENCY_CONFLICT다. object key 순서와 UTC 시각의 ms 표기는 정규화하며 배열 순서는 의미가 있다. 실패한 입력은 성공 receipt로 저장하지 않는다.
 
@@ -96,3 +96,5 @@ develop 통합 직후 Wiki Home 업데이트 기록에 이슈 #6·머지 PR·날
 - 같은 층의 통로는 연결되어야 하며 알려진 입구는 통로에 붙어야 한다. 보호 구역의 폭/깊이는 실제 기둥보다 작을 수 없다. UNKNOWN/DRAFT의 미확정 형상은 여전히 구분한다.
 
 통로와 진입 여유는 평면에서 장애물이 없는지 검사하는 개발 규칙이다. 특정 차량의 축거·조향각·회전반경·후진 전환을 계산한 주차 궤적이나 건축/주차 관련 법규 적합성 검증은 아니다. 통로 방향 표시는 메타데이터이며 차량별 경로 탐색 엔진을 구현한 것은 아니다. 실제 적용에는 별도 차량/현장 검증이 필요하다.
+
+S-06에서 인증된 SDK 카탈로그 검색·상세를 연결한다. query·목록/전체 구조·차량별 난이도 정렬·페이지 및 미배포/미검증 경계는 [lot-search.md](lot-search.md)를 따른다.

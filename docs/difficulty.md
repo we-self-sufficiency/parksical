@@ -25,7 +25,7 @@ query 정수는 십진 숫자 문자열만 받는다. 지수·hex·공백·배�
 /api/v1/lots/66666666-6666-4666-8666-666666666666/difficulty?asOfYear=2026&vehicleLengthMm=5100&vehicleWidthMm=1900&ruleVersion=difficulty-v1
 ```
 
-현재 버전과 요청한 과거 버전이 **모두 active**여야 한다. 현재 비활성 주차장을 과거 버전 query로 우회할 수 없다. 읽기 전용 RepeatableRead 트랜잭션에서 기준 버전을 고정한다. 현재 실제 자료 경로는 비활성으로 두고 SYNTHETIC 이외 출처는 거절한다. 공개 검색/상세 `/lots`는 #8에서 구현한다.
+현재 버전과 요청한 과거 버전이 **모두 active**여야 한다. 현재 비활성 주차장을 과거 버전 query로 우회할 수 없다. 읽기 전용 RepeatableRead 트랜잭션에서 기준 버전을 고정한다. 현재 실제 자료 경로는 비활성으로 두고 SYNTHETIC 이외 출처는 거절한다. 인증된 검색/상세 `/lots`는 S-06 #8에서 같은 계산기에 연결한다([검색 가이드](lot-search.md)).
 
 ## difficulty-v1 개발 기본값
 
@@ -83,6 +83,8 @@ score = unroundedScore를 0.5 단위로 반올림(정확한 중간값은 올림)
 
 검증은 각 차체 축 단조성, 5100mm≥3600mm, 경계/클리핑/6자리·0.5 반올림, 모든 결측/표본 사유, 불변 룰·입력 비변경·재현성, 실제 DB/HTTP의 WEB/VEHICLE·로그 제외·과거 버전/비활성·미지원 출처·오류/제한을 포함한다. 합성 API 테스트를 실제 SDK/실차 검증으로 바꾸어 보고하지 않는다.
 
-## Wiki 반영 계획
+## Wiki 반영
 
-develop 머지 직후 Wiki Home에 #7/머지 PR/날짜와 새 난이도 API 준비 현황을 기록한다. 이 문서의 query·예제·결측 처리·계산 근거·룰·검증 경계를 가이드에 반영한다. 미배포/실제 SDK 미검증 및 #8 검색/상세 미구현은 유지한다. PR 단계에서는 예정 변경으로만 기록한다.
+PR #26 develop 통합 뒤 [Wiki Difficulty](https://github.com/we-self-sufficiency/parksical-server/wiki/Difficulty)와 Home에 S-07 API/예제·계산·검증 상태를 반영했다. S-06 #8 검색/상세는 같은 계산기를 재사용하며 해당 PR 머지 후 Wiki를 별도로 갱신한다. 미배포/실제 SDK 미검증은 유지한다.
+
+S-06에서 인증된 SDK 카탈로그 검색·상세를 연결한다. query·목록/전체 구조·차량별 난이도 정렬·페이지 및 미배포/미검증 경계는 [lot-search.md](lot-search.md)를 따른다.

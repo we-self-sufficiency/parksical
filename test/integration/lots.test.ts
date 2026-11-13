@@ -81,7 +81,7 @@ test('real PG lots: administrator permissions, immutable revisions, concurrent w
     assert.ok(list.items.some(x => x.id === first.id && !x.active && x.source === 'SYNTHETIC'));
     const nextPage = await (await call('/admin/lots?after=' + first.id, 'GET', undefined, admin.accessToken)).json() as typeof list;
     assert.ok(nextPage.items.every(x => x.id > first.id));
-    await expectError(await call('/lots', 'GET', undefined, user.accessToken), 404, 'RESOURCE_NOT_FOUND');
+    await expectError(await call('/lots', 'GET', undefined, user.accessToken), 400, 'INVALID_REQUEST');
 
     // A different lot contributes unique child identifiers; neither API nor composite DB FKs may borrow them.
     const other = structuredClone(body); other.code += '-other'; other.snapshot.floors[0]!.id = 'foreign-floor';

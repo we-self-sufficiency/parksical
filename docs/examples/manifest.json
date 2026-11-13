@@ -29,7 +29,10 @@
     "difficulty-adjusted.json": "DifficultyResponse",
     "difficulty-unsupported.json": "DifficultyResponse",
     "difficulty-insufficient.json": "DifficultyResponse",
-    "difficulty-query.json": "DifficultyQuery"
+    "difficulty-query.json": "DifficultyQuery",
+    "lot-search-query.json": "LotSearchQuery",
+    "lot-search-page.json": "LotPage",
+    "lot-detail.json": "LotDetail"
   },
   "cases": [
     {
@@ -183,6 +186,20 @@
       "status": 200,
       "schema": "DifficultyResponse",
       "example": "difficulty-insufficient.json"
+    },
+    {
+      "name": "listLots implemented synthetic read",
+      "operationId": "listLots",
+      "status": 200,
+      "schema": "LotPage",
+      "example": "lot-search-page.json"
+    },
+    {
+      "name": "getLot implemented synthetic read",
+      "operationId": "getLot",
+      "status": 200,
+      "schema": "LotDetail",
+      "example": "lot-detail.json"
     }
   ],
   "negativeCases": [
@@ -381,6 +398,46 @@
         "score": 2.3
       },
       "reason": "Half-point display step"
+    },
+    {
+      "schema": "LotSearchQuery",
+      "baseExample": "lot-search-query.json",
+      "set": {
+        "latitude": 91
+      },
+      "reason": "latitude range"
+    },
+    {
+      "schema": "LotSearchQuery",
+      "baseExample": "lot-search-query.json",
+      "set": {
+        "limit": 51
+      },
+      "reason": "page cap"
+    },
+    {
+      "schema": "LotSearchQuery",
+      "baseExample": "lot-search-query.json",
+      "set": {
+        "radiusM": 20001
+      },
+      "reason": "radius cap"
+    },
+    {
+      "schema": "LotSearchQuery",
+      "baseExample": "lot-search-query.json",
+      "set": {
+        "partnered": "true"
+      },
+      "reason": "strict boolean transport"
+    },
+    {
+      "schema": "LotSearchQuery",
+      "baseExample": "lot-search-query.json",
+      "set": {
+        "sort": "INVALID"
+      },
+      "reason": "unknown sort"
     }
   ]
 }

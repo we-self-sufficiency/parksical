@@ -11,6 +11,7 @@ import { DatabaseService } from '../../src/database.service.js';
 test('real PostgreSQL migration reapply, Prisma persistence, HTTP DB readiness and recovery', async () => {
   execFileSync(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy'], { stdio: 'pipe' });
   execFileSync(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy'], { stdio: 'pipe' });
+  execFileSync(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'diff', '--from-config-datasource', '--to-schema', 'prisma/schema.prisma', '--exit-code'], { stdio: 'pipe' });
   const app = await createApp(readConfig(), () => {});
   await app.listen(0, '127.0.0.1');
   const base = await app.getUrl();

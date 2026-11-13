@@ -59,7 +59,7 @@ for path, methods in DOC['paths'].items():
         assert path_params == set(re.findall(r'\{([^}]+)\}', path)), path
         assert all(p['required'] for p in operation.get('parameters', []) if p['in'] == 'path')
         assert {'400', '401', '403', '404', '409', '413', '422', '429', '503'} <= set(operation['responses'])
-        if method in ('post', 'patch'):
+        if method in ('post', 'patch', 'put'):
             if operation.get('x-idempotency-policy') == 'credential-flow':
                 assert path.startswith('/auth/'), 'Credential exception must be scoped to authentication'
             else:

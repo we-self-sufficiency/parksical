@@ -81,6 +81,7 @@ model AuthSession {
   createdAt        DateTime @default(now()) @db.Timestamptz(3)
   refreshes        RefreshCredential[]
   vehicleSessions  VehicleSession[]
+  lotMutations     LotMutation[]
   @@index([userId])
   @@index([installationId])
 }
@@ -174,4 +175,96 @@ model VehicleEvent {
   receipt      Json @db.JsonB
   @@id([sessionId, eventId])
   @@unique([sessionId, sequence])
+}
+
+// Stable identity; all editable information lives in immutable revision snapshots.
+model ParkingLot {
+  id             String @id @default(uuid()) @db.Uuid
+  code           String @unique @db.VarChar(64)
+  currentVersion Int
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  revisions      LotRevision[]
+}
+
+model LotRevision {
+  lotId           String @db.Uuid
+  lot             ParkingLot @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  version         Int
+  name            String @db.VarChar(120)
+  active          Boolean
+  latitude        Float
+  longitude       Float
+  ownership       String @db.VarChar(16)
+  parkingType     String @db.VarChar(16)
+  partnered       Boolean
+  builtYear       Int?
+  source          String @db.VarChar(16)
+  sourceUpdatedAt DateTime @db.Timestamptz(3)
+  structureStatus String @db.VarChar(16)
+  challengeAllowed Boolean @default(false)
+  snapshot        Json @db.JsonB
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  floors          LotFloor[]
+  @@id([lotId, version])
+}
+
+model LotFloor {
+  lotId   String @db.Uuid
+  version Int
+  id      String @db.VarChar(32)
+  revision LotRevision @relation(fields: [lotId, version], references: [lotId, version], onDelete: Restrict)
+  zones   LotZone[]
+  entrances LotEntrance[]
+  rampsFrom LotRamp[] @relation("RampFromFloor")
+  rampsTo   LotRamp[] @relation("RampToFloor")
+  @@id([lotId, version, id])
+}
+
+model LotZone {
+  lotId   String @db.Uuid
+  version Int
+  floorId String @db.VarChar(32)
+  id      String @db.VarChar(32)
+  floor   LotFloor @relation(fields: [lotId, version, floorId], references: [lotId, version, id], onDelete: Restrict)
+  entrances LotEntrance[]
+  rampsFrom LotRamp[] @relation("RampFromZone")
+  rampsTo   LotRamp[] @relation("RampToZone")
+  @@id([lotId, version, id])
+  @@unique([lotId, version, floorId, id])
+}
+
+model LotEntrance {
+  lotId   String @db.Uuid
+  version Int
+  id      String @db.VarChar(32)
+  floorId String @db.VarChar(32)
+  zoneId  String? @db.VarChar(32)
+  floor   LotFloor @relation(fields: [lotId, version, floorId], references: [lotId, version, id], onDelete: Restrict)
+  zone    LotZone? @relation(fields: [lotId, version, floorId, zoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
+  @@id([lotId, version, id])
+}
+
+model LotRamp {
+  lotId       String @db.Uuid
+  version     Int
+  id          String @db.VarChar(32)
+  fromFloorId String @db.VarChar(32)
+  toFloorId   String @db.VarChar(32)
+  fromZoneId  String? @db.VarChar(32)
+  toZoneId    String? @db.VarChar(32)
+  fromFloor LotFloor @relation("RampFromFloor", fields: [lotId, version, fromFloorId], references: [lotId, version, id], onDelete: Restrict)
+  toFloor   LotFloor @relation("RampToFloor", fields: [lotId, version, toFloorId], references: [lotId, version, id], onDelete: Restrict)
+  fromZone LotZone? @relation("RampFromZone", fields: [lotId, version, fromFloorId, fromZoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
+  toZone   LotZone? @relation("RampToZone", fields: [lotId, version, toFloorId, toZoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
+  @@id([lotId, version, id])
+}
+
+model LotMutation {
+  authSessionId String @db.Uuid
+  authSession AuthSession @relation(fields: [authSessionId], references: [id], onDelete: Restrict)
+  key         String @db.VarChar(64)
+  requestHash String @db.Char(64)
+  response    Json @db.JsonB
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  @@id([authSessionId, key])
 }

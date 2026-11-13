@@ -1,0 +1,172 @@
+{
+  "code": "parksical-synthetic-001",
+  "snapshot": {
+    "name": "P지컬 가상 주차장 1",
+    "address": "가상 데이터 — 실제 주소 없음",
+    "active": true,
+    "latitude": 0,
+    "longitude": 0,
+    "ownership": "PRIVATE",
+    "parkingType": "SELF_PARK",
+    "partnered": false,
+    "builtYear": 2020,
+    "source": "SYNTHETIC",
+    "sourceReference": "fixtures/lots/one-synthetic-lot.json; invented for integration testing",
+    "rightsNote": "직접 작성한 가상 구조와 요금. 실제 주차장·측량·제휴·이용 권한 확인 자료가 아님.",
+    "sourceUpdatedAt": "2026-11-13T12:00:00.000Z",
+    "structureStatus": "COMPLETE",
+    "geometrySystem": "LOCAL_METERS",
+    "timezone": "Asia/Seoul",
+    "operatingHours": [
+      {
+        "day": 1,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 2,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 3,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 4,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 5,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 6,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 7,
+        "openMinute": 0,
+        "closeMinute": 1440
+      }
+    ],
+    "fees": {
+      "currency": "KRW",
+      "baseMinutes": 30,
+      "baseAmount": 1000,
+      "additionalMinutes": 10,
+      "additionalAmount": 500,
+      "dailyMaxAmount": 15000
+    },
+    "tags": [
+      "SYNTHETIC",
+      "실제 방문 금지",
+      "지하1층",
+      "연동 테스트"
+    ],
+    "photos": [],
+    "factorScores": {
+      "structure": 2.5,
+      "review": null,
+      "driving": null,
+      "age": null
+    },
+    "challengeAllowed": false,
+    "floors": [
+      {
+        "id": "ground",
+        "label": "1F (가상)",
+        "level": 0
+      },
+      {
+        "id": "basement1",
+        "label": "B1 (가상)",
+        "level": -1
+      }
+    ],
+    "zones": [
+      {
+        "id": "ground-a",
+        "floorId": "ground",
+        "label": "지상 A",
+        "polygon": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      },
+      {
+        "id": "basement-a",
+        "floorId": "basement1",
+        "label": "지하 A",
+        "polygon": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      }
+    ],
+    "entrances": [
+      {
+        "id": "gate-main",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "direction": "BOTH",
+        "point": {
+          "x": 0,
+          "y": 15
+        }
+      }
+    ],
+    "ramps": [
+      {
+        "id": "ramp-b1",
+        "fromFloorId": "ground",
+        "toFloorId": "basement1",
+        "fromZoneId": "ground-a",
+        "toZoneId": "basement-a",
+        "direction": "TWO_WAY",
+        "widthMm": 6000,
+        "slopePercent": 12
+      }
+    ]
+  }
+}

@@ -82,6 +82,14 @@ export class AuthService {
     });
   }
 
+  async forAdmin<T>(p: Principal, work: (tx: Tx) => Promise<T>): Promise<T> {
+    return this.locked('session:' + p.sessionId, async tx => {
+      const row = await this.principal(tx, p, true);
+      if (row.user.role !== 'ADMIN') throw new ApiError(403, 'FORBIDDEN');
+      return work(tx);
+    });
+  }
+
   private async issue(tx: Tx, userId: string, kind: 'WEB' | 'VEHICLE', installationId: string | null = null) {
     const accessToken = secret(), refreshToken = secret();
     const accessExpiresAt = new Date(Date.now() + 15 * 60_000);

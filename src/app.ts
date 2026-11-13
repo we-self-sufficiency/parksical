@@ -18,6 +18,8 @@ import { ObjectValidationPipe } from './validation.js';
 import { LotController } from './lots/lot.controller.js';
 import { LotService } from './lots/lot.service.js';
 import { DifficultyController } from './difficulty/difficulty.controller.js';
+import { ReviewController } from './reviews/review.controller.js';
+import { ReviewService } from './reviews/review.service.js';
 import { CatalogController } from './lots/catalog.controller.js';
 import { CatalogService } from './lots/catalog.service.js';
 import { DifficultyService } from './difficulty/difficulty.service.js';
@@ -28,8 +30,8 @@ class AppModule {}
 export async function createApp(config: AppConfig, sink: LogSink = defaultLogSink) {
   const app = await NestFactory.create({
     module: AppModule,
-    controllers: [HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController],
-    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, VehicleService, LotService, DifficultyService, CatalogService, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
+    controllers: [HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController],
+    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
   }, { logger: false, bodyParser: false, abortOnError: false });
   app.use(requestContext(sink));
   app.use(json({ limit: '64kb' }));

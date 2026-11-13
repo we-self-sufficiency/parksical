@@ -104,7 +104,16 @@
           "SYNTHETIC_DATA",
           "PARTIAL_DATA",
           "REFERENCE_VEHICLE_USED"
-        ]
+        ],
+        "reviewAggregation": {
+          "status": "DISABLED",
+          "source": "SYNTHETIC",
+          "privacyStatus": "DEVELOPMENT_ONLY_NOT_ANONYMIZED",
+          "ruleVersion": "reviews-v1",
+          "sampleCount": null,
+          "version": null,
+          "updatedAt": null
+        }
       },
       "navigation": {
         "latitude": 0,

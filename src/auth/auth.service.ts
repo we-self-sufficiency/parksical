@@ -82,6 +82,13 @@ export class AuthService {
     });
   }
 
+  async forUser<T>(p: Principal, work: (tx: Tx) => Promise<T>): Promise<T> {
+    return this.locked(p.installationId ? 'installation:' + p.installationId : 'session:' + p.sessionId, async tx => {
+      await this.principal(tx, p);
+      return work(tx);
+    });
+  }
+
   async forAdmin<T>(p: Principal, work: (tx: Tx) => Promise<T>): Promise<T> {
     return this.locked('session:' + p.sessionId, async tx => {
       const row = await this.principal(tx, p, true);

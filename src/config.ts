@@ -4,6 +4,7 @@ export interface AppConfig {
   databaseUrl: string;
   shutdownTimeoutMs: number;
   devAuthEnabled: boolean;
+  devReviewsEnabled: boolean;
   devAuthSecret?: string;
 }
 
@@ -19,13 +20,16 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('Invalid DATABASE_URL');
   }
   // No feature needing a user policy is activated by this foundation.
-  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED']) {
+  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED', 'REAL_REVIEWS_ENABLED']) {
     if (env[name] !== undefined && env[name] !== 'false') throw new Error(`Unsupported ${name}`);
   }
   if (env.DEV_AUTH_ENABLED !== undefined && !['true', 'false'].includes(env.DEV_AUTH_ENABLED)) throw new Error('Invalid DEV_AUTH_ENABLED');
   const devAuthEnabled = env.DEV_AUTH_ENABLED === 'true';
   if (devAuthEnabled && (nodeEnv === 'production' || (env.DEV_AUTH_SECRET?.length ?? 0) < 32)) throw new Error('Development authentication is not allowed or missing configuration');
-  return { nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
+  if (env.DEV_REVIEWS_ENABLED !== undefined && !['true','false'].includes(env.DEV_REVIEWS_ENABLED)) throw new Error('Invalid DEV_REVIEWS_ENABLED');
+  const devReviewsEnabled=env.DEV_REVIEWS_ENABLED==='true';
+  if(devReviewsEnabled && (nodeEnv==='production' || !devAuthEnabled)) throw new Error('Synthetic reviews require non-production development authentication');
+  return { devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');

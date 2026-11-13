@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.6
+# 서버·차량 앱 계약 v0.7
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07/S-08 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.6.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.7.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -128,3 +128,7 @@ examples는 전부 합성 데이터다. 정상, steeringAngle 미지원, 순서 
 검증은 JSON 파싱, JSON Schema 2020-12 정의 검사, 내부 $ref 해석, 요청/응답 예제 검증, 음성 입력 거절, 경로 변수·operationId·오류/보안·사례 응답 일치를 포함한다. 검증 스크립트는 [check_contract.py](../scripts/check_contract.py)이며 `python -m pip install -r scripts/contract-validation-requirements.txt` 후 `python scripts/check_contract.py`로 실행한다. 이 Python 도구는 문서 검증용이며 서버 런타임은 TypeScript/NestJS다. NestJS lint/build/runtime 검증은 S-02 이후 적용한다.
 
 공식 형식 근거: [OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html). SDK 근거와 미확인 항목은 [차량 계약 노트](vehicle-contract-notes.md)에 분리했다.
+
+## S-08 합성 리뷰 경계
+
+[reviews.md](reviews.md)는 DEV_REVIEWS_ENABLED 기본false·production 차단과 개발용 합성 방문 전용 리뷰/집계 계약이다. 실제 수집/익명화 D-02 승인이 아니다. POST/PUT/DELETE의 인증 세션+Idempotency-Key와 expectedVersion, 본인 소유 방문/주차장 구조 검증, 삭제 tombstone·원자 집계/재집계와 작은 표본 평균 비공개를 적용한다. 세 난이도 응답에 reviewAggregation을 추가하고 집계 버전 변경은 검색 cursor409재검색이다. difficulty-v1·차량 contractVersion1.0과 기존 요청은 유지한다.

@@ -37,6 +37,7 @@ model User {
   role          UserRole @default(USER)
   rankingPublic Boolean @default(false)
   createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  reviewVisits  ReviewVisit[]
   identities    AuthIdentity[]
   sessions      AuthSession[]
   installations Installation[]
@@ -82,6 +83,7 @@ model AuthSession {
   refreshes        RefreshCredential[]
   vehicleSessions  VehicleSession[]
   lotMutations     LotMutation[]
+  reviewMutations  ReviewMutation[]
   @@index([userId])
   @@index([installationId])
 }
@@ -205,6 +207,8 @@ model LotRevision {
   challengeAllowed Boolean @default(false)
   snapshot        Json @db.JsonB
   createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  reviewVisits    ReviewVisit[]
+  reviewAggregate ReviewAggregate?
   floors          LotFloor[]
   @@id([lotId, version])
   @@index([source, active, latitude, longitude])
@@ -312,4 +316,52 @@ model LotDriveAisle {
   spaces ParkingSpace[]
   @@id([lotId, version, id])
   @@unique([lotId, version, floorId, zoneId, id])
+}
+
+// Synthetic development visits only; not a real parking/telemetry record.
+model ReviewVisit {
+  id         String @id @default(uuid()) @db.Uuid
+  userId     String @db.Uuid
+  user       User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  lotId      String @db.Uuid
+  lotVersion Int
+  revision   LotRevision @relation(fields: [lotId, lotVersion], references: [lotId, version], onDelete: Restrict)
+  source     String @default("SYNTHETIC") @db.VarChar(16)
+  occurredAt DateTime @default(now()) @db.Timestamptz(3)
+  review     Review?
+  @@unique([userId, lotId, lotVersion])
+  @@index([lotId, lotVersion])
+}
+
+model Review {
+  id         String @id @default(uuid()) @db.Uuid
+  visitId    String @unique @db.Uuid
+  visit      ReviewVisit @relation(fields: [visitId], references: [id], onDelete: Restrict)
+  rating     String? @db.VarChar(8)
+  version    Int @default(1)
+  deletedAt  DateTime? @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+}
+
+// No account/visit IDs in this projection. Development-only, not anonymization approval.
+model ReviewAggregate {
+  lotId      String @db.Uuid
+  lotVersion Int
+  revision   LotRevision @relation(fields: [lotId, lotVersion], references: [lotId, version], onDelete: Restrict)
+  source     String @default("SYNTHETIC") @db.VarChar(16)
+  scoreSum   BigInt
+  sampleCount Int
+  version    Int
+  updatedAt  DateTime @db.Timestamptz(3)
+  @@id([lotId, lotVersion])
+}
+
+model ReviewMutation {
+  authSessionId String @db.Uuid
+  authSession   AuthSession @relation(fields: [authSessionId], references: [id], onDelete: Restrict)
+  key           String @db.VarChar(64)
+  requestHash   String @db.Char(64)
+  response      Json @db.JsonB
+  @@id([authSessionId, key])
 }

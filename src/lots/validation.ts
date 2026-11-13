@@ -1,5 +1,6 @@
 import { ApiError } from '../api-error.js';
 import type { LotSnapshotDto, PointDto } from './dto.js';
+import { fitsZone, footprintsOverlap, pillarFootprint, spaceFootprint } from './layout.js';
 
 const fail = () => { throw new ApiError(422, 'INVALID_LOT_STRUCTURE'); };
 const same = (a: PointDto, b: PointDto) => a.x === b.x && a.y === b.y;
@@ -28,10 +29,12 @@ export function validatePolygon(p: PointDto[]) {
 }
 export function validateSnapshot(s: LotSnapshotDto) {
   if (new Date(s.sourceUpdatedAt).getTime() > Date.now() + 300000) throw new ApiError(422, 'CLOCK_SKEW');
-  const text = [s.name, s.address, s.sourceReference, s.rightsNote, ...s.tags, ...s.floors.map(f => f.label), ...s.zones.map(z => z.label), ...s.photos.flatMap(p => [p.caption, p.rightsNote])];
+  const spaces = s.parkingSpaces ?? [], pillars = s.pillars ?? [];
+  const text = [s.name, s.address, s.sourceReference, s.rightsNote, ...s.tags, ...s.floors.map(f => f.label), ...s.zones.map(z => z.label), ...s.photos.flatMap(p => [p.caption, p.rightsNote]), ...spaces.map(p => p.label)];
   if (text.some(v => !v.trim())) fail();
   if (s.photos.some(p => { const u = new URL(p.url); return u.username !== '' || u.password !== ''; })) fail();
-  for (const rows of [s.floors, s.zones, s.entrances, s.ramps]) if (new Set(rows.map(r => r.id)).size !== rows.length) fail();
+  for (const rows of [s.floors, s.zones, s.entrances, s.ramps, spaces, pillars]) if (new Set(rows.map(r => r.id)).size !== rows.length) fail();
+  if (new Set(spaces.map(p => JSON.stringify([p.floorId,p.label.trim()]))).size !== spaces.length || spaces.some(p => p.label !== p.label.trim())) fail();
   const floors = new Map(s.floors.map(f => [f.id, f]));
   const zones = new Map(s.zones.map(z => [z.id, z]));
   const floor = (id: string) => { if (!floors.has(id)) fail(); };
@@ -39,6 +42,19 @@ export function validateSnapshot(s: LotSnapshotDto) {
   for (const z of s.zones) { floor(z.floorId); if (z.polygon !== null) validatePolygon(z.polygon); }
   for (const e of s.entrances) { floor(e.floorId); zone(e.zoneId, e.floorId); }
   for (const r of s.ramps) { floor(r.fromFloorId); floor(r.toFloorId); zone(r.fromZoneId, r.fromFloorId); zone(r.toZoneId, r.toFloorId); if (r.fromFloorId === r.toFloorId) fail(); }
+  const layout = [...spaces.map(p => ({ ...p, footprint: spaceFootprint(p) })), ...pillars.map(p => ({ ...p, footprint: pillarFootprint(p) }))];
+  for (const p of layout) {
+    floor(p.floorId); zone(p.zoneId,p.floorId);
+    const polygon=zones.get(p.zoneId)!.polygon;
+    if (p.footprint && polygon && !fitsZone(p.footprint,polygon)) fail();
+    if (s.structureStatus === 'COMPLETE' && (!p.footprint || !polygon)) fail();
+  }
+  // Different zones may touch/overlap; collision must be checked across the entire floor.
+  for (let i=0;i<layout.length;i++) for (let j=i+1;j<layout.length;j++) {
+    const a=layout[i]!,b=layout[j]!;
+    if (a.floorId === b.floorId && a.footprint && b.footprint && footprintsOverlap(a.footprint,b.footprint)) fail();
+  }
+  if (s.structureStatus === 'COMPLETE' && (!s.parkingSpaces?.length || s.pillars === undefined)) fail();
   if (s.structureStatus === 'COMPLETE' && (!s.floors.length || !s.zones.length || !s.entrances.length || s.floors.some(f => f.level === null) || s.zones.some(z => z.polygon === null) || s.entrances.some(e => e.point === null || e.direction === 'UNKNOWN') || s.ramps.some(r => r.direction === 'UNKNOWN'))) fail();
   if (s.operatingHours !== null) {
     const sorted = [...s.operatingHours].sort((a, b) => a.day - b.day || a.openMinute - b.openMinute);

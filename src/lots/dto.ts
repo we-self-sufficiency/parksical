@@ -33,6 +33,27 @@ export class RampDto {
   @ValidateIf(o => o.widthMm !== null) @IsInt() @Min(500) @Max(30000) widthMm!: number | null;
   @ValidateIf(o => o.slopePercent !== null) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(100) slopePercent!: number | null;
 }
+export class ParkingSpaceDto {
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) id!: string;
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) floorId!: string;
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) zoneId!: string;
+  @IsString() @MinLength(1) @MaxLength(32) label!: string;
+  @IsIn(['GENERAL', 'ACCESSIBLE', 'EV', 'COMPACT', 'UNKNOWN']) type!: string;
+  @IsBoolean() active!: boolean;
+  @ValidateIf(o => o.center !== null) @IsObject() @ValidateNested() @Type(() => PointDto) center!: PointDto | null;
+  @ValidateIf(o => o.widthMm !== null) @IsInt() @Min(1000) @Max(10000) widthMm!: number | null;
+  @ValidateIf(o => o.lengthMm !== null) @IsInt() @Min(1000) @Max(20000) lengthMm!: number | null;
+  @ValidateIf(o => o.headingDegrees !== null) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(359.99) headingDegrees!: number | null;
+}
+export class PillarDto {
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) id!: string;
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) floorId!: string;
+  @Matches(/^[A-Za-z0-9_-]{1,32}$/) zoneId!: string;
+  @ValidateIf(o => o.center !== null) @IsObject() @ValidateNested() @Type(() => PointDto) center!: PointDto | null;
+  @ValidateIf(o => o.widthMm !== null) @IsInt() @Min(100) @Max(10000) widthMm!: number | null;
+  @ValidateIf(o => o.depthMm !== null) @IsInt() @Min(100) @Max(10000) depthMm!: number | null;
+  @ValidateIf(o => o.rotationDegrees !== null) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(359.99) rotationDegrees!: number | null;
+}
 export class HoursDto {
   @IsInt() @Min(1) @Max(7) day!: number;
   @IsInt() @Min(0) @Max(1439) openMinute!: number;
@@ -86,6 +107,9 @@ export class LotSnapshotDto {
   @IsArray() @ArrayMaxSize(100) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => ZoneDto) zones!: ZoneDto[];
   @IsArray() @ArrayMaxSize(30) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => EntranceDto) entrances!: EntranceDto[];
   @IsArray() @ArrayMaxSize(100) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => RampDto) ramps!: RampDto[];
+  // Omitted = not mapped. [] = mapped, none. COMPLETE requires explicit arrays and at least one space.
+  @ValidateIf(o => o.parkingSpaces !== undefined) @IsArray() @ArrayMaxSize(200) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => ParkingSpaceDto) parkingSpaces?: ParkingSpaceDto[];
+  @ValidateIf(o => o.pillars !== undefined) @IsArray() @ArrayMaxSize(100) @IsObject({ each: true }) @ValidateNested({ each: true }) @Type(() => PillarDto) pillars?: PillarDto[];
 }
 export class LotCreateDto {
   @Matches(/^[a-z0-9][a-z0-9_-]{0,63}$/) code!: string;

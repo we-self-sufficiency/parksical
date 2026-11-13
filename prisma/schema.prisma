@@ -229,6 +229,8 @@ model LotZone {
   entrances LotEntrance[]
   rampsFrom LotRamp[] @relation("RampFromZone")
   rampsTo   LotRamp[] @relation("RampToZone")
+  parkingSpaces ParkingSpace[]
+  pillars LotPillar[]
   @@id([lotId, version, id])
   @@unique([lotId, version, floorId, id])
 }
@@ -267,4 +269,29 @@ model LotMutation {
   response    Json @db.JsonB
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
   @@id([authSessionId, key])
+}
+
+model ParkingSpace {
+  lotId   String @db.Uuid
+  version Int
+  id      String @db.VarChar(32)
+  floorId String @db.VarChar(32)
+  zoneId  String @db.VarChar(32)
+  label   String @db.VarChar(32)
+  type    String @db.VarChar(16)
+  active  Boolean
+  zone LotZone @relation(fields: [lotId, version, floorId, zoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
+  @@id([lotId, version, id])
+  @@unique([lotId, version, floorId, label])
+  @@unique([lotId, version, floorId, zoneId, id])
+}
+
+model LotPillar {
+  lotId   String @db.Uuid
+  version Int
+  id      String @db.VarChar(32)
+  floorId String @db.VarChar(32)
+  zoneId  String @db.VarChar(32)
+  zone LotZone @relation(fields: [lotId, version, floorId, zoneId], references: [lotId, version, floorId, id], onDelete: Restrict)
+  @@id([lotId, version, id])
 }

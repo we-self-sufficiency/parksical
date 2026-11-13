@@ -4234,6 +4234,22 @@
             },
             "minItems": 0,
             "maxItems": 100
+          },
+          "parkingSpaces": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ParkingSpace"
+            },
+            "description": "Omitted = not mapped; [] = mapped but none. COMPLETE requires explicit arrays and at least one parking space. Whole JSON request remains limited to 64KiB."
+          },
+          "pillars": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/LotPillar"
+            },
+            "description": "Omitted = not mapped; [] = mapped but none. COMPLETE requires explicit arrays and at least one parking space. Whole JSON request remains limited to 64KiB."
           }
         },
         "required": [
@@ -4263,7 +4279,8 @@
           "zones",
           "entrances",
           "ramps"
-        ]
+        ],
+        "description": "Versioned lot structure, including parking spaces and rectangular pillars. Layout containment and interior overlaps are validated per floor. Boundary touching is allowed. active means administratively enabled, never FREE/OCCUPIED. COMPLETE requires known geometry for every space/pillar."
       },
       "AdminLotCreate": {
         "type": "object",
@@ -4416,6 +4433,188 @@
         "required": [
           "items",
           "nextCursor"
+        ]
+      },
+      "ParkingSpace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "floorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "zoneId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GENERAL",
+              "ACCESSIBLE",
+              "EV",
+              "COMPACT",
+              "UNKNOWN"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "center": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "widthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lengthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 20000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "headingDegrees": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 359.99,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "zoneId",
+          "label",
+          "type",
+          "active",
+          "center",
+          "widthMm",
+          "lengthMm",
+          "headingDegrees"
+        ],
+        "description": "Structural space, not sensed occupancy. Heading is counterclockwise from local +x toward vehicle front; units degrees. Dimensions are authored synthetic values, not legal/safety certification."
+      },
+      "LotPillar": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "floorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "zoneId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "center": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotPoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "widthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "depthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rotationDegrees": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 359.99,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "floorId",
+          "zoneId",
+          "center",
+          "widthMm",
+          "depthMm",
+          "rotationDegrees"
         ]
       }
     },

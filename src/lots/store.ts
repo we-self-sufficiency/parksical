@@ -14,5 +14,7 @@ export async function writeRevision(tx: Prisma.TransactionClient, lotId: string,
   if (s.zones.length) await tx.lotZone.createMany({ data: s.zones.map(z => ({ lotId, version, id: z.id, floorId: z.floorId })) });
   if (s.entrances.length) await tx.lotEntrance.createMany({ data: s.entrances.map(e => ({ lotId, version, id: e.id, floorId: e.floorId, zoneId: e.zoneId })) });
   if (s.ramps.length) await tx.lotRamp.createMany({ data: s.ramps.map(r => ({ lotId, version, id: r.id, fromFloorId: r.fromFloorId, toFloorId: r.toFloorId, fromZoneId: r.fromZoneId, toZoneId: r.toZoneId })) });
+  if (s.parkingSpaces?.length) await tx.parkingSpace.createMany({ data: s.parkingSpaces.map(p => ({ lotId, version, id: p.id, floorId: p.floorId, zoneId: p.zoneId, label: p.label, type: p.type, active: p.active })) });
+  if (s.pillars?.length) await tx.lotPillar.createMany({ data: s.pillars.map(p => ({ lotId, version, id: p.id, floorId: p.floorId, zoneId: p.zoneId })) });
   return revision;
 }

@@ -58,7 +58,7 @@ test('real PG lots: administrator permissions, immutable revisions, concurrent w
     assert.deepEqual(race.map(r => r.status).sort(), [200, 409]);
     assert.equal(await db.lotRevision.count({ where: { lotId: first.id } }), 2);
     assert.equal(await db.lotMutation.count({ where: { authSession: { userId: admin.userId } } }), 3, 'failed optimistic update rolls back its receipt');
-    const disabled = { expectedVersion: 2, snapshot: { ...body.snapshot, active: false, fees: null, operatingHours: null, builtYear: null, floors: [], zones: [], entrances: [], ramps: [], structureStatus: 'UNKNOWN' } };
+    const disabled = { expectedVersion: 2, snapshot: { ...body.snapshot, active: false, fees: null, operatingHours: null, builtYear: null, floors: [], zones: [], entrances: [], ramps: [], parkingSpaces: [], pillars: [], structureStatus: 'UNKNOWN' } };
     await expectError(await call('/admin/lots/' + first.id, 'PUT', disabled, admin.accessToken, 'disable'), 200);
     const historical = await call('/admin/lots/' + first.id + '/revisions/1', 'GET', undefined, admin.accessToken);
     assert.equal(historical.headers.get('cache-control'), 'no-store');
@@ -70,6 +70,8 @@ test('real PG lots: administrator permissions, immutable revisions, concurrent w
     assert.equal(replayedCreate.status, 201); assert.equal(replayedCreate.headers.get('Idempotency-Replayed'), 'true');
     assert.deepEqual(await replayedCreate.json(), first, 'original response stays unchanged after later edits/disable');
     assert.equal(await db.lotFloor.count({ where: { lotId: first.id, version: 1 } }), 2, 'disabling/removing current geometry retains historical rows');
+    assert.equal(await db.parkingSpace.count({ where: { lotId: first.id, version: 1 } }), 48);
+    assert.equal(await db.lotPillar.count({ where: { lotId: first.id, version: 1 } }), 12);
     await expectError(await call('/admin/lots/' + first.id, 'DELETE', undefined, admin.accessToken), 404);
     await expectError(await call('/admin/lots/' + first.id + '/revisions/99', 'GET', undefined, admin.accessToken), 404);
     await expectError(await call('/admin/lots/' + first.id + '/revisions/0', 'GET', undefined, admin.accessToken), 400);
@@ -84,6 +86,7 @@ test('real PG lots: administrator permissions, immutable revisions, concurrent w
     // A different lot contributes unique child identifiers; neither API nor composite DB FKs may borrow them.
     const other = structuredClone(body); other.code += '-other'; other.snapshot.floors[0]!.id = 'foreign-floor';
     other.snapshot.zones[0]!.floorId = 'foreign-floor'; other.snapshot.entrances[0]!.floorId = 'foreign-floor'; other.snapshot.ramps[0]!.fromFloorId = 'foreign-floor';
+    for (const p of [...other.snapshot.parkingSpaces!, ...other.snapshot.pillars!]) if (p.floorId === 'ground') p.floorId = 'foreign-floor';
     const otherResponse = await call('/admin/lots', 'POST', other, admin.accessToken, 'other'); assert.equal(otherResponse.status, 201);
     const otherId = (await otherResponse.json() as { id: string }).id; ids.push(otherId);
     const invalids: [string, (s: LotCreateDto['snapshot']) => void, number][] = [
@@ -103,6 +106,17 @@ test('real PG lots: administrator permissions, immutable revisions, concurrent w
       ['polygon-array', s => { Object.assign(s.zones[0]!, { polygon: [[0, 0], [1, 0], [0, 1], [0, 0]] }); }, 400],
       ['extra-field', s => { Object.assign(s, { difficulty: 5 }); }, 400],
       ['future-source', s => { s.sourceUpdatedAt = new Date(Date.now() + 3600000).toISOString(); }, 422],
+      ['space-zone', s => { s.parkingSpaces![0]!.zoneId = 'basement-a'; }, 422],
+      ['space-label', s => { s.parkingSpaces![1]!.label = s.parkingSpaces![0]!.label; }, 422],
+      ['space-outside', s => { s.parkingSpaces![0]!.center = { x:50,y:5 }; }, 422],
+      ['space-overlap', s => { s.parkingSpaces![1]!.center = s.parkingSpaces![0]!.center; }, 422],
+      ['zone-overlap', s => { s.zones.push({...s.zones[0]!,id:'overlap'}); s.parkingSpaces![1]!.zoneId='overlap'; s.parkingSpaces![1]!.center=s.parkingSpaces![0]!.center; }, 422],
+      ['pillar-space', s => { s.pillars![0]!.center = s.parkingSpaces![0]!.center; }, 422],
+      ['pillar-overlap', s => { s.pillars![1]!.center = s.pillars![0]!.center; }, 422],
+      ['pillar-outside', s => { s.pillars![0]!.center = {x:0,y:0}; }, 422],
+      ['space-unknown', s => { s.parkingSpaces![0]!.center = null; }, 422],
+      ['negative-size', s => { s.parkingSpaces![0]!.widthMm = -1; }, 400],
+      ['space-occupancy', s => { Object.assign(s.parkingSpaces![0]!, { occupancy:'FREE' }); }, 400],
     ];
     for (const [key, mutate, status] of invalids) {
       const invalid = structuredClone(body); invalid.code += '-' + key; mutate(invalid.snapshot);
@@ -113,7 +127,15 @@ test('real PG lots: administrator permissions, immutable revisions, concurrent w
     await assert.rejects(db.lotZone.create({ data: { lotId: first.id, version: 3, id: 'wrong', floorId: 'ground' } }), 'other revision floor is not a valid reference');
     await assert.rejects(db.lotEntrance.create({ data: { lotId: first.id, version: 1, id: 'wrong', floorId: 'ground', zoneId: 'basement-a' } }));
     await assert.rejects(db.lotRamp.create({ data: { lotId: first.id, version: 1, id: 'wrong', fromFloorId: 'ground', toFloorId: 'basement1', fromZoneId: 'basement-a' } }));
+    await assert.rejects(db.parkingSpace.create({ data: { lotId: first.id, version: 1, id: 'wrong', floorId: 'ground', zoneId: 'basement-a', label:'wrong', type:'GENERAL', active:true } }));
+    await assert.rejects(db.parkingSpace.create({ data: { lotId: first.id, version: 1, id: 'duplicate-number', floorId: 'ground', zoneId:'ground-a', label:body.snapshot.parkingSpaces![0]!.label, type:'GENERAL', active:true } }));
+    await assert.rejects(db.lotPillar.create({ data: { lotId: first.id, version: 3, id:'wrong', floorId:'ground', zoneId:'ground-a' } }));
     await assert.rejects(db.parkingLot.delete({ where: { id: first.id } }), 'historical FK prevents destructive deletion');
+
+    const unknown=structuredClone(body);unknown.code+='-draft';unknown.snapshot.structureStatus='DRAFT';unknown.snapshot.pillars=[];
+    unknown.snapshot.parkingSpaces=[{...body.snapshot.parkingSpaces![0]!,center:null,widthMm:null,lengthMm:null,headingDegrees:null}];
+    const drafted=await call('/admin/lots','POST',unknown,admin.accessToken,'draft');assert.equal(drafted.status,201);
+    const draft=await drafted.json() as typeof first;ids.push(draft.id);assert.equal(draft.snapshot.parkingSpaces![0]!.center,null);
 
     await assert.rejects(seedSyntheticLot(db, { NODE_ENV: 'production', ALLOW_SYNTHETIC_SEED: 'true' }));
     await assert.rejects(seedSyntheticLot(db, { NODE_ENV: 'test' }));
@@ -134,6 +156,8 @@ test('real PG lots: administrator permissions, immutable revisions, concurrent w
       await db.lotMutation.deleteMany({ where: { authSession: { userId: { in: users } } } });
       await db.lotRamp.deleteMany({ where: { lotId: { in: ids } } });
       await db.lotEntrance.deleteMany({ where: { lotId: { in: ids } } });
+      await db.parkingSpace.deleteMany({ where: { lotId: { in: ids } } });
+      await db.lotPillar.deleteMany({ where: { lotId: { in: ids } } });
       await db.lotZone.deleteMany({ where: { lotId: { in: ids } } });
       await db.lotFloor.deleteMany({ where: { lotId: { in: ids } } });
       await db.lotRevision.deleteMany({ where: { lotId: { in: ids } } });

@@ -1,0 +1,16 @@
+{
+  "id": "parked_demo_1",
+  "clientRecordId": "local_demo_1",
+  "lotId": "lot_synthetic_1",
+  "floorId": null,
+  "zoneId": null,
+  "confidence": "LOW",
+  "distanceM": 120.5,
+  "occurredAt": "2026-11-13T11:00:00Z",
+  "structureVersion": null,
+  "version": 1,
+  "userEdited": false,
+  "createdAt": "2026-11-13T11:00:00Z",
+  "updatedAt": "2026-11-13T11:00:00Z",
+  "note": null
+}

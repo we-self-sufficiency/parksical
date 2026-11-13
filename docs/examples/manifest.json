@@ -1,0 +1,138 @@
+{
+  "schemas": {
+    "session-request.json": "SessionCreate",
+    "session-response.json": "Session",
+    "event-request.json": "CapabilityEvent",
+    "event-response.json": "EventReceipt",
+    "out-of-order-response.json": "EventReceipt",
+    "location-request.json": "LocationCreate",
+    "location-patch.json": "LocationPatch",
+    "conflict-response.json": "Error",
+    "stale-response.json": "Error",
+    "policy-disabled-response.json": "Error",
+    "unsupported-version-response.json": "Error",
+    "out-of-order-request.json": "EventRequest",
+    "conflict-request.json": "EventRequest",
+    "location-response.json": "Location"
+  },
+  "cases": [
+    {
+      "name": "normal-capability",
+      "operationId": "submitVehicleEvent",
+      "status": 201,
+      "schema": "EventReceipt",
+      "example": "event-response.json",
+      "requestExample": "event-request.json"
+    },
+    {
+      "name": "unsupported-signal",
+      "operationId": "createVehicleSession",
+      "status": 201,
+      "schema": "Session",
+      "example": "session-response.json",
+      "requestExample": "session-request.json"
+    },
+    {
+      "name": "late-but-in-window",
+      "operationId": "submitVehicleEvent",
+      "status": 201,
+      "schema": "EventReceipt",
+      "example": "out-of-order-response.json",
+      "requestExample": "out-of-order-request.json"
+    },
+    {
+      "name": "duplicate-replay",
+      "operationId": "submitVehicleEvent",
+      "status": 201,
+      "schema": "EventReceipt",
+      "example": "event-response.json",
+      "responseHeaders": {
+        "Idempotency-Replayed": "true"
+      },
+      "requestExample": "event-request.json"
+    },
+    {
+      "name": "different-payload-same-key",
+      "operationId": "submitVehicleEvent",
+      "status": 409,
+      "schema": "Error",
+      "example": "conflict-response.json",
+      "requestExample": "conflict-request.json"
+    },
+    {
+      "name": "too-old",
+      "operationId": "submitVehicleEvent",
+      "status": 422,
+      "schema": "Error",
+      "example": "stale-response.json"
+    },
+    {
+      "name": "policy-not-enabled",
+      "operationId": "issueQrGrant",
+      "status": 403,
+      "schema": "Error",
+      "example": "policy-disabled-response.json"
+    },
+    {
+      "name": "unknown-contract-version",
+      "operationId": "submitVehicleEvent",
+      "status": 422,
+      "schema": "Error",
+      "example": "unsupported-version-response.json"
+    }
+  ],
+  "negativeCases": [
+    {
+      "schema": "SessionCreate",
+      "baseExample": "session-request.json",
+      "set": {
+        "rawSignals": [
+          {
+            "speedKmh": 10
+          }
+        ]
+      },
+      "reason": "Reject uncontracted raw signals"
+    },
+    {
+      "schema": "LocationCreate",
+      "baseExample": "location-request.json",
+      "set": {
+        "confidence": "CERTAIN"
+      },
+      "reason": "Unknown confidence enum"
+    },
+    {
+      "schema": "LocationPatch",
+      "baseExample": "location-patch.json",
+      "set": {
+        "expectedVersion": 0
+      },
+      "reason": "Invalid revision"
+    },
+    {
+      "schema": "EventRequest",
+      "baseExample": "event-request.json",
+      "set": {
+        "type": "RUN_FINISHED"
+      },
+      "reason": "No untyped event payload"
+    },
+    {
+      "schema": "EventRequest",
+      "baseExample": "event-request.json",
+      "set": {
+        "contractVersion": "2.0"
+      },
+      "reason": "Unknown contract version"
+    },
+    {
+      "schema": "EventRequest",
+      "baseExample": "event-request.json",
+      "set": {
+        "occurredAt": "2026-11-13T11:00:00+09:00"
+      },
+      "reason": "UTC Z required"
+    }
+  ]
+}

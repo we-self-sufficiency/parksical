@@ -1,0 +1,10 @@
+{
+  "clientRecordId": "local_demo_1",
+  "lotId": "lot_synthetic_1",
+  "floorId": null,
+  "zoneId": null,
+  "confidence": "LOW",
+  "distanceM": 120.5,
+  "occurredAt": "2026-11-13T11:00:00Z",
+  "structureVersion": null
+}

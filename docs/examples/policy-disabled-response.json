@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "POLICY_NOT_ENABLED",
+    "message": "Synthetic contract example",
+    "requestId": "req_demo_1",
+    "retryable": false,
+    "details": []
+  }
+}

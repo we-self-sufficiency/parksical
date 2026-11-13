@@ -39,6 +39,7 @@ class PleosVehicleSource(private val context: Context) : VehicleSource {
     private val lock = Any()
     private var raw = VehicleState()
     private var started = false
+    @Volatile private var speedReal = false
     private var scope: CoroutineScope? = null
 
     private var car: Car? = null
@@ -83,7 +84,13 @@ class PleosVehicleSource(private val context: Context) : VehicleSource {
         val sc = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         scope = sc
         // Re-emit immediately when the debug override changes.
-        sc.launch { DebugSpeedOverride.kmh.collect { synchronized(lock) { publish() } } }
+        // Debug override also counts as a speed input, otherwise speed missions are skipped on the emulator (no speed property).
+        sc.launch {
+            DebugSpeedOverride.kmh.collect { o ->
+                setCap { it.copy(speed = speedReal || o != null) }
+                synchronized(lock) { publish() }
+            }
+        }
         startPleos()
         try {
             Car.createCar(context, Handler(Looper.getMainLooper()), 5000L) { c, ready ->
@@ -105,7 +112,7 @@ class PleosVehicleSource(private val context: Context) : VehicleSource {
                     Log.i(TAG, "gear initial=$v")
                 }
                 registerProp(pm, VehiclePropertyIds.PERF_VEHICLE_SPEED, CarPropertyManager.SENSOR_RATE_NORMAL) { v ->
-                    setCap { it.copy(speed = true) }; applyProperty(VehiclePropertyIds.PERF_VEHICLE_SPEED, v)
+                    speedReal = true; setCap { it.copy(speed = true) }; applyProperty(VehiclePropertyIds.PERF_VEHICLE_SPEED, v)
                 }
             }
         } catch (t: Throwable) {

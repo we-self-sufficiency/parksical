@@ -190,7 +190,7 @@ private fun ReservationPanel(
         }
     }
 
-    PixelPanel(Modifier.widthIn(max = 1000.dp).fillMaxWidth(0.62f).verticalScroll(rememberScrollState()), border = PixelColors.Paper, borderWidth = 4.dp, shadow = PixelColors.Purple, padding = 32.dp) {
+    PixelPanel(Modifier.widthIn(max = 1280.dp).fillMaxWidth(0.9f).verticalScroll(rememberScrollState()), border = PixelColors.Paper, borderWidth = 4.dp, shadow = PixelColors.Purple, padding = 32.dp) {
         Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Mono("CONFIRM 2/2", 14, PixelColors.Gold)

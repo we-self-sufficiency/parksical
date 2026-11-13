@@ -37,14 +37,14 @@ fun BoxScope.DebugSpeedPanel() {
         Modifier
             .align(Alignment.BottomStart)
             .padding(8.dp)
-            .width(if (open) 320.dp else 160.dp)
+            .width(if (open) 320.dp else 230.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xCC111111))
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.width(if (open) 304.dp else 144.dp)) {
+            modifier = Modifier.width(if (open) 304.dp else 214.dp)) {
             Text("DBG ${"%.1f".format(v.speedKmh)}km/h", color = Color.White, fontSize = 14.sp)
             OutlinedButton(onClick = { open = !open }) { Text(if (open) "접기" else "펼치기", fontSize = 12.sp) }
         }

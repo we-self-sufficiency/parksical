@@ -16,7 +16,7 @@
 | D2 | 내 차 차체 크기 | Vehicle SDK CarInfo | CarInfo는 VIN만 제공 | AAOS `INFO_EXTERIOR_DIMENSIONS`, `INFO_MAKE/MODEL` 사용. 값이 없으면 차급 수동 선택 | ✅ |
 | D3 | 기어 상태 | AAOS `GEAR_SELECTION` | Vehicle SDK `Gear`는 deprecated | AAOS `GEAR_SELECTION`, `PERF_VEHICLE_SPEED` 사용 | ✅ |
 | D4 | 차속 시뮬레이션 | Virtual Console로 시연 | Virtual Console에는 기어·브레이크·조향 카드만 있고 차속 카드 없음 | ~~adb 주입~~ → Pleos 에뮬레이터가 `user` 빌드라 `inject-vhal-event`가 SecurityException으로 거부됨(2026-11-13 확인). **디버그 빌드 전용 차속 오버라이드 슬라이더**로 변경: 기어·조향·브레이크는 Virtual Console 실제 값, 차속만 디버그 슬라이더로 덮어씀. 릴리스 빌드에는 없음 | ✅ |
-| D5 | 지도 | 지도 기반 검색 | 일반 앱용 지도 SDK 없음 | **네이버 지도 SDK** 사용. 목업 주차장을 핀으로 표시하고, 길안내는 NaviHelper `requestRoute`. NCP Client ID는 사용자가 발급해 `local.properties`에 넣음. AAOS·arm64 에뮬레이터 동작은 0단계에서 확인 | ✅ |
+| D5 | 지도 | 지도 기반 검색 | 일반 앱용 지도 SDK 없음 | ~~네이버 지도~~ → **카카오맵 SDK v2 (2.15.2)** 로 변경(2026-11-13 사용자 요청). 목업 주차장을 라벨 핀으로 표시하고, 길안내는 NaviHelper `requestRoute`(Directions API 불필요). 네이티브 앱 키를 `local.properties`의 `KAKAO_NATIVE_APP_KEY`에 넣음. 키가 없으면 지도 자리에 안내 문구 표시. SDK 네이티브 라이브러리는 arm64-v8a·armeabi-v7a만 있음(x86 에뮬레이터 불가) | ✅ |
 | D6 | 앱 이름 | 접수양식: P지컬 / P지컬 MAX | 시안: 고수의 주차장 / 고수 모드 | P지컬 / P지컬 MAX로 통일 | ✅ |
 | D7 | UI 툴킷 | – | 현재 AppCompat만 있음 | Jetpack Compose 도입 (네이버 지도는 `AndroidView`로 감싸서 사용) | ✅ |
 | D8 | 화면 방향 | portrait 1창 + landscape 2창 | 시안은 1280×800 | MVP는 landscape(2창) 고정 | ✅ |
@@ -93,7 +93,7 @@ VehicleState Flow (gear, speedKmh, steeringDeg, brakePressed, uxRestricted)
 ---
 
 ## 5. 사용자 할 일
-- NCP Maps Client ID 발급(패키지 `com.parksical`) 후 프로젝트 `local.properties`에 `NAVER_MAP_CLIENT_ID=...` 추가. 키가 없어도 빌드는 되고 지도만 비어 보이게 구성
+- Kakao Developers에서 앱 생성 → 네이티브 앱 키 발급, 플랫폼 Android에 패키지 `com.parksical`과 키 해시 등록, 카카오맵 사용 설정 ON. 프로젝트 `local.properties`에 `KAKAO_NATIVE_APP_KEY=...` 추가. 키가 없어도 빌드·실행됨(지도 자리에 안내 문구)
 
 ## 6. 미확인 사항
 - 에뮬레이터에서 NaviHelper가 실제로 동작하는지

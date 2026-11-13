@@ -108,7 +108,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
         Row(Modifier.weight(1f)) {
             // map
             Box(Modifier.weight(1f).fillMaxHeight().background(GeneralColors.Map)) {
-                NaverMapPanel(c.parking.destinationLat, c.parking.destinationLng, pins, onOpenLot, Modifier.fillMaxSize())
+                KakaoMapPanel(c.parking.destinationLat, c.parking.destinationLng, pins, onOpenLot, Modifier.fillMaxSize())
                 Row(
                     Modifier.align(Alignment.BottomStart).padding(24.dp).clip(RoundedCornerShape(12.dp))
                         .background(Color(0xEB121418)).border(1.dp, GeneralColors.Border, RoundedCornerShape(12.dp)).padding(16.dp, 12.dp),

@@ -27,10 +27,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Parksical">
 
-        <meta-data
-            android:name="com.naver.maps.map.NCP_KEY_ID"
-            android:value="${naverMapClientId}" />
-
         <activity
             android:name=".MainActivity"
             android:exported="true"

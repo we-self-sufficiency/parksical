@@ -59,7 +59,7 @@ Owns: `domain/engine/Default*.kt`, new files in `domain/engine/`, tests.
 
 ### C — general mode UI + NaviHelper
 Owns: `ui/general/*`, `navi/PleosNaviGateway.kt`, new files in `ui/general/`, `navi/`.
-- Naver Map SDK 3.24.1 (`com.naver.maps.map.MapView` in `AndroidView`, forward lifecycle). Client ID may be empty → map stays blank; the screen must still work (list panel + pins overlay is fine).
+- Kakao Maps SDK v2 2.15.2 (`ui/general/KakaoMapPanel.kt`, `com.kakao.vectormap.MapView`). Key `BuildConfig.KAKAO_NATIVE_APP_KEY` may be empty → placeholder; the screen must still work.
 - Home (mockup 01): header (logo "P지컬", destination field showing `ParkingRepository.destinationName`, mode toggle 일반/P지컬 MAX → `onOpenMaxEntry(null)`), map with star pins (+ 도전장 badge on `challengeOpen` lots → `onOpenMaxEntry(lotId)`), legend, right panel "목적지 주변 N곳" sorted 쉬운 순/가까운 순 (straight-line distance), 제휴 할인 filter, 내 차 기준 난이도 (session.vehicleSize; if null show a size picker chip row).
 - Detail (mockup 02): info, factor bars from `DifficultyCalculator`, 내 차 vs 소형차 stars, tags, 길안내 시작 (set `session.navigatingLotId`, `NaviGateway.requestRoute`), 더 쉬운 주차장 보기, 도전장 card when `challengeOpen`.
 - Parked screen: "B2 · D구역 부근에 주차했어요", confidence ("추정 위치"), QR (generate with a tiny pure-Kotlin QR encoder or draw a placeholder pattern — no new dependency unless ZXing core is truly needed; ask), floor/zone correction pickers, "오늘 주차 어땠나요?" one-tap 쉬움/보통/어려움.

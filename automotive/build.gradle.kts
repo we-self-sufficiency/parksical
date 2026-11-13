@@ -23,8 +23,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        // Empty when not issued yet: build still works, map tiles just don't load.
-        manifestPlaceholders["naverMapClientId"] = localProps.getProperty("NAVER_MAP_CLIENT_ID", "")
+        // Empty when not issued yet: build still works, the map area shows a placeholder.
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProps.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
     }
 
     buildTypes {
@@ -55,7 +55,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.pleos.vehicle)
     implementation(libs.pleos.navihelper)
-    implementation(libs.naver.map)
+    implementation(libs.kakao.map)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

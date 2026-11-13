@@ -35,7 +35,7 @@ fun BoxScope.DebugSpeedPanel() {
     val override by DebugSpeedOverride.kmh.collectAsState()
     Column(
         Modifier
-            .align(Alignment.BottomStart)
+            .align(Alignment.BottomCenter)
             .padding(8.dp)
             .width(if (open) 320.dp else 230.dp)
             .clip(RoundedCornerShape(8.dp))

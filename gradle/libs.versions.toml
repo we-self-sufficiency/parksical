@@ -13,7 +13,7 @@ navigationCompose = "2.8.4"
 coroutines = "1.8.1"
 pleosVehicle = "2.3.2"
 pleosNaviHelper = "3.0.5"
-naverMap = "3.24.1"
+kakaoMap = "2.15.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,7 +34,7 @@ coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 pleos-vehicle = { group = "ai.pleos.playground", name = "Vehicle", version.ref = "pleosVehicle" }
 pleos-navihelper = { group = "ai.pleos.playground", name = "NaviHelper", version.ref = "pleosNaviHelper" }
-naver-map = { group = "com.naver.maps", name = "map-sdk", version.ref = "naverMap" }
+kakao-map = { group = "com.kakao.maps.open", name = "android", version.ref = "kakaoMap" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

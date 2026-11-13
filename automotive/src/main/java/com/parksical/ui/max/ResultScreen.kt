@@ -1,14 +1,131 @@
 package com.parksical.ui.max
 
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.parksical.LocalAppContainer
+import com.parksical.data.MockParkingRepository
+import com.parksical.domain.model.Dungeon
+import com.parksical.domain.model.RunMode
+import com.parksical.domain.model.RunRecord
+import com.parksical.domain.model.RunStatus
+import com.parksical.domain.model.Title
+import com.parksical.ui.common.LocalVehicleState
+import com.parksical.ui.common.parkedOnly
+import com.parksical.ui.theme.PixelColors
 
-/** Phase 0 placeholder. Owner: agent D. Keep this signature; it is called from nav/AppNavHost.kt. */
 @Composable
 fun ResultScreen(onBackToGeneral: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("결과") }
+    val c = LocalAppContainer.current
+    val parked = LocalVehicleState.current.isParked
+    if (!parked) { NeedParkPanel(); return }
+    val records by c.session.records.collectAsState()
+    val status by c.judge.status.collectAsState()
+    val ctx = LocalContext.current
+    val record = records.lastOrNull { it.mode == RunMode.CHALLENGE }
+    ResultContent(
+        record = record,
+        dungeon = record?.let { c.parking.dungeon(it.lotId) },
+        abortReason = (status as? RunStatus.Aborted)?.takeIf { it.partial.startedAtMs == record?.startedAtMs }?.reason,
+        stamps = stampsOf(c.session.baseStamps, records, c.parking::dungeon),
+        onShare = parkedOnly { Toast.makeText(ctx, "기록을 공유했어요 (데모)", Toast.LENGTH_SHORT).show() },
+        onBack = parkedOnly(onBackToGeneral),
+    )
 }
+
+/** Mockup 07. [abortReason] is only known while the judge still holds the Aborted status. */
+@Composable
+internal fun ResultContent(
+    record: RunRecord?,
+    dungeon: Dungeon?,
+    abortReason: String?,
+    stamps: Int,
+    onShare: () -> Unit,
+    onBack: () -> Unit,
+) {
+    if (record == null) {
+        Box(Modifier.fillMaxSize().background(PixelColors.Bg), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                Ko("아직 도전 기록이 없어요", 32, PixelColors.Gold)
+                PixelButton("일반 모드로", onBack, Modifier.width(320.dp))
+            }
+        }
+        return
+    }
+    val cleared = abortReason == null && record.cleared(dungeon)
+    val name = dungeon?.name ?: "던전"
+    val maxStars = (dungeon?.stages?.size ?: record.stageResults.size).coerceAtLeast(1) * 3
+    val next = Title.entries.firstOrNull { it.minStamps > stamps }
+    Row(Modifier.fillMaxSize().background(PixelColors.Bg).padding(56.dp), horizontalArrangement = Arrangement.spacedBy(48.dp)) {
+        Column(Modifier.width(560.dp).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(24.dp)) {
+            Mono(if (cleared) "DUNGEON\nCLEAR!" else "MISSION\nABORTED", 30, if (cleared) PixelColors.Gold else PixelColors.Orange, align = TextAlign.Center)
+            PixelStamp(cleared, Modifier.size(360.dp))
+            Ko(if (cleared) "$name 도장 획득" else "MISSION 중단", 34, align = TextAlign.Center)
+            if (!cleared) Ko(abortReason ?: "모든 스테이지를 완료하지 못했어요", 18, Px.Warm, false, align = TextAlign.Center)
+            Ko(
+                "도장 ${stamps}개째 · " + (next?.let { "다음 칭호 '${it.label}'까지 ${it.minStamps - stamps}개" } ?: "최고 칭호 달성"),
+                18, PixelColors.Lavender, false, align = TextAlign.Center,
+            )
+        }
+        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                StatCard("STARS", "${record.totalStars}/$maxStars", PixelColors.Gold, PixelColors.Gold, Modifier.weight(1f))
+                StatCard("CLEAR TIME", mmss(record.durationMs), PixelColors.Paper, PixelColors.Paper, Modifier.weight(1f))
+                StatCard("RANK", Title.of(stamps).label, PixelColors.Paper, PixelColors.Paper, Modifier.weight(1f))
+            }
+            record.stageResults.forEachIndexed { i, r ->
+                PixelPanel(Modifier.fillMaxWidth(), padding = 18.dp) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                        Mono("STAGE ${i + 1}", 13, PixelColors.Orange, Modifier.width(100.dp))
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Ko(r.mission.title, 24)
+                            Ko(r.summary, 16, PixelColors.Lavender, false)
+                        }
+                        PixelStars(r.stars)
+                    }
+                }
+            }
+            Box(Modifier.weight(1f))
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                PixelButton("기록 공유", onShare, Modifier.weight(1f), filled = true)
+                PixelButton("일반 모드로", onBack, Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatCard(label: String, value: String, border: androidx.compose.ui.graphics.Color, valueColor: androidx.compose.ui.graphics.Color, modifier: Modifier) =
+    PixelPanel(modifier, border = border, borderWidth = 4.dp) {
+        Mono(label, 13, PixelColors.Lavender)
+        Mono(value, 28, valueColor, Modifier.padding(top = 8.dp))
+    }
+
+private val PreviewDungeon = MockParkingRepository().dungeon("daon")!!
+
+@Preview(widthDp = 1682, heightDp = 1210)
+@Composable
+private fun PreviewClear() = ResultContent(SampleData.record(RunMode.CHALLENGE, 3, 1), PreviewDungeon, null, 7, {}, {})
+
+@Preview(widthDp = 1682, heightDp = 1210)
+@Composable
+private fun PreviewAborted() =
+    ResultContent(SampleData.record(RunMode.CHALLENGE, 0, 0, full = false), PreviewDungeon, "저속 상한 초과로 미션이 중단됐어요", 6, {}, {})

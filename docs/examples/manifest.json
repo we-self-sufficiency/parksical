@@ -24,7 +24,12 @@
     "admin-lot-create.json": "AdminLotCreate",
     "admin-lot-response.json": "AdminLot",
     "admin-lot-replace.json": "AdminLotReplace",
-    "admin-lot-updated.json": "AdminLot"
+    "admin-lot-updated.json": "AdminLot",
+    "difficulty-reference.json": "DifficultyResponse",
+    "difficulty-adjusted.json": "DifficultyResponse",
+    "difficulty-unsupported.json": "DifficultyResponse",
+    "difficulty-insufficient.json": "DifficultyResponse",
+    "difficulty-query.json": "DifficultyQuery"
   },
   "cases": [
     {
@@ -150,6 +155,34 @@
       "status": 200,
       "schema": "AdminLot",
       "example": "admin-lot-response.json"
+    },
+    {
+      "name": "difficulty-reference",
+      "operationId": "getLotDifficulty",
+      "status": 200,
+      "schema": "DifficultyResponse",
+      "example": "difficulty-reference.json"
+    },
+    {
+      "name": "difficulty-adjusted",
+      "operationId": "getLotDifficulty",
+      "status": 200,
+      "schema": "DifficultyResponse",
+      "example": "difficulty-adjusted.json"
+    },
+    {
+      "name": "difficulty-unsupported",
+      "operationId": "getLotDifficulty",
+      "status": 200,
+      "schema": "DifficultyResponse",
+      "example": "difficulty-unsupported.json"
+    },
+    {
+      "name": "difficulty-insufficient",
+      "operationId": "getLotDifficulty",
+      "status": 200,
+      "schema": "DifficultyResponse",
+      "example": "difficulty-insufficient.json"
     }
   ],
   "negativeCases": [
@@ -300,6 +333,54 @@
       "setPaths": {
         "snapshot.parkingSpaces.0.widthMm": -1
       }
+    },
+    {
+      "schema": "DifficultyQuery",
+      "baseExample": "difficulty-query.json",
+      "set": {
+        "vehicleLengthMm": 999
+      },
+      "reason": "Vehicle bounds"
+    },
+    {
+      "schema": "DifficultyQuery",
+      "baseExample": "difficulty-query.json",
+      "set": {
+        "vehicleStatus": "UNSUPPORTED"
+      },
+      "reason": "Do not use dimensions declared unsupported"
+    },
+    {
+      "schema": "DifficultyQuery",
+      "baseExample": "difficulty-query.json",
+      "set": {
+        "structureScore": 5
+      },
+      "reason": "Clients cannot override stored difficulty factors"
+    },
+    {
+      "schema": "DifficultyResponse",
+      "baseExample": "difficulty-reference.json",
+      "set": {
+        "score": 0
+      },
+      "reason": "No zero difficulty"
+    },
+    {
+      "schema": "DifficultyResponse",
+      "baseExample": "difficulty-insufficient.json",
+      "set": {
+        "score": 1
+      },
+      "reason": "Insufficient evidence must not fabricate a rating"
+    },
+    {
+      "schema": "DifficultyResponse",
+      "baseExample": "difficulty-reference.json",
+      "set": {
+        "score": 2.3
+      },
+      "reason": "Half-point display step"
     }
   ]
 }

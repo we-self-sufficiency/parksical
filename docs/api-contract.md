@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.4
+# 서버·차량 앱 계약 v0.5
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-07 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.4.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.5.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -32,6 +32,8 @@ S-05의 `/admin/lots`는 ADMIN+WEB 전용 합성 주차장/구조 관리다. POS
 - `/v1`의 호환 변경은 선택 필드 추가가 기본이다. 알 수 없는 요청 필드는 거부하므로 새 필드를 보내기 전 계약 협의가 필요하다. enum/필수 필드 변경은 새 버전 또는 명시적인 전환 기간을 둔다. 클라이언트는 알 수 없는 응답 필드를 무시하며 알 수 없는 상태를 정상/0으로 해석하지 않는다.
 
 ## 단위·시각·품질
+
+S-07은 인증된 WEB/VEHICLE의 `GET /lots/{lotId}/difficulty`를 제공한다. 차체 쌍/미지원 상태·기준 연도·구조/룰 버전을 명시하며 응답의 null/결측 사유·합성 출처를 보존한다. 새 API는 주차 가능/실차 검증이 아니며 공개 검색·상세 #8을 구현한 것으로 표시하지 않는다. 상세는 [difficulty.md](difficulty.md)를 따른다.
 
 | 항목 | 전송 계약 |
 |---|---|

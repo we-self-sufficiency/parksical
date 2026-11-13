@@ -1,0 +1,124 @@
+{
+  "lotId": "66666666-6666-4666-8666-666666666666",
+  "lotVersion": 1,
+  "currentLotVersion": 1,
+  "sourceUpdatedAt": "2026-11-13T12:00:00.000Z",
+  "ruleVersion": "difficulty-v1",
+  "asOfYear": 2026,
+  "status": "INSUFFICIENT_DATA",
+  "score": null,
+  "unroundedScore": null,
+  "baseScore": null,
+  "dataSource": "SYNTHETIC",
+  "coverage": {
+    "availableWeight": 0.15,
+    "minimumWeight": 0.4,
+    "includedFactorCount": 1,
+    "excludedFactors": [
+      "structure",
+      "review",
+      "driving"
+    ]
+  },
+  "vehicle": {
+    "inputStatus": "UNKNOWN",
+    "basis": "REFERENCE_DEFAULT",
+    "dimensionsMm": {
+      "lengthMm": 4800,
+      "widthMm": 1850
+    },
+    "referenceMm": {
+      "lengthMm": 4800,
+      "widthMm": 1850
+    },
+    "rawAdjustment": 0,
+    "appliedAdjustment": 0
+  },
+  "factors": [
+    {
+      "name": "structure",
+      "score": null,
+      "source": "SYNTHETIC",
+      "sampleCount": null,
+      "origin": "AUTHORED",
+      "status": "MISSING_SCORE",
+      "nominalWeight": 0.4,
+      "normalizedWeight": 0,
+      "contribution": null
+    },
+    {
+      "name": "review",
+      "score": null,
+      "source": "SYNTHETIC",
+      "sampleCount": null,
+      "origin": "AGGREGATE",
+      "status": "MISSING_SCORE",
+      "nominalWeight": 0.25,
+      "normalizedWeight": 0,
+      "contribution": null
+    },
+    {
+      "name": "driving",
+      "score": null,
+      "source": "SYNTHETIC",
+      "sampleCount": null,
+      "origin": "AGGREGATE",
+      "status": "MISSING_SCORE",
+      "nominalWeight": 0.2,
+      "normalizedWeight": 0,
+      "contribution": null
+    },
+    {
+      "name": "age",
+      "score": 1.6,
+      "source": "SYNTHETIC",
+      "sampleCount": null,
+      "origin": "DERIVED_BUILT_YEAR",
+      "status": "INCLUDED",
+      "nominalWeight": 0.15,
+      "normalizedWeight": 1,
+      "contribution": 1.6
+    }
+  ],
+  "rule": {
+    "version": "difficulty-v1",
+    "weights": {
+      "structure": 40,
+      "review": 25,
+      "driving": 20,
+      "age": 15
+    },
+    "minimumSamples": {
+      "review": 5,
+      "driving": 20
+    },
+    "minimumCoverageWeight": 40,
+    "referenceVehicle": {
+      "lengthMm": 4800,
+      "widthMm": 1850
+    },
+    "vehicleCorrection": {
+      "lengthPointsPerMetre": 0.8,
+      "widthPointsPerMetre": 1.6,
+      "maximumAbsolutePoints": 1.5
+    },
+    "age": {
+      "pointsPerYear": 0.1,
+      "maximumYears": 40
+    },
+    "score": {
+      "minimum": 1,
+      "maximum": 5,
+      "displayStep": 0.5,
+      "calculationDecimals": 6
+    }
+  },
+  "caveats": [
+    "NOT_A_PARKABILITY_ASSESSMENT",
+    "SYNTHETIC_DATA",
+    "PARTIAL_DATA",
+    "BELOW_MINIMUM_COVERAGE",
+    "STRUCTURE_FACTOR_MISSING",
+    "REFERENCE_VEHICLE_USED"
+  ]
+}

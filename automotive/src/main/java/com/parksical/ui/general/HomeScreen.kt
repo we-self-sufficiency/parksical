@@ -1,5 +1,7 @@
 package com.parksical.ui.general
 
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,6 +57,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
     val (size, picked) = mySize()
     var sort by remember { mutableStateOf(Sort.EASY) }
     var partnerOnly by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     val lots by c.parking.lots.collectAsStateWithLifecycle()
     val status by c.parking.status.collectAsStateWithLifecycle()
@@ -163,6 +166,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     },
                     color = GeneralColors.TextSub, fontSize = 16.sp, modifier = Modifier.padding(top = 24.dp),
                 )
+                if (status is LotsStatus.Error) Pill("다시 시도", false, { scope.launch { c.parking.refresh(dims) } })
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(shown, key = { it.first.id }) { (lot, b) -> LotCard(lot, b, onOpenLot, onOpenMaxEntry, parked) }
                 }

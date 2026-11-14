@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>P지컬 · 주차 위치</title>
+  <link rel="stylesheet" href="/p/style.css">
+  <script defer src="/p/app.js"></script>
+</head>
+<body>
+  <main>
+    <header><span class="brand">P지컬</span><span class="badge">개발 · 합성 데이터</span></header>
+    <h1>내 차를 찾는 길</h1>
+    <p class="intro">공유한 주차 위치를 이 휴대폰에서 확인하세요.</p>
+    <section class="card" aria-live="polite">
+      <p id="status">조회 권한을 확인하고 있습니다.</p>
+      <button id="exchange" hidden>이 휴대폰에서 열기</button>
+      <div id="location" hidden>
+        <p id="lot" class="lot"></p>
+        <h2 id="place"></h2>
+        <p id="estimate" class="estimate"></p>
+        <div id="map"></div>
+        <p id="time" class="muted"></p>
+      </div>
+      <div class="actions">
+        <button id="refresh" hidden>다시 확인</button>
+        <button id="logout" class="secondary" hidden>이 휴대폰에서 닫기</button>
+      </div>
+    </section>
+    <p class="footnote">위치는 추정 정보입니다. 가상 평면도는 실제 빈자리·진입 가능 여부를 나타내지 않습니다.</p>
+  </main>
+</body>
+</html>

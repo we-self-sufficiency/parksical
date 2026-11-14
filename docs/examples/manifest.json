@@ -53,7 +53,15 @@
     "location-deleted.json": "LocationReceipt",
     "location-delete.json": "LocationDelete",
     "location-photo-request.json": "LocationPhotoUpload",
-    "location-photo-receipt.json": "LocationPhotoReceipt"
+    "location-photo-receipt.json": "LocationPhotoReceipt",
+    "qr-issue.json": "QrIssue",
+    "qr-grant.json": "QrGrant",
+    "qr-revoke.json": "QrRevokeReceipt",
+    "qr-empty.json": "QrEmpty",
+    "qr-bootstrap.json": "QrBootstrap",
+    "qr-exchange.json": "QrExchange",
+    "qr-exchange-receipt.json": "QrExchangeReceipt",
+    "qr-phone-location.json": "QrPhoneLocation"
   },
   "cases": [
     {
@@ -334,6 +342,45 @@
       "schema": "LocationPhotoReceipt",
       "example": "location-photo-receipt.json",
       "requestExample": "location-photo-request.json"
+    },
+    {
+      "name": "qr-issue",
+      "operationId": "issueQrGrant",
+      "status": 201,
+      "schema": "QrGrant",
+      "example": "qr-grant.json",
+      "requestExample": "qr-issue.json"
+    },
+    {
+      "name": "qr-revoke",
+      "operationId": "revokeQrGrant",
+      "status": 200,
+      "schema": "QrRevokeReceipt",
+      "example": "qr-revoke.json",
+      "requestExample": "qr-empty.json"
+    },
+    {
+      "name": "qr-bootstrap",
+      "operationId": "bootstrapQrPhone",
+      "status": 200,
+      "schema": "QrBootstrap",
+      "example": "qr-bootstrap.json",
+      "requestExample": "qr-empty.json"
+    },
+    {
+      "name": "qr-exchange",
+      "operationId": "exchangeQrGrant",
+      "status": 200,
+      "schema": "QrExchangeReceipt",
+      "example": "qr-exchange-receipt.json",
+      "requestExample": "qr-exchange.json"
+    },
+    {
+      "name": "qr-phone",
+      "operationId": "getQrPhoneLocation",
+      "status": 200,
+      "schema": "QrPhoneLocation",
+      "example": "qr-phone-location.json"
     }
   ],
   "negativeCases": [
@@ -687,6 +734,46 @@
         "parkingSpaceId": "ground-s01"
       },
       "reason": "space requires resolved parents"
+    },
+    {
+      "baseExample": "qr-issue.json",
+      "schema": "QrIssue",
+      "set": {
+        "expectedVersion": "2"
+      },
+      "reason": "QR expectedVersion must be a body integer"
+    },
+    {
+      "baseExample": "qr-exchange.json",
+      "schema": "QrExchange",
+      "set": {
+        "token": "short"
+      },
+      "reason": "QR token must be256-bit base64url"
+    },
+    {
+      "baseExample": "qr-empty.json",
+      "schema": "QrEmpty",
+      "set": {
+        "url": "https://elsewhere.invalid"
+      },
+      "reason": "Bootstrap/revoke/logout accept no extra body fields"
+    },
+    {
+      "baseExample": "qr-phone-location.json",
+      "schema": "QrPhoneLocation",
+      "set": {
+        "note": "private"
+      },
+      "reason": "Phone projection never contains private notes"
+    },
+    {
+      "baseExample": "qr-phone-location.json",
+      "schema": "QrPhoneLocation",
+      "set": {
+        "estimated": false
+      },
+      "reason": "QR cannot upgrade estimate to verified location"
     }
   ]
 }

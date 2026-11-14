@@ -1,0 +1,18 @@
+:root{color-scheme:light;font-family:system-ui,-apple-system,sans-serif;color:#182c33;background:#f1f5f4}
+*{box-sizing:border-box}body{margin:0}
+main{max-width:640px;margin:auto;padding:32px 22px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
+.brand{font-weight:850;font-size:25px;color:#145a4d}
+.badge{font-size:12px;background:#e0eae5;color:#365c4c;padding:7px 10px;border-radius:20px}
+h1{font-size:32px;letter-spacing:-1.2px;margin-bottom:12px}
+.intro,.muted,.footnote{color:#617278;line-height:1.65}.intro{margin-bottom:30px}
+.card{background:white;border:1px solid #dbe5e1;padding:26px;border-radius:22px;box-shadow:0 10px 35px #183f3010}
+button{background:#146956;color:white;border:0;padding:14px 20px;border-radius:12px;font:inherit;font-weight:650;cursor:pointer}
+button:disabled{opacity:.5}button:focus-visible{outline:3px solid #d88a2c;outline-offset:3px}
+.secondary{background:#e9eeeb;color:#29473d}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.lot{font-weight:650;color:#4e6c60}h2{font-size:28px;line-height:1.4;letter-spacing:-.5px}
+.estimate{color:#8a5a20;line-height:1.6}
+svg{width:100%;height:auto;background:#f8faf9;border-radius:12px;border:1px solid #e3eae5}
+.legend{font-size:12px;color:#617278;line-height:1.6}.muted{font-size:12px}
+.footnote{font-size:12px;padding:4px 8px}[hidden]{display:none!important}
+@media(max-width:400px){main{padding:24px 16px}.card{padding:21px}h1{font-size:28px}header{margin-bottom:36px}}

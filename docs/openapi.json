@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.8.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending."
+    "version": "0.9.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline."
   },
   "servers": [
     {
@@ -1160,7 +1160,7 @@
       },
       "delete": {
         "operationId": "deleteMyParkedLocation",
-        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md. Clears original/selection/note/session reference/history and all photo metadata/bytes atomically; accessEpoch increments. Minimal dedup/cursor tombstone remains for development. Future QR #11 must check deleted/epoch; no QR activation in this issue.",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md. Clears original/selection/note/session reference/history and all photo metadata/bytes atomically; accessEpoch increments. Minimal dedup/cursor tombstone remains for development. S-10 QR reads/exchanges check deleted/epoch and issuer state on every request; derived access becomes410.",
         "security": [
           {
             "bearerAuth": []
@@ -1262,27 +1262,126 @@
     "/parked-locations/{locationId}/qr-tokens": {
       "post": {
         "operationId": "issueQrGrant",
-        "description": "Provisional D-07 token flow; disabled until D-07 and D-06 are configured. Not an implemented endpoint.",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. Own WEB/VEHICLE only. Requires current expectedVersion. 256-bit token disclosed once as fragment URL, only hash stored; no raw secret in idempotency receipt. Same user+key/body returns409 QR_SECRET_ALREADY_ISSUED, changed body409 IDEMPOTENCY_CONFLICT. If response is lost, explicitly use a new key to reissue; reissue atomically revokes old grants and derived access. Original deadline is createdAt+24h. Maximum1000 grants/account in development.",
+        "x-implementation-status": "implemented-development",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
-          "201": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server request correlation ID",
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "pattern": "^[A-Za-z0-9_.-]+$"
-                }
-              },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
-                "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
-            },
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
@@ -1290,33 +1389,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "$ref": "#/components/responses/Error400"
-          },
-          "401": {
-            "$ref": "#/components/responses/Error401"
-          },
-          "403": {
-            "$ref": "#/components/responses/Error403"
-          },
-          "404": {
-            "$ref": "#/components/responses/Error404"
-          },
-          "409": {
-            "$ref": "#/components/responses/Error409"
-          },
-          "422": {
-            "$ref": "#/components/responses/Error422"
-          },
-          "429": {
-            "$ref": "#/components/responses/Error429"
-          },
-          "503": {
-            "$ref": "#/components/responses/Error503"
-          },
-          "413": {
-            "$ref": "#/components/responses/Error413"
           }
         },
         "parameters": [
@@ -1326,9 +1398,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_.-]+$"
+              "format": "uuid"
             }
           },
           {
@@ -1337,13 +1407,20 @@
             "required": true,
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_.-]+$"
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
             }
           }
         ],
-        "x-implementation-status": "design"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QrIssue"
+              }
+            }
+          }
+        }
       }
     },
     "/auth/development/login": {
@@ -3841,6 +3918,1210 @@
           }
         }
       }
+    },
+    "/parked-locations/{locationId}/qr-tokens/{grantId}": {
+      "delete": {
+        "operationId": "revokeQrGrant",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. Own user/location/grant only. Empty JSON body. Resource-scoped idempotent revocation (same receipt after retry, no secret); different routes identify different resources. Parent deletion need not prevent revocation. Derived phone access checks revocation every request.",
+        "x-implementation-status": "implemented-development",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrRevokeReceipt"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QrEmpty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/qr/bootstrap": {
+      "post": {
+        "operationId": "bootstrapQrPhone",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. No account login. Explicit exact Origin, Sec-Fetch-Site same-origin when present; empty JSON. Creates/reuses 10min HttpOnly/SameSite=Strict challenge cookie; returns derived CSRF proof. HTTPS uses __Host- cookies with Secure and Path=/; only loopback HTTP development may omit Secure. No QR consumption. No CORS credential origins.",
+        "x-implementation-status": "implemented-development",
+        "security": [],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrBootstrap"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QrEmpty"
+              }
+            }
+          }
+        },
+        "x-idempotency-policy": "credential-flow"
+      }
+    },
+    "/qr/exchanges": {
+      "post": {
+        "operationId": "exchangeQrGrant",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. Explicit POST only; Origin+challenge cookie+X-CSRF-Token required. Atomic one-time QR-to-phone exchange, unique session per grant. Same token/browser proof/key retry restores same HttpOnly credential and returns Idempotency-Replayed:true without storing raw secrets. Other browser/key after consumption409 QR_ALREADY_EXCHANGED. Same original grant deadline, never extended from exchange. Unknown/expired/revoked/deleted/issuer-unlinked410 QR_UNAVAILABLE. No account access.",
+        "x-implementation-status": "implemented-development",
+        "security": [],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrExchangeReceipt"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QrExchange"
+              }
+            }
+          }
+        },
+        "x-idempotency-policy": "credential-flow"
+      }
+    },
+    "/qr/location": {
+      "get": {
+        "operationId": "getQrPhoneLocation",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. QR-only cookie read. No query accepted. Rechecks issuer session (refresh expiry/logout/revocation/vehicle unlink), grant deadline/epoch/revocation, parent nondeletion and phone deadline/revocation under shared locks. Access-token rotation/15min expiry does not extend or shorten original QR TTL. Returns current owner-corrected labels/estimated confidence and selected-floor schematic only. Excludes account/client/location/vehicle IDs, notes/photos, coordinates/address, history and other floors. Unknown floor gives map:null. Origin/Fetch Metadata checked when present.",
+        "x-implementation-status": "implemented-development",
+        "security": [
+          {
+            "qrPhoneCookie": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrPhoneLocation"
+                }
+              }
+            }
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/qr/logout": {
+      "post": {
+        "operationId": "logoutQrPhone",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. Empty JSON, exact Origin+challenge CSRF required; idempotent204 for missing/already-revoked phone cookie. Revokes phone session and clears cookie; consumed QR cannot reopen it. Does not revoke account credentials.",
+        "x-implementation-status": "implemented-development",
+        "security": [
+          {
+            "qrPhoneCookie": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QrEmpty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/p": {
+      "get": {
+        "operationId": "getQrPhonePage",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. Generic mobile shell only; GET/HEAD/previews never consume QR or set cookies. Fragment is removed by self-hosted script before API calls; explicit button initiates exchange. JS required. /p/{token} is not implemented.",
+        "x-implementation-status": "implemented-development",
+        "security": [],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Static asset",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "servers": [
+          {
+            "url": "https://api.example.invalid"
+          }
+        ]
+      }
+    },
+    "/p/app.js": {
+      "get": {
+        "operationId": "getQrPhoneScript",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. Self-hosted script. In-memory QR secret only; no localStorage, analytics, third-party resource or raw HTML injection. Cookie-backed revisit/refresh/logout and30s visible refresh.",
+        "x-implementation-status": "implemented-development",
+        "security": [],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Static asset",
+            "content": {
+              "application/javascript": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "servers": [
+          {
+            "url": "https://api.example.invalid"
+          }
+        ]
+      }
+    },
+    "/p/style.css": {
+      "get": {
+        "operationId": "getQrPhoneStyle",
+        "description": "Default disabled, synthetic non-production only: DEV_QR_ENABLED+DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and exact QR_PUBLIC_ORIGIN. D-06/D-07 remain pending; no deployment or actual SDK/vehicle validation. No-store, no-referrer, strict CSP, no credential/path/body logging. Self-hosted responsive mobile styles.",
+        "x-implementation-status": "implemented-development",
+        "security": [],
+        "responses": {
+          "400": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Common error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Static asset",
+            "content": {
+              "text/css": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [],
+        "servers": [
+          {
+            "url": "https://api.example.invalid"
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3855,6 +5136,12 @@
         "in": "header",
         "name": "X-Development-Key",
         "description": "Configured development-only shared key; disabled in production."
+      },
+      "qrPhoneCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-parksical-qr",
+        "description": "QR-only HttpOnly/Secure/SameSite=Strict host cookie; loopback HTTP development uses parksical-qr instead. Never accepted as account bearer."
       }
     },
     "schemas": {
@@ -5029,9 +6316,14 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "grantId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "url": {
             "type": "string",
-            "format": "uri"
+            "format": "uri",
+            "pattern": "^https?://[^/]+/p#[A-Za-z0-9_-]{43}$"
           },
           "expiresAt": {
             "type": "string",
@@ -5043,6 +6335,7 @@
           }
         },
         "required": [
+          "grantId",
           "url",
           "expiresAt",
           "policyStatus"
@@ -8770,6 +10063,346 @@
           }
         },
         "required": []
+      },
+      "QrIssue": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "QrRevokeReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "grantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revoked": {
+            "const": true
+          }
+        },
+        "required": [
+          "grantId",
+          "revoked"
+        ]
+      },
+      "QrEmpty": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      },
+      "QrBootstrap": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "csrfToken": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "csrfToken"
+        ]
+      },
+      "QrExchange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "QrExchangeReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "viewPath": {
+            "const": "/api/v1/qr/location"
+          }
+        },
+        "required": [
+          "expiresAt",
+          "viewPath"
+        ]
+      },
+      "QrPhoneMap": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "unit": {
+            "const": "m"
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "polygon": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LotPoint"
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "polygon"
+              ]
+            }
+          },
+          "spaces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "center": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/LotPoint"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "widthMm": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1000,
+                      "maximum": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "lengthMm": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1000,
+                      "maximum": 20000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "headingDegrees": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 359.99
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "selected": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "center",
+                "widthMm",
+                "lengthMm",
+                "headingDegrees",
+                "selected"
+              ]
+            }
+          },
+          "pillars": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "center": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/LotPoint"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "widthMm": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 100,
+                      "maximum": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "depthMm": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 100,
+                      "maximum": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rotationDegrees": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 359.99
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "center",
+                "widthMm",
+                "depthMm",
+                "rotationDegrees"
+              ]
+            }
+          }
+        },
+        "required": [
+          "unit",
+          "zones",
+          "spaces",
+          "pillars"
+        ]
+      },
+      "QrPhoneLocation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "estimated": {
+            "const": true
+          },
+          "confidence": {
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW",
+              "UNKNOWN"
+            ]
+          },
+          "userEdited": {
+            "type": "boolean"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "lotName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "floorLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpaceLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "map": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QrPhoneMap"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "source",
+          "estimated",
+          "confidence",
+          "userEdited",
+          "occurredAt",
+          "expiresAt",
+          "lotName",
+          "floorLabel",
+          "zoneLabel",
+          "parkingSpaceLabel",
+          "map"
+        ]
       }
     },
     "responses": {

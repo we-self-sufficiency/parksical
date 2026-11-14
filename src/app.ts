@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { Module } from '@nestjs/common';
+import { Module,RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { json, urlencoded,type Request,type Response,type NextFunction } from 'express';
 import { APP_CONFIG, type AppConfig } from './config.js';
@@ -18,6 +18,9 @@ import { ObjectValidationPipe } from './validation.js';
 import { LotController } from './lots/lot.controller.js';
 import { LotService } from './lots/lot.service.js';
 import { DifficultyController } from './difficulty/difficulty.controller.js';
+import { QrOwnerController,QrPhoneController } from './qr/qr.controller.js';
+import { QrPageController } from './qr/page.controller.js';
+import { QrService } from './qr/qr.service.js';
 import { LocationController } from './locations/location.controller.js';
 import { LocationService } from './locations/location.service.js';
 import { DatabasePhotoStore,PRIVATE_PHOTO_STORE } from './locations/photos.js';
@@ -33,14 +36,14 @@ class AppModule {}
 export async function createApp(config: AppConfig, sink: LogSink = defaultLogSink) {
   const app = await NestFactory.create({
     module: AppModule,
-    controllers: [HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController, LocationController],
-    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, LocationService, { provide: PRIVATE_PHOTO_STORE, useClass: DatabasePhotoStore }, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
+    controllers: [HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController, LocationController, QrOwnerController, QrPhoneController, QrPageController],
+    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, LocationService, QrService, { provide: PRIVATE_PHOTO_STORE, useClass: DatabasePhotoStore }, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
   }, { logger: false, bodyParser: false, abortOnError: false });
   app.use(requestContext(sink));
   const ordinaryJson=json({limit:'64kb'}),photoJson=json({limit:'3mb'});
   app.use((req:Request,res:Response,next:NextFunction)=>req.method==='POST' && /^\/api\/v1\/parked-locations\/[0-9a-f-]{36}\/photos$/i.test(req.path)?photoJson(req,res,next):ordinaryJson(req,res,next));
   app.use(urlencoded({ extended: false, limit: '64kb' }));
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1',{exclude:['p','p/app.js','p/style.css'].map(path=>({path,method:RequestMethod.GET}))});
   app.useGlobalPipes(new ObjectValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true, validationError: { target: false, value: false } }));
   app.useGlobalFilters(new SafeExceptionFilter());
   // This is the reviewed design contract, not Swagger generated from unimplemented controllers.

@@ -69,7 +69,7 @@ sharp0.35.5를 lockfile에 고정했다. [constructor](https://sharp.pixelplumbi
 
 위치 삭제는 추정/선택/메모·차량 세션 참조/사진/이력을 지우고 version/accessEpoch를 증가시킨다. 최소 사용자/clientRecordId/발생시각/생성 hash/삭제 표시는 개발 dedup과 cursor를 위해 남긴다. hash를 익명화로 취급하지 않고 실데이터 보관/완전 삭제 기한 D-02는 미정이다. GET/이력/사진은404, 같은 clientRecordId 재생성은409 RESOURCE_DELETED다.
 
-QR 발급/휴대폰 조회는 **#11 미구현**이다. 미래 grant는 locationId/accessEpoch에 묶고 미삭제·현재 epoch·소유권/허용 정책을 매번 확인해야 한다. 이번 작업이 기존 QR 토큰을 실제 폐기했다고 보고하지 않는다. 삭제 전 이미 내려받은 bytes를 원격 회수하는 기능도 아니다.
+QR 발급/휴대폰 조회는 [S-10 개발 opt-in](location-qr.md)에서 구현했다. grant는 locationId/accessEpoch에 묶고 미삭제·현재 epoch·소유권과 발급자 인증/설치 상태를 매 교환/조회마다 확인한다. 위치 삭제가 원 토큰과 파생 접근을410으로 차단하며 운영 D-06/D-07은 미정이다. 삭제 전 이미 내려받은 bytes를 원격 회수하는 기능도 아니다.
 
 ## 오류·검증·Wiki
 

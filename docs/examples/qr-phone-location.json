@@ -1,0 +1,259 @@
+{
+  "source": "SYNTHETIC",
+  "estimated": true,
+  "confidence": "LOW",
+  "userEdited": true,
+  "occurredAt": "2026-01-01T12:00:00.000Z",
+  "expiresAt": "2026-11-16T00:00:00.000Z",
+  "lotName": "P지컬 가상 주차장 1",
+  "floorLabel": "1F (가상)",
+  "zoneLabel": "지상 A",
+  "parkingSpaceLabel": "1F-A01",
+  "map": {
+    "unit": "m",
+    "zones": [
+      {
+        "polygon": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 0
+          },
+          {
+            "x": 40,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 30
+          },
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      }
+    ],
+    "spaces": [
+      {
+        "center": {
+          "x": 8.15,
+          "y": 8.6
+        },
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": true
+      },
+      {
+        "center": {
+          "x": 11.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 15.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 18.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 22.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 25.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 29.6,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 32.2,
+          "y": 8.6
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 90,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 8.15,
+          "y": 21.4
+        },
+        "widthMm": 3500,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 11.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 15.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 18.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 22.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 25.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 29.6,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      },
+      {
+        "center": {
+          "x": 32.2,
+          "y": 21.4
+        },
+        "widthMm": 2600,
+        "lengthMm": 5200,
+        "headingDegrees": 270,
+        "selected": false
+      }
+    ],
+    "pillars": [
+      {
+        "center": {
+          "x": 13.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0
+      },
+      {
+        "center": {
+          "x": 20.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0
+      },
+      {
+        "center": {
+          "x": 27.4,
+          "y": 8.6
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0
+      },
+      {
+        "center": {
+          "x": 13.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0
+      },
+      {
+        "center": {
+          "x": 20.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0
+      },
+      {
+        "center": {
+          "x": 27.4,
+          "y": 21.4
+        },
+        "widthMm": 600,
+        "depthMm": 600,
+        "rotationDegrees": 0
+      }
+    ]
+  }
+}

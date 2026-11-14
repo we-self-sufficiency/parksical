@@ -11,6 +11,7 @@ P지컬 차량 앱과 통신하는 서비스 백엔드입니다.
 - 주변 검색·상세: [범위·필터·정렬·페이지·구조 조회](docs/lot-search.md)
 - 리뷰·개발 집계: [합성 방문·중복/수정/삭제·난이도 반영](docs/reviews.md)
 - 개인 주차 위치: [오프라인 동기화·수정 이력·비공개 사진/메모](docs/parked-locations.md)
+- QR·휴대폰 조회: [1회 교환·재조회·만료/폐기·최소 평면도](docs/location-qr.md)
 - 개발 통합 브랜치: `develop`
 - 서버 작업지시서: [develop의 Agent.md](https://github.com/we-self-sufficiency/parksical-server/blob/develop/Agent.md)
 

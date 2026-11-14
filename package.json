@@ -8,7 +8,7 @@
   },
   "scripts": {
     "generate": "prisma generate",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node --check public/qr/app.js",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "lint": "eslint src test prisma.config.ts",
     "start": "node dist/main.js",
@@ -40,9 +40,11 @@
     "@eslint/js": "10.0.1",
     "@nestjs/testing": "12.5.0",
     "@types/express": "5.0.6",
+    "@types/jsdom": "30.0.0",
     "@types/node": "24.19.2",
     "@types/pg": "8.23.1",
     "eslint": "10.14.0",
+    "jsdom": "31.0.1",
     "prisma": "7.10.1",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.2"

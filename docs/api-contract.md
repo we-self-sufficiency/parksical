@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.8
+# 서버·차량 앱 계약 v0.9
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07/S-08/S-09 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07/S-08/S-09/S-10 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.8.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.9.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -55,7 +55,7 @@ Capability는 `SUPPORTED / UNSUPPORTED / PERMISSION_DENIED / ERROR / UNKNOWN`과
 | POST `/vehicle-sessions/{sessionId}/events` | `CAPABILITIES_REPORTED`, `SESSION_CLOSED`만 수신. 위치·미션·결제 변경을 실행하지 않음 |
 | POST `/parked-locations` | 개인 위치 생성의 정본. 사용자+clientRecordId 유일성으로 로컬 기록 동기화 |
 | PATCH `/parked-locations/{locationId}` | expectedVersion 기반 사용자 수정. 추정 원본은 내부 이력에 유지 |
-| DELETE `/parked-locations/{locationId}` | 본인 위치/첨부 차단·내용 삭제·accessEpoch 증가. QR은 #11 후속, 보관/완전 삭제 기한 D-02 미정 |
+| DELETE `/parked-locations/{locationId}` | 본인 위치/첨부 차단·내용 삭제·accessEpoch 증가. QR은 #11의 명시적 개발 opt-in, 보관/완전 삭제 기한 D-02 미정 |
 | POST `/runs` (후속) | 개인 미션 결과 저장의 정본. 이벤트 API에 같은 결과를 중복 제출하지 않음 |
 
 공통 이벤트 API에 범용 payload map이나 원본 배열을 열지 않는다. 미션·주차 위치 DTO를 추가하려면 각각의 정본 자원 계약을 먼저 변경한다. 이벤트 영수증은 저장/적용 결과이며 차량의 안전·위치 정확성·물리적 정차 증명이 아니다.
@@ -109,7 +109,7 @@ S-04의 구체적인 인증 세션 scope, 엄격한 UTC ms/sequence 범위, 종�
 
 ## QR와 후속 API의 미정 경계
 
-QR 발급 경로와 24시간 expiresAt은 초안이다. D-07 전에는 POLICY_NOT_ENABLED다. 권장안은 GET /p/{token}은 교환 확인 페이지만 표시하고, 명시적 POST 교환으로 토큰을 1회 소비하여 제한된 휴대폰 세션을 발급하는 방식이다. 세션 쿠키·CSRF·만료/철회·재조회 경계는 D-07/S-10에서 확정한다. 토큰이 URL에 있으므로 로그·Referrer·캐시·미리보기 처리도 S-10에서 검증한다.
+S-10은 비운영 DEV_QR_ENABLED와 명시 QR_PUBLIC_ORIGIN의 합성 개발 범위로 구현했다. D-06/D-07은 계속PENDING이며 A-13의1회 교환·같은 브라우저 제한 세션·원래24시간 기한을 가역 기본값으로 쓴다. GET/HEAD /p는 비소모, 링크는 /p#TOKEN으로 구체화했다. 소유자 발급은 원문1회 공개 예외(같은 key409), 명시적 재발급으로 이전 권한을 폐기한다. 교환은 같은 challenge/key 재시도에 쿠키를 복구하고 다른 교환409, 만료/발급자 폐기/연결 해제/삭제는410이다. HttpOnly/Secure/SameSite·Origin/CSRF·최소 평면도·호환성/검증은 [location-qr.md](location-qr.md)를 따른다. 기존 미구현 /p/{token} 설계는 새 계약으로 대체하며 운영 활성화를 뜻하지 않는다.
 
 | 영역 | 예약 경로·후속 작업 | 미정 사항 |
 |---|---|---|
@@ -137,4 +137,4 @@ examples는 전부 합성 데이터다. 정상, steeringAngle 미지원, 순서 
 
 ## S-09 구현 범위와 이전 설계 전환
 
-본인 위치 CRUD/current/목록/이력과 비공개 사진 추가/조회/삭제의10개 경로를 개발 opt-in으로 제공한다. S-01의 미구현 위치 DTO를 정수 structureVersion·명시 nullable 주차면/층/구역·SYNTHETIC source로 구체화했다. 생성/변경은 원문 Location 대신 최소 LocationReceipt/LocationPhotoReceipt를 반환하고 별도 GET으로 현재 상태를 조회한다. 원본과 현재 selection·수신 시각·photo metadata를 응답하며 외부 사진 URL은 없다. DELETE는 JSON expectedVersion이 필요하다. 기존에 구현된 인증/이벤트/주차장/난이도/리뷰 요청 계약은 바꾸지 않는다. 실제 SDK/실차·공유 Base URL은 미검증/미정이며 develop 통합 뒤 Wiki에 반영한다.
+본인 위치 CRUD/current/목록/이력과 비공개 사진 추가/조회/삭제의10개 경로를 개발 opt-in으로 제공한다. S-01의 미구현 위치 DTO를 정수 structureVersion·명시 nullable 주차면/층/구역·SYNTHETIC source로 구체화했다. 생성/변경은 원문 Location 대신 최소 LocationReceipt/LocationPhotoReceipt를 반환하고 별도 GET으로 현재 상태를 조회한다. 원본과 현재 selection·수신 시각·photo metadata를 응답하며 외부 사진 URL은 없다. DELETE는 JSON expectedVersion이 필요하다. 기존에 구현된 인증/이벤트/주차장/난이도/리뷰 요청 계약은 바꾸지 않는다. 실제 SDK/실차·공유 Base URL은 미검증/미정이며 각 작업 develop 통합 뒤 Wiki에 반영한다.

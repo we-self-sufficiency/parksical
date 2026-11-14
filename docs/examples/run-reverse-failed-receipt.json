@@ -1,0 +1,19 @@
+{
+  "runId": "3195a87e-443c-4ec0-826b-133695119a3d",
+  "version": 2,
+  "state": "COMPLETED",
+  "source": "SYNTHETIC",
+  "receivedAt": "2026-11-14T18:20:43.925Z",
+  "outcome": "COMPLETED",
+  "reason": "FINISHED",
+  "stars": 0,
+  "consistencyStatus": "CHECKED",
+  "recognitionStatus": "SYNTHETIC_NOT_ELIGIBLE",
+  "physicalVerification": "UNVERIFIED",
+  "operationalBlockers": [
+    "D-02",
+    "D-04"
+  ],
+  "rankingEligible": false,
+  "rewardEligible": false
+}

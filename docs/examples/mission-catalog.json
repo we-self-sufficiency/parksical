@@ -1,0 +1,110 @@
+{
+  "lotId": "b9239e04-5d3d-4551-bdb5-b650399b449e",
+  "structureVersion": 1,
+  "ruleVersion": "missions-v1",
+  "rules": {
+    "version": "missions-v1",
+    "maxSpeedKph": 10,
+    "maxElapsedMs": 7200000,
+    "maxGapMs": 1000,
+    "minContinuousSamples": 2,
+    "clockToleranceMs": 5000,
+    "scoring": {
+      "noStopStars": 3,
+      "oneReverseStars": 3,
+      "smoothMaxStars": 3
+    }
+  },
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "items": [
+    {
+      "missionCode": "NO_STOP_RAMP",
+      "developmentStatus": "SYNTHETIC_ONLY",
+      "disabledReason": null,
+      "stage": {
+        "stageId": "NO_STOP_RAMP:ramp-b1",
+        "missionCode": "NO_STOP_RAMP",
+        "floorId": "ground",
+        "zoneId": "ground-a",
+        "rampId": "ramp-b1",
+        "parkingSpaceId": null,
+        "requiredCapabilities": [
+          "speed",
+          "gear"
+        ],
+        "requiredQuality": [
+          "speed",
+          "gear",
+          "segment",
+          "riskEvents"
+        ]
+      },
+      "physicalSupport": "UNCONFIRMED"
+    },
+    {
+      "missionCode": "ONE_SHOT_REVERSE",
+      "developmentStatus": "SYNTHETIC_ONLY",
+      "disabledReason": null,
+      "stage": {
+        "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+        "missionCode": "ONE_SHOT_REVERSE",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "rampId": null,
+        "parkingSpaceId": "basement1-s03",
+        "requiredCapabilities": [
+          "speed",
+          "gear"
+        ],
+        "requiredQuality": [
+          "speed",
+          "gear",
+          "segment",
+          "riskEvents"
+        ]
+      },
+      "physicalSupport": "UNCONFIRMED"
+    },
+    {
+      "missionCode": "PILLAR_FOREST",
+      "developmentStatus": "DISABLED",
+      "disabledReason": "OBSTACLE_EVIDENCE_UNCONFIRMED",
+      "stage": null,
+      "physicalSupport": "UNCONFIRMED"
+    },
+    {
+      "missionCode": "SMOOTH_STEERING",
+      "developmentStatus": "SYNTHETIC_ONLY",
+      "disabledReason": null,
+      "stage": {
+        "stageId": "SMOOTH_STEERING:basement-a",
+        "missionCode": "SMOOTH_STEERING",
+        "floorId": "basement1",
+        "zoneId": "basement-a",
+        "rampId": null,
+        "parkingSpaceId": null,
+        "requiredCapabilities": [
+          "speed",
+          "gear",
+          "steeringAngle"
+        ],
+        "requiredQuality": [
+          "speed",
+          "gear",
+          "segment",
+          "riskEvents",
+          "steeringAngle"
+        ]
+      },
+      "physicalSupport": "UNCONFIRMED"
+    },
+    {
+      "missionCode": "TIME_ATTACK",
+      "developmentStatus": "DISABLED",
+      "disabledReason": "SPEED_INCENTIVE_EXCLUDED",
+      "stage": null,
+      "physicalSupport": "UNCONFIRMED"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ export interface AppConfig {
   devReviewsEnabled: boolean;
   devLocationsEnabled: boolean;
   devQrEnabled: boolean;
+  devMissionsEnabled: boolean;
   qrPublicOrigin?: string;
   devAuthSecret?: string;
 }
@@ -23,7 +24,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('Invalid DATABASE_URL');
   }
   // No feature needing a user policy is activated by this foundation.
-  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED', 'REAL_REVIEWS_ENABLED', 'REAL_LOCATIONS_ENABLED', 'REAL_QR_ENABLED']) {
+  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED', 'REAL_REVIEWS_ENABLED', 'REAL_LOCATIONS_ENABLED', 'REAL_QR_ENABLED', 'REAL_MISSIONS_ENABLED']) {
     if (env[name] !== undefined && env[name] !== 'false') throw new Error(`Unsupported ${name}`);
   }
   if (env.DEV_AUTH_ENABLED !== undefined && !['true', 'false'].includes(env.DEV_AUTH_ENABLED)) throw new Error('Invalid DEV_AUTH_ENABLED');
@@ -45,7 +46,10 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     qrPublicOrigin=origin.origin;
   }
   if(devQrEnabled && (nodeEnv==='production' || !devAuthEnabled || !devLocationsEnabled || !qrPublicOrigin))throw new Error('Development QR requires synthetic locations, authentication and explicit origin');
-  return { devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
+  if(env.DEV_MISSIONS_ENABLED!==undefined && !['true','false'].includes(env.DEV_MISSIONS_ENABLED))throw new Error('Invalid DEV_MISSIONS_ENABLED');
+  const devMissionsEnabled=env.DEV_MISSIONS_ENABLED==='true';
+  if(devMissionsEnabled && (nodeEnv==='production' || !devAuthEnabled))throw new Error('Synthetic missions require non-production development authentication');
+  return { devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');

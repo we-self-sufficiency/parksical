@@ -61,7 +61,38 @@
     "qr-bootstrap.json": "QrBootstrap",
     "qr-exchange.json": "QrExchange",
     "qr-exchange-receipt.json": "QrExchangeReceipt",
-    "qr-phone-location.json": "QrPhoneLocation"
+    "qr-phone-location.json": "QrPhoneLocation",
+    "mission-catalog.json": "MissionCatalog",
+    "run-create.json": "RunCreate",
+    "run-created.json": "RunCreated",
+    "run-result.json": "RunResultSubmit",
+    "run-receipt.json": "RunReceipt",
+    "run-detail.json": "MissionRun",
+    "run-page.json": "MissionRunPage",
+    "run-reverse-success-request.json": "RunResultSubmit",
+    "run-reverse-success-receipt.json": "RunReceipt",
+    "run-reverse-failed-request.json": "RunResultSubmit",
+    "run-reverse-failed-receipt.json": "RunReceipt",
+    "run-smooth-two-stars-request.json": "RunResultSubmit",
+    "run-smooth-two-stars-receipt.json": "RunReceipt",
+    "run-ramp-success-request.json": "RunResultSubmit",
+    "run-ramp-success-receipt.json": "RunReceipt",
+    "run-speed-abort-request.json": "RunResultSubmit",
+    "run-speed-abort-receipt.json": "RunReceipt",
+    "run-warning-abort-request.json": "RunResultSubmit",
+    "run-warning-abort-receipt.json": "RunReceipt",
+    "run-stale-unverifiable-request.json": "RunResultSubmit",
+    "run-stale-unverifiable-receipt.json": "RunReceipt",
+    "run-restart-unverifiable-request.json": "RunResultSubmit",
+    "run-restart-unverifiable-receipt.json": "RunReceipt",
+    "run-ux-abort-request.json": "RunResultSubmit",
+    "run-ux-abort-receipt.json": "RunReceipt",
+    "run-ux-unknown-request.json": "RunResultSubmit",
+    "run-ux-unknown-receipt.json": "RunReceipt",
+    "run-cancel-abort-request.json": "RunResultSubmit",
+    "run-cancel-abort-receipt.json": "RunReceipt",
+    "run-stationary-not-success-request.json": "RunResultSubmit",
+    "run-stationary-not-success-receipt.json": "RunReceipt"
   },
   "cases": [
     {
@@ -381,6 +412,139 @@
       "status": 200,
       "schema": "QrPhoneLocation",
       "example": "qr-phone-location.json"
+    },
+    {
+      "name": "missions-listMissions",
+      "operationId": "listMissions",
+      "status": 200,
+      "schema": "MissionCatalog",
+      "example": "mission-catalog.json"
+    },
+    {
+      "name": "missions-createMissionRun",
+      "operationId": "createMissionRun",
+      "status": 201,
+      "schema": "RunCreated",
+      "example": "run-created.json",
+      "requestExample": "run-create.json"
+    },
+    {
+      "name": "missions-submitMissionRunResult",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-receipt.json",
+      "requestExample": "run-result.json"
+    },
+    {
+      "name": "missions-getMissionRun",
+      "operationId": "getMissionRun",
+      "status": 200,
+      "schema": "MissionRun",
+      "example": "run-detail.json"
+    },
+    {
+      "name": "missions-listMissionRuns",
+      "operationId": "listMissionRuns",
+      "status": 200,
+      "schema": "MissionRunPage",
+      "example": "run-page.json"
+    },
+    {
+      "name": "mission-reverse-success",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-reverse-success-receipt.json",
+      "requestExample": "run-reverse-success-request.json"
+    },
+    {
+      "name": "mission-reverse-failed",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-reverse-failed-receipt.json",
+      "requestExample": "run-reverse-failed-request.json"
+    },
+    {
+      "name": "mission-smooth-two-stars",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-smooth-two-stars-receipt.json",
+      "requestExample": "run-smooth-two-stars-request.json"
+    },
+    {
+      "name": "mission-ramp-success",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-ramp-success-receipt.json",
+      "requestExample": "run-ramp-success-request.json"
+    },
+    {
+      "name": "mission-speed-abort",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-speed-abort-receipt.json",
+      "requestExample": "run-speed-abort-request.json"
+    },
+    {
+      "name": "mission-warning-abort",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-warning-abort-receipt.json",
+      "requestExample": "run-warning-abort-request.json"
+    },
+    {
+      "name": "mission-stale-unverifiable",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-stale-unverifiable-receipt.json",
+      "requestExample": "run-stale-unverifiable-request.json"
+    },
+    {
+      "name": "mission-restart-unverifiable",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-restart-unverifiable-receipt.json",
+      "requestExample": "run-restart-unverifiable-request.json"
+    },
+    {
+      "name": "mission-ux-abort",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-ux-abort-receipt.json",
+      "requestExample": "run-ux-abort-request.json"
+    },
+    {
+      "name": "mission-ux-unknown",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-ux-unknown-receipt.json",
+      "requestExample": "run-ux-unknown-request.json"
+    },
+    {
+      "name": "mission-cancel-abort",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-cancel-abort-receipt.json",
+      "requestExample": "run-cancel-abort-request.json"
+    },
+    {
+      "name": "mission-stationary-not-success",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-stationary-not-success-receipt.json",
+      "requestExample": "run-stationary-not-success-request.json"
     }
   ],
   "negativeCases": [
@@ -774,6 +938,102 @@
         "estimated": false
       },
       "reason": "QR cannot upgrade estimate to verified location"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "set": {
+        "source": "APP_REPORTED"
+      },
+      "reason": "real-source forbidden"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "set": {
+        "rawSignals": []
+      },
+      "reason": "raw signals forbidden"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "set": {
+        "elapsedMs": "1000"
+      },
+      "reason": "no string body duration"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "set": {
+        "expectedVersion": 2
+      },
+      "reason": "final expected version is1"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "set": {
+        "stars": 10
+      },
+      "reason": "run stars outside0..9"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "set": {
+        "stages": null
+      },
+      "reason": "null stages forbidden"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.metrics.rawSignals": []
+      },
+      "reason": "no nested raw payload"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.quality.0.status": "NORMAL"
+      },
+      "reason": "unknown quality status"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.quality.0.maxGapMs": "0"
+      },
+      "reason": "no string gap"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.parkingConfirmed": "yes"
+      },
+      "reason": "no ambiguous truthy"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.stars": 4
+      },
+      "reason": "stage star bound"
+    },
+    {
+      "baseExample": "run-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.metrics": null
+      },
+      "reason": "metrics required object"
     }
   ]
 }

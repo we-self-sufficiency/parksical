@@ -1,0 +1,62 @@
+{
+  "expectedVersion": 1,
+  "clientResultId": "ux-unknown",
+  "source": "SYNTHETIC",
+  "outcome": "UNVERIFIABLE",
+  "reason": "UX_UNKNOWN",
+  "finishedAt": "2026-11-15T00:00:01.000Z",
+  "elapsedMs": 1000,
+  "stars": 0,
+  "stages": [
+    {
+      "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+      "startOffsetMs": 0,
+      "endOffsetMs": 1000,
+      "outcome": "UNVERIFIABLE",
+      "reason": "UX_UNKNOWN",
+      "stars": 0,
+      "uxState": "UNKNOWN",
+      "segmentEntered": true,
+      "segmentExited": true,
+      "parkingConfirmed": true,
+      "metrics": {
+        "movingDurationMs": 800,
+        "maxSpeedKph": 5,
+        "dangerEventCount": 0,
+        "reverseSegmentCount": 1,
+        "stopCount": null,
+        "abruptSteeringCount": null
+      },
+      "quality": [
+        {
+          "signal": "speed",
+          "status": "AVAILABLE",
+          "validSampleCount": 11,
+          "maxGapMs": 100,
+          "coveredMs": 1000
+        },
+        {
+          "signal": "gear",
+          "status": "AVAILABLE",
+          "validSampleCount": 1,
+          "maxGapMs": 100,
+          "coveredMs": 1000
+        },
+        {
+          "signal": "segment",
+          "status": "AVAILABLE",
+          "validSampleCount": 1,
+          "maxGapMs": 100,
+          "coveredMs": 1000
+        },
+        {
+          "signal": "riskEvents",
+          "status": "AVAILABLE",
+          "validSampleCount": 1,
+          "maxGapMs": 100,
+          "coveredMs": 1000
+        }
+      ]
+    }
+  ]
+}

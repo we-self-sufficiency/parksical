@@ -1,0 +1,19 @@
+{
+  "runId": "b4e0a4cb-da55-47c9-b77e-4e7803053787",
+  "version": 2,
+  "state": "ABORTED",
+  "source": "SYNTHETIC",
+  "receivedAt": "2026-11-14T18:20:44.068Z",
+  "outcome": "ABORTED",
+  "reason": "DANGER_EVENT",
+  "stars": 0,
+  "consistencyStatus": "CHECKED",
+  "recognitionStatus": "SYNTHETIC_NOT_ELIGIBLE",
+  "physicalVerification": "UNVERIFIED",
+  "operationalBlockers": [
+    "D-02",
+    "D-04"
+  ],
+  "rankingEligible": false,
+  "rewardEligible": false
+}

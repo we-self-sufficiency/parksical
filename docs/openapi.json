@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.9.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline."
+    "version": "0.10.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false."
   },
   "servers": [
     {
@@ -5121,6 +5121,412 @@
             "url": "https://api.example.invalid"
           }
         ]
+      }
+    },
+    "/missions": {
+      "get": {
+        "operationId": "listMissions",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_MISSIONS",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED only; no real SDK/physical verification, operational ranking or rewards. No-store. WEB/VEHICLE catalog. Three configured synthetic stages; obstacle/time missions disabled. All physicalSupport UNCONFIRMED. Actual stage availability is checked on create against pinned synthetic vehicle-session capabilities.",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "structureVersion",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "ruleVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,32}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic development result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissionCatalog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs": {
+      "post": {
+        "operationId": "createMissionRun",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_MISSIONS",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED only; no real SDK/physical verification, operational ranking or rewards. No-store. VEHICLE only. Same user/installation/auth session and ACTIVE SYNTHETIC vehicle session required. Pin rule/structure/stages/capabilities. Per-user/installation clientRunId and idempotency key, 1000 attempts/account.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic development result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunCreated"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunCreate"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listMissionRuns",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_MISSIONS",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED only; no real SDK/physical verification, operational ranking or rewards. No-store. WEB own history, VEHICLE own installation. Default limit20. Cursor binds owner/kind/installation/limit, order startedAt DESC/id DESC.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic development result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{runId}": {
+      "get": {
+        "operationId": "getMissionRun",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_MISSIONS",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED only; no real SDK/physical verification, operational ranking or rewards. No-store. WEB own history, VEHICLE own installation. State is ACTIVE without final result, else immutable final outcome. Original rules/stages/structure remain pinned.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic development result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRun"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{runId}/result": {
+      "post": {
+        "operationId": "submitMissionRunResult",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_MISSIONS",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED only; no real SDK/physical verification, operational ranking or rewards. No-store. VEHICLE only, original auth session/installation. App-local terminal result; server checks summary consistency, not raw driving. Single immutable result/run. Same clientResultId/body replays across keys; different terminal result409. UTC/monotonic alignment tolerance5s, finish within72h/past and future5min. See missions.md for rule/quality/state checks.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic development result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunReceipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunResultSubmit"
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -10402,6 +10808,1089 @@
           "zoneLabel",
           "parkingSpaceLabel",
           "map"
+        ]
+      },
+      "MissionRules": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "maxSpeedKph": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "maxElapsedMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 86400000
+          },
+          "maxGapMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 86400000
+          },
+          "minContinuousSamples": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "clockToleranceMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 300000
+          },
+          "scoring": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "noStopStars": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "oneReverseStars": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "smoothMaxStars": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              }
+            },
+            "required": [
+              "noStopStars",
+              "oneReverseStars",
+              "smoothMaxStars"
+            ]
+          }
+        },
+        "required": [
+          "version",
+          "maxSpeedKph",
+          "maxElapsedMs",
+          "maxGapMs",
+          "minContinuousSamples",
+          "clockToleranceMs",
+          "scoring"
+        ]
+      },
+      "MissionStagePlan": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stageId": {
+            "type": "string",
+            "pattern": "^[A-Z_]+:[A-Za-z0-9_-]{1,32}$"
+          },
+          "missionCode": {
+            "type": "string",
+            "enum": [
+              "NO_STOP_RAMP",
+              "ONE_SHOT_REVERSE",
+              "PILLAR_FOREST",
+              "SMOOTH_STEERING",
+              "TIME_ATTACK"
+            ]
+          },
+          "floorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "zoneId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "rampId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpaceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,32}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requiredCapabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "gear",
+                "speed",
+                "steeringAngle",
+                "brake",
+                "safetyWarnings",
+                "carProfile",
+                "navigation"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 7,
+            "uniqueItems": true
+          },
+          "requiredQuality": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "speed",
+                "gear",
+                "steeringAngle",
+                "segment",
+                "riskEvents"
+              ]
+            },
+            "minItems": 4,
+            "maxItems": 5,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "stageId",
+          "missionCode",
+          "floorId",
+          "zoneId",
+          "rampId",
+          "parkingSpaceId",
+          "requiredCapabilities",
+          "requiredQuality"
+        ]
+      },
+      "MissionCatalogItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "missionCode": {
+            "type": "string",
+            "enum": [
+              "NO_STOP_RAMP",
+              "ONE_SHOT_REVERSE",
+              "PILLAR_FOREST",
+              "SMOOTH_STEERING",
+              "TIME_ATTACK"
+            ]
+          },
+          "developmentStatus": {
+            "type": "string",
+            "enum": [
+              "SYNTHETIC_ONLY",
+              "DISABLED"
+            ]
+          },
+          "disabledReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "OBSTACLE_EVIDENCE_UNCONFIRMED",
+                  "SPEED_INCENTIVE_EXCLUDED",
+                  "SEGMENT_NOT_CONFIGURED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MissionStagePlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "physicalSupport": {
+            "const": "UNCONFIRMED"
+          }
+        },
+        "required": [
+          "missionCode",
+          "developmentStatus",
+          "disabledReason",
+          "stage",
+          "physicalSupport"
+        ]
+      },
+      "MissionCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/MissionRules"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissionCatalogItem"
+            },
+            "minItems": 5,
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "lotId",
+          "structureVersion",
+          "ruleVersion",
+          "rules",
+          "source",
+          "operationalAllowed",
+          "items"
+        ]
+      },
+      "RunCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contractVersion": {
+            "const": "1.0"
+          },
+          "clientRunId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+          },
+          "vehicleSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CHALLENGE",
+              "PRACTICE"
+            ]
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "stageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z_]+:[A-Za-z0-9_-]{1,32}$"
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "contractVersion",
+          "clientRunId",
+          "vehicleSessionId",
+          "lotId",
+          "structureVersion",
+          "ruleVersion",
+          "source",
+          "mode",
+          "startedAt",
+          "stageIds"
+        ]
+      },
+      "RunCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "const": 1
+          },
+          "state": {
+            "const": "ACTIVE"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          }
+        },
+        "required": [
+          "runId",
+          "version",
+          "state",
+          "source",
+          "ruleVersion",
+          "structureVersion",
+          "receivedAt"
+        ]
+      },
+      "MissionSignalQuality": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": [
+              "speed",
+              "gear",
+              "steeringAngle",
+              "segment",
+              "riskEvents"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "UNSUPPORTED",
+              "PERMISSION_DENIED",
+              "ERROR",
+              "MISSING",
+              "STALE",
+              "UNKNOWN"
+            ]
+          },
+          "validSampleCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "maxGapMs": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 86400000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coveredMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400000
+          }
+        },
+        "required": [
+          "signal",
+          "status",
+          "validSampleCount",
+          "maxGapMs",
+          "coveredMs"
+        ]
+      },
+      "MissionStageMetrics": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "movingDurationMs": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 86400000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxSpeedKph": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 500,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dangerEventCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reverseSegmentCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stopCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "abruptSteeringCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "movingDurationMs",
+          "maxSpeedKph",
+          "dangerEventCount",
+          "reverseSegmentCount",
+          "stopCount",
+          "abruptSteeringCount"
+        ]
+      },
+      "MissionStageResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stageId": {
+            "type": "string",
+            "pattern": "^[A-Z_]+:[A-Za-z0-9_-]{1,32}$"
+          },
+          "startOffsetMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400000
+          },
+          "endOffsetMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 86400000
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "FAILED",
+              "ABORTED",
+              "UNVERIFIABLE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "FINISHED",
+              "SPEED_LIMIT",
+              "DANGER_EVENT",
+              "UX_RESTRICTED",
+              "UX_UNKNOWN",
+              "SIGNAL_QUALITY",
+              "USER_CANCELLED",
+              "APP_RESTARTED",
+              "TIME_LIMIT"
+            ]
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "uxState": {
+            "type": "string",
+            "enum": [
+              "ALLOWED",
+              "RESTRICTED",
+              "UNKNOWN"
+            ]
+          },
+          "segmentEntered": {
+            "type": "boolean"
+          },
+          "segmentExited": {
+            "type": "boolean"
+          },
+          "parkingConfirmed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/MissionStageMetrics"
+          },
+          "quality": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissionSignalQuality"
+            },
+            "minItems": 4,
+            "maxItems": 5,
+            "allOf": [
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "speed"
+                    }
+                  },
+                  "required": [
+                    "signal"
+                  ]
+                },
+                "minContains": 0,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "gear"
+                    }
+                  },
+                  "required": [
+                    "signal"
+                  ]
+                },
+                "minContains": 0,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "steeringAngle"
+                    }
+                  },
+                  "required": [
+                    "signal"
+                  ]
+                },
+                "minContains": 0,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "segment"
+                    }
+                  },
+                  "required": [
+                    "signal"
+                  ]
+                },
+                "minContains": 0,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "riskEvents"
+                    }
+                  },
+                  "required": [
+                    "signal"
+                  ]
+                },
+                "minContains": 0,
+                "maxContains": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "stageId",
+          "startOffsetMs",
+          "endOffsetMs",
+          "outcome",
+          "reason",
+          "stars",
+          "uxState",
+          "segmentEntered",
+          "segmentExited",
+          "parkingConfirmed",
+          "metrics",
+          "quality"
+        ]
+      },
+      "RunResultSubmit": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "clientResultId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "ABORTED",
+              "UNVERIFIABLE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "FINISHED",
+              "SPEED_LIMIT",
+              "DANGER_EVENT",
+              "UX_RESTRICTED",
+              "UX_UNKNOWN",
+              "SIGNAL_QUALITY",
+              "USER_CANCELLED",
+              "APP_RESTARTED",
+              "TIME_LIMIT"
+            ]
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "elapsedMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400000
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissionStageResult"
+            },
+            "minItems": 0,
+            "maxItems": 3
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "clientResultId",
+          "source",
+          "outcome",
+          "reason",
+          "finishedAt",
+          "elapsedMs",
+          "stars",
+          "stages"
+        ]
+      },
+      "RunAssessment": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "ABORTED",
+              "UNVERIFIABLE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "FINISHED",
+              "SPEED_LIMIT",
+              "DANGER_EVENT",
+              "UX_RESTRICTED",
+              "UX_UNKNOWN",
+              "SIGNAL_QUALITY",
+              "USER_CANCELLED",
+              "APP_RESTARTED",
+              "TIME_LIMIT"
+            ]
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          },
+          "consistencyStatus": {
+            "const": "CHECKED"
+          },
+          "recognitionStatus": {
+            "const": "SYNTHETIC_NOT_ELIGIBLE"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04"
+            ]
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          }
+        },
+        "required": [
+          "outcome",
+          "reason",
+          "stars",
+          "consistencyStatus",
+          "recognitionStatus",
+          "physicalVerification",
+          "operationalBlockers",
+          "rankingEligible",
+          "rewardEligible"
+        ]
+      },
+      "RunReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "const": 2
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "ABORTED",
+              "UNVERIFIABLE"
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "ABORTED",
+              "UNVERIFIABLE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "FINISHED",
+              "SPEED_LIMIT",
+              "DANGER_EVENT",
+              "UX_RESTRICTED",
+              "UX_UNKNOWN",
+              "SIGNAL_QUALITY",
+              "USER_CANCELLED",
+              "APP_RESTARTED",
+              "TIME_LIMIT"
+            ]
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          },
+          "consistencyStatus": {
+            "const": "CHECKED"
+          },
+          "recognitionStatus": {
+            "const": "SYNTHETIC_NOT_ELIGIBLE"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04"
+            ]
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          }
+        },
+        "required": [
+          "runId",
+          "version",
+          "state",
+          "source",
+          "receivedAt",
+          "outcome",
+          "reason",
+          "stars",
+          "consistencyStatus",
+          "recognitionStatus",
+          "physicalVerification",
+          "operationalBlockers",
+          "rankingEligible",
+          "rewardEligible"
+        ]
+      },
+      "RunStoredResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "report": {
+            "$ref": "#/components/schemas/RunResultSubmit"
+          },
+          "assessment": {
+            "$ref": "#/components/schemas/RunAssessment"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          }
+        },
+        "required": [
+          "report",
+          "assessment",
+          "receivedAt"
+        ]
+      },
+      "MissionRun": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clientRunId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+          },
+          "vehicleSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CHALLENGE",
+              "PRACTICE"
+            ]
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/MissionRules"
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissionStagePlan"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/Capabilities"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED",
+              "ABORTED",
+              "UNVERIFIABLE"
+            ]
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunStoredResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "clientRunId",
+          "vehicleSessionId",
+          "source",
+          "mode",
+          "lotId",
+          "structureVersion",
+          "ruleVersion",
+          "rules",
+          "stages",
+          "capabilities",
+          "startedAt",
+          "receivedAt",
+          "version",
+          "state",
+          "result"
+        ]
+      },
+      "MissionRunPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissionRun"
+            },
+            "minItems": 0,
+            "maxItems": 50
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,256}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
         ]
       }
     },

@@ -1,0 +1,818 @@
+{
+  "source": "SYNTHETIC",
+  "ruleVersion": "missions-v1",
+  "startedAt": "2026-11-15T00:00:00.000Z",
+  "stageIds": {
+    "ONE_SHOT_REVERSE": "ONE_SHOT_REVERSE:basement1-s03",
+    "NO_STOP_RAMP": "NO_STOP_RAMP:ramp-b1",
+    "SMOOTH_STEERING": "SMOOTH_STEERING:basement-a"
+  },
+  "scenarios": [
+    {
+      "name": "reverse-success",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "reverse-success",
+        "source": "SYNTHETIC",
+        "outcome": "COMPLETED",
+        "reason": "FINISHED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 3,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "SUCCESS",
+            "reason": "FINISHED",
+            "stars": 3,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "reverse-failed",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "reverse-failed",
+        "source": "SYNTHETIC",
+        "outcome": "COMPLETED",
+        "reason": "FINISHED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "FAILED",
+            "reason": "FINISHED",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 2,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "smooth-two-stars",
+      "missionCode": "SMOOTH_STEERING",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "smooth-two-stars",
+        "source": "SYNTHETIC",
+        "outcome": "COMPLETED",
+        "reason": "FINISHED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 2,
+        "stages": [
+          {
+            "stageId": "SMOOTH_STEERING:basement-a",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "SUCCESS",
+            "reason": "FINISHED",
+            "stars": 2,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": null,
+            "metrics": {
+              "movingDurationMs": 1000,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": null,
+              "stopCount": null,
+              "abruptSteeringCount": 1
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "steeringAngle",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ramp-success",
+      "missionCode": "NO_STOP_RAMP",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "ramp-success",
+        "source": "SYNTHETIC",
+        "outcome": "COMPLETED",
+        "reason": "FINISHED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 3,
+        "stages": [
+          {
+            "stageId": "NO_STOP_RAMP:ramp-b1",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "SUCCESS",
+            "reason": "FINISHED",
+            "stars": 3,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": null,
+            "metrics": {
+              "movingDurationMs": 1000,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": null,
+              "stopCount": 0,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "speed-abort",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "speed-abort",
+        "source": "SYNTHETIC",
+        "outcome": "ABORTED",
+        "reason": "SPEED_LIMIT",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "ABORTED",
+            "reason": "SPEED_LIMIT",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 10.001,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "warning-abort",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "warning-abort",
+        "source": "SYNTHETIC",
+        "outcome": "ABORTED",
+        "reason": "DANGER_EVENT",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "ABORTED",
+            "reason": "DANGER_EVENT",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 1,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "stale-unverifiable",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "stale-unverifiable",
+        "source": "SYNTHETIC",
+        "outcome": "UNVERIFIABLE",
+        "reason": "SIGNAL_QUALITY",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "UNVERIFIABLE",
+            "reason": "SIGNAL_QUALITY",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": null,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "STALE",
+                "validSampleCount": 0,
+                "maxGapMs": null,
+                "coveredMs": 0
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "restart-unverifiable",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "restart-unverifiable",
+        "source": "SYNTHETIC",
+        "outcome": "UNVERIFIABLE",
+        "reason": "APP_RESTARTED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "UNVERIFIABLE",
+            "reason": "APP_RESTARTED",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ux-abort",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "ux-abort",
+        "source": "SYNTHETIC",
+        "outcome": "ABORTED",
+        "reason": "UX_RESTRICTED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "ABORTED",
+            "reason": "UX_RESTRICTED",
+            "stars": 0,
+            "uxState": "RESTRICTED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ux-unknown",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "ux-unknown",
+        "source": "SYNTHETIC",
+        "outcome": "UNVERIFIABLE",
+        "reason": "UX_UNKNOWN",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "UNVERIFIABLE",
+            "reason": "UX_UNKNOWN",
+            "stars": 0,
+            "uxState": "UNKNOWN",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "cancel-abort",
+      "missionCode": "ONE_SHOT_REVERSE",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "cancel-abort",
+        "source": "SYNTHETIC",
+        "outcome": "ABORTED",
+        "reason": "USER_CANCELLED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "ABORTED",
+            "reason": "USER_CANCELLED",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": true,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": 1,
+              "stopCount": null,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "stationary-not-success",
+      "missionCode": "SMOOTH_STEERING",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "stationary-not-success",
+        "source": "SYNTHETIC",
+        "outcome": "UNVERIFIABLE",
+        "reason": "SIGNAL_QUALITY",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "SMOOTH_STEERING:basement-a",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "UNVERIFIABLE",
+            "reason": "SIGNAL_QUALITY",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": true,
+            "parkingConfirmed": null,
+            "metrics": {
+              "movingDurationMs": 0,
+              "maxSpeedKph": 0,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": null,
+              "stopCount": null,
+              "abruptSteeringCount": 0
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "steeringAngle",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

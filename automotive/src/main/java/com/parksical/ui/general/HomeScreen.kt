@@ -71,7 +71,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
         (l.lat - c.parking.destinationLat) * 111_000.0,
         (l.lng - c.parking.destinationLng) * 111_000.0 * cos(Math.toRadians(l.lat)),
     )
-    val shown = rows.filter { !partnerOnly || it.first.prepayDiscountPercent > 0 }
+    val shown = rows.filter { !partnerOnly || it.first.isPartner || it.first.prepayDiscountPercent > 0 }
         .sortedBy { if (sort != Sort.EASY) dist(it.first).toFloat() else if (it.second.insufficient) Float.MAX_VALUE else it.second.forMyCar }
     val pins = remember(rows) {
         rows.map { (l, b) ->
@@ -155,6 +155,10 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     Pill("가까운 순", sort == Sort.NEAR, { sort = Sort.NEAR })
                     Pill("제휴 할인", partnerOnly, { partnerOnly = !partnerOnly })
                 }
+                if (shown.isEmpty()) Text(
+                    if (partnerOnly) "제휴 할인 주차장이 없어요. 필터를 끄면 전체를 볼 수 있어요." else "주변에 주차장이 없어요",
+                    color = GeneralColors.TextSub, fontSize = 16.sp, modifier = Modifier.padding(top = 24.dp),
+                )
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(shown, key = { it.first.id }) { (lot, b) -> LotCard(lot, b, onOpenLot, onOpenMaxEntry, parked) }
                 }

@@ -81,7 +81,7 @@ internal fun MaxEntryContent(
             pair == null -> GeneralPanel {
                 Text26("도전 가능한 주차장이 없어요")
                 Text("서버에서 도전 정보를 아직 제공하지 않아요", color = GeneralColors.TextSub, fontSize = 20.sp)
-                GButton("일반 모드로", onDismiss, primary = false, dim = false)
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { GButton("일반 모드로", onDismiss, primary = false, dim = false) }
             }
             step == 1 -> ModeSwitchPanel(pair.second, parked, onDismiss) { step = 2 }
             else -> ReservationPanel(lots, pair, parked, { lotSel = it }, { step = 1 }, onConfirmed)

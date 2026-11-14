@@ -114,6 +114,7 @@ private fun GButton(text: String, onClick: () -> Unit, primary: Boolean, dim: Bo
         Text(
             text, color = if (primary) GeneralColors.Bg else GeneralColors.Text, fontSize = 20.sp,
             fontWeight = if (primary) FontWeight.Bold else FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 40.dp),
         )
     }
 }

@@ -111,7 +111,7 @@ class ServerParkingRepository(
             }
         } catch (e: Exception) {
             _lots.value = mock.lots.value
-            _status.value = LotsStatus.Fallback(if (e is NoAuth) "서버 인증 안 됨" else fallbackReason(e))
+            _status.value = LotsStatus.Fallback(if (e is NoAuth) auth.lastError?.let(::fallbackReason)?.takeIf { it == "서버 연결 안 됨" } ?: "서버 인증 안 됨" else fallbackReason(e))
         }
     }
 

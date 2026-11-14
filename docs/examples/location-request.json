@@ -1,10 +1,12 @@
 {
-  "clientRecordId": "local_demo_1",
-  "lotId": "lot_synthetic_1",
+  "clientRecordId": "first",
+  "lotId": "66666666-6666-4666-8666-666666666666",
+  "structureVersion": null,
   "floorId": null,
   "zoneId": null,
+  "parkingSpaceId": null,
   "confidence": "LOW",
-  "distanceM": 120.5,
-  "occurredAt": "2026-11-13T11:00:00Z",
-  "structureVersion": null
+  "distanceM": null,
+  "occurredAt": "2026-01-01T12:00:00Z",
+  "source": "SYNTHETIC"
 }

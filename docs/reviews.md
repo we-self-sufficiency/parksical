@@ -18,7 +18,7 @@ npm run seed:review-visit
 
 DEV_AUTH_SECRET/DATABASE_URL은 기존 개발 환경에서 비밀값으로 주입한다. CLI는 DEV identity·현재 active SYNTHETIC 구조 버전을 확인하고 visitId/lotId/lotVersion/source만 출력한다. 기본 주차장은 기존66666666-6666-4666-8666-666666666666·버전1이며 SYNTHETIC_REVIEW_LOT_ID/SYNTHETIC_REVIEW_LOT_VERSION으로 명시 변경할 수 있다. 반복 실행은 같은 사용자/주차장/버전의 기존 방문을 유지하고 리뷰/집계를 생성하지 않는다. startup/migration에서 자동 실행하지 않는다. 지속 주차장 시드는 여전히 한 곳·32면이다.
 
-#10 실제 개인 주차 위치가 미구현이므로 현재 방문은 합성 fixture 전용이다. 후속 실제 기록 어댑터는 소유권·주차장/구조 버전·동의·수집 정책 확정 뒤 연결한다. 임의 visitId/lotId/source/P단 신고로 실제 방문을 인정하지 않는다. P단/화면 안전 제한은 차량 앱 책임이며 서버가 정차를 보장하지 않는다.
+#10의 [개인 위치 동기화](parked-locations.md)도 개발용 합성 자료만 받으며 리뷰 방문을 자동 생성하지 않는다. 현재 리뷰 방문은 합성 fixture 전용이다. 후속 실제 기록 어댑터는 소유권·주차장/구조 버전·동의·수집 정책 확정 뒤 연결한다. 임의 visitId/lotId/source/P단 신고로 실제 방문을 인정하지 않는다. P단/화면 안전 제한은 차량 앱 책임이며 서버가 정차를 보장하지 않는다.
 
 ## API·소유권
 

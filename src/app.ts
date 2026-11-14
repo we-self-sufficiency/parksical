@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { json, urlencoded } from 'express';
+import { json, urlencoded,type Request,type Response,type NextFunction } from 'express';
 import { APP_CONFIG, type AppConfig } from './config.js';
 import { DatabaseService } from './database.service.js';
 import { HealthController } from './health.controller.js';
@@ -18,6 +18,9 @@ import { ObjectValidationPipe } from './validation.js';
 import { LotController } from './lots/lot.controller.js';
 import { LotService } from './lots/lot.service.js';
 import { DifficultyController } from './difficulty/difficulty.controller.js';
+import { LocationController } from './locations/location.controller.js';
+import { LocationService } from './locations/location.service.js';
+import { DatabasePhotoStore,PRIVATE_PHOTO_STORE } from './locations/photos.js';
 import { ReviewController } from './reviews/review.controller.js';
 import { ReviewService } from './reviews/review.service.js';
 import { CatalogController } from './lots/catalog.controller.js';
@@ -30,11 +33,12 @@ class AppModule {}
 export async function createApp(config: AppConfig, sink: LogSink = defaultLogSink) {
   const app = await NestFactory.create({
     module: AppModule,
-    controllers: [HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController],
-    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
+    controllers: [HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController, LocationController],
+    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, LocationService, { provide: PRIVATE_PHOTO_STORE, useClass: DatabasePhotoStore }, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
   }, { logger: false, bodyParser: false, abortOnError: false });
   app.use(requestContext(sink));
-  app.use(json({ limit: '64kb' }));
+  const ordinaryJson=json({limit:'64kb'}),photoJson=json({limit:'3mb'});
+  app.use((req:Request,res:Response,next:NextFunction)=>req.method==='POST' && /^\/api\/v1\/parked-locations\/[0-9a-f-]{36}\/photos$/i.test(req.path)?photoJson(req,res,next):ordinaryJson(req,res,next));
   app.use(urlencoded({ extended: false, limit: '64kb' }));
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ObjectValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true, validationError: { target: false, value: false } }));

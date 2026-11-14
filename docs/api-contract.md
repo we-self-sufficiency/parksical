@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.7
+# 서버·차량 앱 계약 v0.8
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07/S-08 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07/S-08/S-09 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.7.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.8.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -55,12 +55,14 @@ Capability는 `SUPPORTED / UNSUPPORTED / PERMISSION_DENIED / ERROR / UNKNOWN`과
 | POST `/vehicle-sessions/{sessionId}/events` | `CAPABILITIES_REPORTED`, `SESSION_CLOSED`만 수신. 위치·미션·결제 변경을 실행하지 않음 |
 | POST `/parked-locations` | 개인 위치 생성의 정본. 사용자+clientRecordId 유일성으로 로컬 기록 동기화 |
 | PATCH `/parked-locations/{locationId}` | expectedVersion 기반 사용자 수정. 추정 원본은 내부 이력에 유지 |
-| DELETE `/parked-locations/{locationId}` | 본인 위치 접근·QR·첨부 무효화. 세부 보관/삭제 기한은 D-02에서 결정 |
+| DELETE `/parked-locations/{locationId}` | 본인 위치/첨부 차단·내용 삭제·accessEpoch 증가. QR은 #11 후속, 보관/완전 삭제 기한 D-02 미정 |
 | POST `/runs` (후속) | 개인 미션 결과 저장의 정본. 이벤트 API에 같은 결과를 중복 제출하지 않음 |
 
 공통 이벤트 API에 범용 payload map이나 원본 배열을 열지 않는다. 미션·주차 위치 DTO를 추가하려면 각각의 정본 자원 계약을 먼저 변경한다. 이벤트 영수증은 저장/적용 결과이며 차량의 안전·위치 정확성·물리적 정차 증명이 아니다.
 
 ## 중복·동시성·오프라인
+
+S-09 위치의 계정별 키/최소 영수증/삭제 후 재생은 [parked-locations.md](parked-locations.md)의 A-12를 우선 적용한다. 아래 이벤트 scope를 위치에 적용하지 않는다.
 
 S-04의 구체적인 인증 세션 scope, 엄격한 UTC ms/sequence 범위, 종료·정규화·이벤트 순서는 [vehicle-ingestion.md](vehicle-ingestion.md)의 A-07을 적용한다. 인증 폐기 입력은 현재 S-03 guard의 401이며, 유효한 새 인증으로 이전 전송 세션을 지정하는 경우는 404다.
 
@@ -83,8 +85,8 @@ S-04의 구체적인 인증 세션 scope, 엄격한 UTC ms/sequence 범위, 종�
 - S-06 검색은 latitude/longitude 기준점과 반경(기본3000m, 1~20000m) 또는 south/north/west/east 지도 범위(대각40km·축1도 상한)를 받는다. 상세는 [lot-search.md](lot-search.md)의 인증·query/구조·미확인 상태를 따른다. 거리 기준은 주차장에 저장한 대표 좌표 사이의 Haversine 구면 직선거리(m)이며 도로/보행 거리나 실제 입구 확인을 뜻하지 않는다.
 - sort=DISTANCE(기본)는 distanceM→UUID, EASIEST는 같은 차량·연도·룰의 unroundedScore(null 뒤)→distanceM→UUID다. vehicleLengthMm/vehicleWidthMm 쌍·지원 상태는 S-07과 같으며 부정/불완전 입력은400이다.
 - 검색 후보 최대1000곳, 페이지 기본20/최대50이다. 다른 질의나 무효 cursor는400 INVALID_SEARCH_CURSOR, 후보·현재 버전이 달라지면409 SEARCH_CHANGED 후 cursor 없이 재검색한다. 마지막 nextCursor는 null이다. 과거 A-03의 미구현 설계 query/한도는 A-10으로 대체했다.
-- 개인 위치 목록은 본인 자료를 (occurredAt DESC,id DESC)로 조회한다. 커서에는 민감 원문을 넣지 않는다. 같은 스냅샷에서 중복 페이지를 만들지 않는다.
-- 구조 버전이 없으면 floorId/zoneId는 null이어야 한다. 알려진 층·구역은 해당 lot/structureVersion에 속하는지 검사하고, zone만 지정하고 floor가 없는 입력은 거부한다. 구조 버전이 폐기/불명확하면 임의 다른 구조에 매핑하지 않는다.
+- 개인 위치 목록은 본인 자료를 (occurredAt DESC,id DESC)로 조회한다. 커서에는 민감 원문을 넣지 않는다. 기본20/상한50의 keyset 조회이며 사용자/limit에 cursor를 묶는다. 변경 없는 순회에서 중복하지 않으며 장시간 snapshot을 보관하지 않는다. 신규/삭제에 따른 페이지 변화는 [개인 위치 가이드](parked-locations.md)를 따른다.
+- 구조 버전이 없으면 floorId/zoneId/parkingSpaceId는 null이어야 한다. 알려진 층·구역은 해당 lot/structureVersion에 속하는지 검사하고, zone만 지정하고 floor가 없는 입력은 거부한다. 구조 버전이 폐기/불명확하면 임의 다른 구조에 매핑하지 않는다.
 - 난이도 score 1~5의 0.5 단위 표시와 요소·결측/표본 정책은 S-07에서 구현했다. 입력 미확인 시 vehicle.basis=REFERENCE_DEFAULT와 상태/결측 근거를 반환하며 합성 출처를 유지한다.
 
 ## 오류·재시도·크기
@@ -123,7 +125,7 @@ QR 발급 경로와 24시간 expiresAt은 초안이다. D-07 전에는 POLICY_NO
 
 ## 사례 검증
 
-examples는 전부 합성 데이터다. 정상, steeringAngle 미지원, 순서 역전, 동일 성공 재생, 같은 키 다른 body, 오래된 이벤트, 비활성 정책, 알 수 없는 버전의 기대 응답을 manifest에 연결한다. 이는 스키마 검증 자료이며 실제 수신·권한·원자성 테스트는 S-03/S-04/S-09에서 구현한다.
+examples는 전부 합성 데이터다. 정상, steeringAngle 미지원, 순서 역전, 동일 성공 재생, 같은 키 다른 body, 오래된 이벤트, 비활성 정책, 알 수 없는 버전의 기대 응답을 manifest에 연결한다. 이는 스키마 검증 자료이며 실제 수신·권한·원자성 테스트는 S-03/S-04/S-09의 실제 PostgreSQL 통합 테스트로 구분한다.
 
 검증은 JSON 파싱, JSON Schema 2020-12 정의 검사, 내부 $ref 해석, 요청/응답 예제 검증, 음성 입력 거절, 경로 변수·operationId·오류/보안·사례 응답 일치를 포함한다. 검증 스크립트는 [check_contract.py](../scripts/check_contract.py)이며 `python -m pip install -r scripts/contract-validation-requirements.txt` 후 `python scripts/check_contract.py`로 실행한다. 이 Python 도구는 문서 검증용이며 서버 런타임은 TypeScript/NestJS다. NestJS lint/build/runtime 검증은 S-02 이후 적용한다.
 
@@ -132,3 +134,7 @@ examples는 전부 합성 데이터다. 정상, steeringAngle 미지원, 순서 
 ## S-08 합성 리뷰 경계
 
 [reviews.md](reviews.md)는 DEV_REVIEWS_ENABLED 기본false·production 차단과 개발용 합성 방문 전용 리뷰/집계 계약이다. 실제 수집/익명화 D-02 승인이 아니다. POST/PUT/DELETE의 인증 세션+Idempotency-Key와 expectedVersion, 본인 소유 방문/주차장 구조 검증, 삭제 tombstone·원자 집계/재집계와 작은 표본 평균 비공개를 적용한다. 세 난이도 응답에 reviewAggregation을 추가하고 집계 버전 변경은 검색 cursor409재검색이다. difficulty-v1·차량 contractVersion1.0과 기존 요청은 유지한다.
+
+## S-09 구현 범위와 이전 설계 전환
+
+본인 위치 CRUD/current/목록/이력과 비공개 사진 추가/조회/삭제의10개 경로를 개발 opt-in으로 제공한다. S-01의 미구현 위치 DTO를 정수 structureVersion·명시 nullable 주차면/층/구역·SYNTHETIC source로 구체화했다. 생성/변경은 원문 Location 대신 최소 LocationReceipt/LocationPhotoReceipt를 반환하고 별도 GET으로 현재 상태를 조회한다. 원본과 현재 selection·수신 시각·photo metadata를 응답하며 외부 사진 URL은 없다. DELETE는 JSON expectedVersion이 필요하다. 기존에 구현된 인증/이벤트/주차장/난이도/리뷰 요청 계약은 바꾸지 않는다. 실제 SDK/실차·공유 Base URL은 미검증/미정이며 develop 통합 뒤 Wiki에 반영한다.

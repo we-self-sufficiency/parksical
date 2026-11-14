@@ -37,6 +37,8 @@ model User {
   role          UserRole @default(USER)
   rankingPublic Boolean @default(false)
   createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  parkedLocations ParkedLocation[]
+  locationMutations LocationMutation[]
   reviewVisits  ReviewVisit[]
   identities    AuthIdentity[]
   sessions      AuthSession[]
@@ -159,6 +161,7 @@ model VehicleSession {
   createdAt             DateTime @default(now()) @db.Timestamptz(3)
   closedAt              DateTime? @db.Timestamptz(3)
   events                VehicleEvent[]
+  parkedLocations       ParkedLocation[]
   @@unique([authSessionId, creationKey])
   @@index([userId, installationId])
 }
@@ -186,6 +189,7 @@ model ParkingLot {
   currentVersion Int
   createdAt      DateTime @default(now()) @db.Timestamptz(3)
   revisions      LotRevision[]
+  parkedLocations ParkedLocation[]
 }
 
 model LotRevision {
@@ -207,6 +211,7 @@ model LotRevision {
   challengeAllowed Boolean @default(false)
   snapshot        Json @db.JsonB
   createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  parkedLocations ParkedLocation[]
   reviewVisits    ReviewVisit[]
   reviewAggregate ReviewAggregate?
   floors          LotFloor[]
@@ -364,4 +369,82 @@ model ReviewMutation {
   requestHash   String @db.Char(64)
   response      Json @db.JsonB
   @@id([authSessionId, key])
+}
+
+model ParkedLocation {
+  id                  String @id @default(uuid()) @db.Uuid
+  userId              String @db.Uuid
+  user                User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  clientRecordId      String @db.VarChar(64)
+  creationHash        String @db.Char(64)
+  lotId               String @db.Uuid
+  lot                 ParkingLot @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  structureVersion    Int?
+  revision            LotRevision? @relation(fields: [lotId, structureVersion], references: [lotId, version], onDelete: Restrict)
+  floorId             String? @db.VarChar(32)
+  zoneId              String? @db.VarChar(32)
+  parkingSpaceId      String? @db.VarChar(32)
+  vehicleSessionId    String? @db.Uuid
+  vehicleSession      VehicleSession? @relation(fields: [vehicleSessionId], references: [id], onDelete: Restrict)
+  source              String @default("SYNTHETIC") @db.VarChar(16)
+  original            Json @db.JsonB
+  selection           Json @db.JsonB
+  confidence          String @db.VarChar(8)
+  distanceM           Float?
+  note                String? @db.VarChar(1000)
+  occurredAt          DateTime @db.Timestamptz(3)
+  receivedAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+  userEdited          Boolean @default(false)
+  version             Int @default(1)
+  accessEpoch         Int @default(1)
+  deletedAt           DateTime? @db.Timestamptz(3)
+  changes             LocationChange[]
+  photos              LocationPhoto[]
+  mutations           LocationMutation[]
+  @@unique([userId, clientRecordId])
+  @@index([userId, deletedAt, occurredAt, id])
+}
+
+model LocationChange {
+  locationId String @db.Uuid
+  location   ParkedLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  version    Int
+  kind       String @db.VarChar(16)
+  before     Json? @db.JsonB
+  after      Json @db.JsonB
+  actorKind  SessionKind
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  @@id([locationId, version])
+}
+
+model LocationPhoto {
+  id         String @id @default(uuid()) @db.Uuid
+  locationId String @db.Uuid
+  location   ParkedLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  mimeType   String @default("image/jpeg") @db.VarChar(32)
+  byteSize   Int
+  width      Int
+  height     Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  deletedAt  DateTime? @db.Timestamptz(3)
+  blob       PrivatePhotoBlob?
+  @@index([locationId, deletedAt])
+}
+
+model PrivatePhotoBlob {
+  photoId String @id @db.Uuid
+  photo   LocationPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  bytes   Bytes @db.ByteA
+}
+
+model LocationMutation {
+  userId      String @db.Uuid
+  user        User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  key         String @db.VarChar(64)
+  locationId  String @db.Uuid
+  location    ParkedLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  requestHash String @db.Char(64)
+  response    Json @db.JsonB
+  @@id([userId, key])
 }

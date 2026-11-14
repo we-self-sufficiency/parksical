@@ -45,7 +45,15 @@
     "review-difficulty.json": "DifficultyResponse",
     "review-rebuild.json": "ReviewRebuild",
     "review-rebuilt.json": "ReviewRebuildReceipt",
-    "review-updated.json": "ReviewReceipt"
+    "review-updated.json": "ReviewReceipt",
+    "location-receipt.json": "LocationReceipt",
+    "location-page.json": "LocationPage",
+    "location-current.json": "CurrentLocation",
+    "location-history.json": "LocationHistory",
+    "location-deleted.json": "LocationReceipt",
+    "location-delete.json": "LocationDelete",
+    "location-photo-request.json": "LocationPhotoUpload",
+    "location-photo-receipt.json": "LocationPhotoReceipt"
   },
   "cases": [
     {
@@ -266,6 +274,66 @@
       "schema": "ReviewRebuildReceipt",
       "example": "review-rebuilt.json",
       "requestExample": "review-rebuild.json"
+    },
+    {
+      "name": "createParkedLocation synthetic private development",
+      "operationId": "createParkedLocation",
+      "status": 201,
+      "schema": "LocationReceipt",
+      "example": "location-receipt.json",
+      "requestExample": "location-request.json"
+    },
+    {
+      "name": "listMyParkedLocations synthetic private development",
+      "operationId": "listMyParkedLocations",
+      "status": 200,
+      "schema": "LocationPage",
+      "example": "location-page.json"
+    },
+    {
+      "name": "getCurrentParkedLocation synthetic private development",
+      "operationId": "getCurrentParkedLocation",
+      "status": 200,
+      "schema": "CurrentLocation",
+      "example": "location-current.json"
+    },
+    {
+      "name": "getMyParkedLocation synthetic private development",
+      "operationId": "getMyParkedLocation",
+      "status": 200,
+      "schema": "Location",
+      "example": "location-response.json"
+    },
+    {
+      "name": "patchMyParkedLocation synthetic private development",
+      "operationId": "patchMyParkedLocation",
+      "status": 200,
+      "schema": "LocationReceipt",
+      "example": "location-receipt.json",
+      "requestExample": "location-patch.json"
+    },
+    {
+      "name": "deleteMyParkedLocation synthetic private development",
+      "operationId": "deleteMyParkedLocation",
+      "status": 200,
+      "schema": "LocationReceipt",
+      "example": "location-deleted.json",
+      "requestExample": "location-delete.json"
+    },
+    {
+      "name": "getParkedLocationHistory synthetic private development",
+      "operationId": "getParkedLocationHistory",
+      "status": 200,
+      "schema": "LocationHistory",
+      "example": "location-history.json"
+    },
+    {
+      "name": "addParkedLocationPhoto synthetic private development",
+      "operationId": "addParkedLocationPhoto",
+      "status": 201,
+      "schema": "LocationPhotoReceipt",
+      "example": "location-photo-receipt.json",
+      "requestExample": "location-photo-request.json"
     }
   ],
   "negativeCases": [
@@ -570,6 +638,55 @@
         "expectedVersion": 0
       },
       "reason": "positive optimistic version"
+    },
+    {
+      "schema": "LocationCreate",
+      "baseExample": "location-request.json",
+      "set": {
+        "structureVersion": null,
+        "floorId": "ground"
+      },
+      "reason": "unresolved parent reference"
+    },
+    {
+      "schema": "LocationCreate",
+      "baseExample": "location-request.json",
+      "set": {
+        "confidence": "EXACT"
+      },
+      "reason": "confidence enum"
+    },
+    {
+      "schema": "LocationCreate",
+      "baseExample": "location-request.json",
+      "set": {
+        "source": "APP_REPORTED"
+      },
+      "reason": "synthetic boundary"
+    },
+    {
+      "schema": "LocationCreate",
+      "baseExample": "location-request.json",
+      "set": {
+        "userId": "99999999-9999-4999-8999-999999999999"
+      },
+      "reason": "no owner body"
+    },
+    {
+      "schema": "LocationCreate",
+      "baseExample": "location-request.json",
+      "set": {
+        "distanceM": -1
+      },
+      "reason": "nonnegative distance"
+    },
+    {
+      "schema": "LocationCreate",
+      "baseExample": "location-request.json",
+      "set": {
+        "parkingSpaceId": "ground-s01"
+      },
+      "reason": "space requires resolved parents"
     }
   ]
 }

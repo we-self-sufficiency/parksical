@@ -143,12 +143,14 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("목적지 주변 ${shown.size}곳", color = GeneralColors.Text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         val st = status
-                        val (txt, col) = when (st) {
+                        val pill = when (st) {
                             LotsStatus.Loading -> "불러오는 중…" to GeneralColors.Muted
-                            LotsStatus.Server -> "서버 데이터" to GeneralColors.Link
+                            LotsStatus.Server -> null
                             is LotsStatus.Error -> st.reason to GeneralColors.Accent
                         }
-                        Text(txt, color = col, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFF22262D)).padding(10.dp, 3.dp))
+                        pill?.let { (txt, col) ->
+                            Text(txt, color = col, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFF22262D)).padding(10.dp, 3.dp))
+                        }
                     }
                     Text(if (picked) "내 차(${size.label}) 기준" else "차급 선택 필요", color = if (picked) GeneralColors.TextSub else GeneralColors.Accent, fontSize = 16.sp)
                 }

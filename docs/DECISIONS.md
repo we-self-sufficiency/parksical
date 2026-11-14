@@ -104,3 +104,11 @@ A-13 가역 개발안 qr-phone-v1: DEV_QR_ENABLED 기본false·production 차단
 발급은256bit 원문1회 공개·DB hash만 저장하는 예외다. 사용자+key/body 동일 재시도409 QR_SECRET_ALREADY_ISSUED, 다른 body409 IDEMPOTENCY_CONFLICT이며 응답 유실은 새 키 재발급으로 이전 권한을 폐기한다. phone 교환은 Origin+CSRF/challenge+key에 바인딩하고 HMAC 파생 자격을 응답 유실 재시도에 재현한다. DB는 토큰/브라우저 자격 원문 없이 hash/binding만 보관하고 grant당1session을 원자 커밋한다.
 
 휴대폰은 원래 신뢰도·현재 수정 label·선택 층의 합성 평면도만 보며 계정/위치ID·메모/사진·좌표·다른 층을 받지 않는다. 발급자 로그아웃/설치 해제·refresh 만료/폐기·토큰 폐기/재발급·위치 삭제/epoch·파생세션 폐기와 기한을 매 조회에 재검사한다. access-token 정상 회전/15분 만료는 별도이며24시간을 연장하지 않는다. HTTPS의 __Host-/Secure/HttpOnly/Strict 쿠키·exact Origin/CSRF·no-store/CSP/referrer 방어와 개발 HTTP loopback 예외를 구분한다. D-06 운영 도메인/배포·D-02 실제 수집/보관·D-07 최종 정책은 계속 미정이다. 상세는 [location-qr.md](location-qr.md)를 따른다.
+
+## S-11 MAX 조사 제안 (2026-11-15 KST)
+
+A-14 가역 제안: [MAX 적용 가능성](max-feasibility.md)의 미션별 지원·구간/종료·신호 품질·중단 조건을 후속 합성 구현의 검토 기준으로 둔다. 실제 차속 절댓값 >10km/h 유효 관측과 첫 유효 위험 이벤트에서 판정 중단, 1초·2회/3초는 사후 분석 후보로 분리한다. P단만으로 완료하지 않고 구간/정지/품질 근거를 요구하며 결측/오래된 값·제한/허용 미확인·재시작은 성공으로 이어 붙이지 않는다. 이는 제동 명령·안전 인증·SDK의 지연/주기 보장이 아니다.
+
+일반 기능 선출시, MAX는 합성 개발 유지, TIME_ATTACK 빠름 보상 제외/재정의가 권장안이다. D-04a~f(출시·시간 보상·중단안·분류/HUD/백그라운드·통제 장소·QR 제한 질문)는 기존 D-04의 하위 질문이며 모두 PENDING이다. 게임 주행 제한의 공식 근거는 있으나 최소 HUD/백그라운드·폐쇄 주차장 예외를 승인받지 않았다. D-02 실제 최소 요약·동의/보관/철회·완전 삭제와 D-03/04 장소/권리·D-05 실제 인정/보상 조건도 미정이다.
+
+[차량 근거](vehicle-contract-notes.md)에 공식 자료 확인일/버전 불일치(Vehicle 소개2.3.2/Service2.3.21, 2026-10-19 릴리스2.3.1)와 신호별 문서 확인/실차 미확인을 분리했다. E1~E8 앱 증거·플랫폼 답변은 미발송/미응답이다. S-12~S-15의 독립적인 SYNTHETIC 개발은 계속할 수 있지만 조사만으로 운영 gate를 충족하지 않는다. 새 MAX API·원본 업로드·운영 활성화는 이번 변경에 없다.

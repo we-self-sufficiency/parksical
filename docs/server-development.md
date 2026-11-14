@@ -65,3 +65,5 @@ S-08 #9의 리뷰/집계는 기본 비활성이다. DEV_REVIEWS_ENABLED=true는 
 S-09 #10은 [개인 위치·첨부 가이드](parked-locations.md)를 따른다. DEV_LOCATIONS_ENABLED 기본false이며 DEV_AUTH_ENABLED=true인 비운영에서만 켠다. REAL_LOCATIONS_ENABLED는 false만 허용한다. migration은 위치/원본·현재 선택·이력·사진 metadata/비공개 BYTEA·최소 변경 영수증을 추가하며 자동 시드는 없다. 사진 처리는 sharp0.35.5로 고정하고 JPEG/PNG 실제 디코딩·12MP·2MiB·EXIF 제거를 검증한다. 파일 어댑터는 DB 트랜잭션 범위이며 운영 저장소/보관 정책은 미정이다. QR은 아래 S-10 개발 경로를 따른다.
 
 S-10 #11은 [QR·휴대폰 가이드](location-qr.md)를 따른다. DEV_QR_ENABLED=true에는 비운영 개발 인증·위치 opt-in과 정확한 QR_PUBLIC_ORIGIN이 필요하다. REAL_QR_ENABLED는 false만 허용한다. 새 migration 적용 후 소유자 발급/폐기·/p 휴대폰 웹·1회 교환/쿠키 조회를 검증한다. build는 public/qr/app.js 구문도 검사하고 Docker에 정적 자산을 포함한다. GET/HEAD는 비소모이며 운영 D-06/D-07은 미정이다.
+
+S-11 #12는 [MAX 적용 가능성](max-feasibility.md)과 [SDK 근거/앱 확인 질문](vehicle-contract-notes.md)을 기록했다. 새 실행 경로·설정·migration·API는 없다. S-12~S-15는 비운영 SYNTHETIC 계약/판정 정합성을 개발할 수 있으며 실제 MAX 수집·주행 게임 HUD/백그라운드·랭킹/보상은 D-02/D-04와 실차/외부 근거 전 활성화하지 않는다. 문서의 상태 전이·한계값은 A-14 제안이며 설치 SDK 계약/제품 승인으로 취급하지 않는다.

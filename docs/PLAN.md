@@ -101,7 +101,8 @@ VehicleState Flow (gear, speedKmh, steeringDeg, brakePressed, uxRestricted)
 - 기획서 PDF·시안 PDF 원본은 열지 못함(PDF 도구 없음). 같은 내용의 docx와 시안 HTML로 분석
 
 ## 서버 연동 (S-06/S-07 반영)
-- `GET /lots`(latitude, longitude, radiusM, limit, sort, vehicleLengthMm+vehicleWidthMm+vehicleStatus=SUPPORTED, cursor)와 `GET /lots/{id}`는 bearer 토큰 필수. 401이면 액세스 토큰을 버리고 1회 재시도, 토큰이 없으면 목 데이터 + "서버 인증 안 됨".
+- `GET /lots`(latitude, longitude, radiusM, limit, sort, vehicleLengthMm+vehicleWidthMm+vehicleStatus=SUPPORTED, cursor)와 `GET /lots/{id}`는 bearer 토큰 필수. 401이면 액세스 토큰을 버리고 1회 재시도, 토큰이 없으면 빈 목록 + "서버 인증 안 됨" 배너(런타임 목 폴백 없음).
 - 409 SEARCH_CHANGED는 커서를 버리고 1페이지부터 1회 재시작.
-- 서버 응답이 성공이지만 주차장 0개면(시드는 위경도 0,0 합성 1곳뿐) 목 데이터로 대체하고 "주변 서버 주차장 없음" 배너를 표시.
+- 서버 응답이 성공이지만 주차장 0개면 빈 목록 + "목적지 주변에 주차장이 없어요" 안내. 모든 실패는 사유 배너 + 빈 목록.
+- 서버에 던전/미션 API가 아직 없어 `dungeon()`은 null: P지컬 MAX는 "도전 가능한 주차장이 없어요" 상태를 보여주고, 서버가 던전을 제공하면 다시 열린다. `MockParkingRepository`는 테스트/프리뷰 전용.
 - 난이도 점수가 null(INSUFFICIENT_DATA)이면 "정보 부족"으로 표시하고 쉬운 순 정렬에서 맨 뒤로 보낸다. 합성 좌표(navigation.usable=false)는 길안내 버튼을 비활성화.

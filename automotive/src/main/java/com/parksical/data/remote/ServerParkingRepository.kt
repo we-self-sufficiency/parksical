@@ -1,9 +1,9 @@
 package com.parksical.data.remote
 
 import com.parksical.data.LotsStatus
-import com.parksical.data.MockParkingRepository
 import com.parksical.data.ParkingRepository
 import com.parksical.domain.model.DifficultyFactor
+import com.parksical.domain.model.Dungeon
 import com.parksical.domain.model.LotSource
 import com.parksical.domain.model.ParkingLot
 import com.parksical.domain.model.ServerDifficulty
@@ -44,13 +44,13 @@ private class NoAuth : Exception()
 class ServerParkingRepository(
     private val api: ApiClient,
     private val auth: AuthRepository,
-    private val mock: MockParkingRepository,
 ) : ParkingRepository {
-    override val destinationName get() = mock.destinationName
-    override val destinationLat get() = mock.destinationLat
-    override val destinationLng get() = mock.destinationLng
+    // shortcut: destination is fixed until a destination source exists
+    override val destinationName = "테헤란로 거래처 미팅"
+    override val destinationLat = 37.5006
+    override val destinationLng = 127.0364
 
-    private val _lots = MutableStateFlow(mock.lots.value)
+    private val _lots = MutableStateFlow<List<ParkingLot>>(emptyList())
     override val lots: StateFlow<List<ParkingLot>> = _lots
     private val _status = MutableStateFlow<LotsStatus>(LotsStatus.Loading)
     override val status: StateFlow<LotsStatus> = _status
@@ -102,16 +102,11 @@ class ServerParkingRepository(
                 if (cursor == null) break
                 page++
             }
-            if (out.isEmpty()) {
-                _lots.value = mock.lots.value
-                _status.value = LotsStatus.Fallback("주변 서버 주차장 없음")
-            } else {
-                _lots.value = out
-                _status.value = LotsStatus.Server
-            }
+            _lots.value = out
+            _status.value = LotsStatus.Server
         } catch (e: Exception) {
-            _lots.value = mock.lots.value
-            _status.value = LotsStatus.Fallback(if (e is NoAuth) auth.lastError?.let(::fallbackReason)?.takeIf { it == "서버 연결 안 됨" } ?: "서버 인증 안 됨" else fallbackReason(e))
+            _lots.value = emptyList()
+            _status.value = LotsStatus.Error(if (e is NoAuth) auth.lastError?.let(::fallbackReason)?.takeIf { it == "서버 연결 안 됨" } ?: "서버 인증 안 됨" else fallbackReason(e))
         }
     }
 
@@ -150,7 +145,8 @@ class ServerParkingRepository(
         }
     }
 
-    override fun dungeon(lotId: String) = mock.dungeon(lotId)
+    // no server dungeon source yet: MAX shows its unavailable state
+    override fun dungeon(lotId: String): Dungeon? = null
 
     private fun parseFee(f: JSONObject?): Int? = f?.let {
         fee30Min(

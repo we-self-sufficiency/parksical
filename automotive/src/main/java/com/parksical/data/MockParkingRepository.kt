@@ -83,7 +83,7 @@ class MockParkingRepository : ParkingRepository {
 
     private val _lots = MutableStateFlow(seed.map { it.copy(synthetic = true) })
     override val lots: StateFlow<List<ParkingLot>> = _lots
-    override val status: StateFlow<LotsStatus> = MutableStateFlow(LotsStatus.Fallback("목업 데이터"))
+    override val status: StateFlow<LotsStatus> = MutableStateFlow(LotsStatus.Error("테스트용 데이터"))
 
     override suspend fun refresh(dimensions: VehicleDimensions?) {}
     override fun lot(id: String) = _lots.value.find { it.id == id }

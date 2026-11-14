@@ -143,7 +143,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                         val (txt, col) = when (st) {
                             LotsStatus.Loading -> "불러오는 중…" to GeneralColors.Muted
                             LotsStatus.Server -> "서버 데이터" to GeneralColors.Link
-                            is LotsStatus.Fallback -> "목업 데이터 · ${st.reason}" to GeneralColors.Accent
+                            is LotsStatus.Error -> st.reason to GeneralColors.Accent
                         }
                         Text(txt, color = col, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFF22262D)).padding(10.dp, 3.dp))
                     }
@@ -155,8 +155,12 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     Pill("가까운 순", sort == Sort.NEAR, { sort = Sort.NEAR })
                     Pill("제휴 할인", partnerOnly, { partnerOnly = !partnerOnly })
                 }
-                if (shown.isEmpty()) Text(
-                    if (partnerOnly) "제휴 할인 주차장이 없어요. 필터를 끄면 전체를 볼 수 있어요." else "주변에 주차장이 없어요",
+                if (shown.isEmpty() && status != LotsStatus.Loading) Text(
+                    when {
+                        status is LotsStatus.Error -> "주차장 정보를 불러오지 못했어요 (${(status as LotsStatus.Error).reason})"
+                        partnerOnly && lots.isNotEmpty() -> "제휴 할인 주차장이 없어요. 필터를 끄면 전체를 볼 수 있어요."
+                        else -> "목적지 주변에 주차장이 없어요"
+                    },
                     color = GeneralColors.TextSub, fontSize = 16.sp, modifier = Modifier.padding(top = 24.dp),
                 )
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {

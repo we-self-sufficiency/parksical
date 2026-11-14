@@ -49,6 +49,9 @@ class AuthRepository(context: Context, private val api: ApiClient) {
         }
     }
 
+    /** Forget only the access token (server said 401); the next [accessToken] refreshes. */
+    fun invalidate() { prefs.edit().remove(K_ACCESS).remove(K_EXPIRY).apply() }
+
     private suspend fun refresh(refreshToken: String): String? = try {
         val r = api.request("POST", "/auth/refresh", body = JSONObject().put("refreshToken", refreshToken))
         store(r.body!!)

@@ -17,7 +17,12 @@ class DefaultDifficultyCalculator(private val currentYear: Int = 2026) : Difficu
 
     override fun calculate(lot: ParkingLot, size: VehicleSize): DifficultyBreakdown {
         lot.serverDifficulty?.let {
-            return DifficultyBreakdown(null, null, null, null, it.score, it.score, size, it.missingFactors, fromServer = true)
+            val f = it.factorScores
+            val s = it.score ?: 0f
+            return DifficultyBreakdown(
+                f[DifficultyFactor.STRUCTURE], f[DifficultyFactor.REVIEW], f[DifficultyFactor.DRIVING_STATS], f[DifficultyFactor.BUILDING_AGE],
+                s, s, size, it.missingFactors, fromServer = true, insufficient = it.score == null,
+            )
         }
         val structure = lot.structure?.let(::structureScore)
         val review = lot.reviewDifficulty?.coerceIn(1f, 5f)

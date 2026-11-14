@@ -65,17 +65,18 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
         if (firstSize) firstSize = false else c.parking.refresh(dims)
     }
 
-    val rows = remember(lots, size) { lots.map { it to c.difficulty.calculate(it, size).forMyCar } }
+    val rows = remember(lots, size) { lots.map { it to c.difficulty.calculate(it, size) } }
     // shortcut: flat-earth distance (fine at city scale), swap for a real geo lib if lots span regions
     fun dist(l: ParkingLot) = l.distanceM?.toDouble() ?: hypot(
         (l.lat - c.parking.destinationLat) * 111_000.0,
         (l.lng - c.parking.destinationLng) * 111_000.0 * cos(Math.toRadians(l.lat)),
     )
     val shown = rows.filter { !partnerOnly || it.first.prepayDiscountPercent > 0 }
-        .sortedBy { if (sort == Sort.EASY) it.second else dist(it.first).toFloat() }
+        .sortedBy { if (sort != Sort.EASY) dist(it.first).toFloat() else if (it.second.insufficient) Float.MAX_VALUE else it.second.forMyCar }
     val pins = remember(rows) {
-        rows.map { (l, s) ->
-            MapPin(l.id, l.lat, l.lng, "★ ${fmt(s)}" + if (l.challengeOpen) " · 도전장" else "", starColor(s).toArgb())
+        rows.map { (l, b) ->
+            val s = b.forMyCar
+            MapPin(l.id, l.lat, l.lng, (if (b.insufficient) "정보 부족" else "★ ${fmt(s)}") + if (l.challengeOpen) " · 도전장" else "", (if (b.insufficient) GeneralColors.Muted else starColor(s)).toArgb())
         }
     }
 
@@ -155,7 +156,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     Pill("제휴 할인", partnerOnly, { partnerOnly = !partnerOnly })
                 }
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(shown, key = { it.first.id }) { (lot, stars) -> LotCard(lot, stars, onOpenLot, onOpenMaxEntry, parked) }
+                    items(shown, key = { it.first.id }) { (lot, b) -> LotCard(lot, b, onOpenLot, onOpenMaxEntry, parked) }
                 }
             }
         }
@@ -172,7 +173,7 @@ private fun Legend(color: Color, text: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LotCard(lot: ParkingLot, stars: Float, onOpen: (String) -> Unit, onChallenge: (String?) -> Unit, parked: Boolean) {
+private fun LotCard(lot: ParkingLot, b: com.parksical.domain.model.DifficultyBreakdown, onOpen: (String) -> Unit, onChallenge: (String?) -> Unit, parked: Boolean) {
     val shape = RoundedCornerShape(14.dp)
     Column(
         Modifier.fillMaxWidth().clip(shape).background(Color(0xFF1A1D22)).border(1.dp, GeneralColors.Border, shape)
@@ -182,8 +183,8 @@ private fun LotCard(lot: ParkingLot, stars: Float, onOpen: (String) -> Unit, onC
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(lot.name, color = GeneralColors.Text, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Text(
-                "★ ${fmt(stars)}", color = GeneralColors.Bg, fontSize = 16.sp, fontWeight = FontWeight.Bold,
-                modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(starColor(stars)).padding(horizontal = 10.dp, vertical = 4.dp),
+                if (b.insufficient) "정보 부족" else "★ ${fmt(b.forMyCar)}", color = GeneralColors.Bg, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (b.insufficient) GeneralColors.Muted else starColor(b.forMyCar)).padding(horizontal = 10.dp, vertical = 4.dp),
             )
         }
         val meta = listOfNotNull(

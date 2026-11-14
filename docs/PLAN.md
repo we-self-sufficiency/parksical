@@ -99,3 +99,9 @@ VehicleState Flow (gear, speedKmh, steeringDeg, brakePressed, uxRestricted)
 - 에뮬레이터에서 NaviHelper가 실제로 동작하는지
 - 에뮬레이터에서 `INFO_EXTERIOR_DIMENSIONS`가 값을 반환하는지
 - 기획서 PDF·시안 PDF 원본은 열지 못함(PDF 도구 없음). 같은 내용의 docx와 시안 HTML로 분석
+
+## 서버 연동 (S-06/S-07 반영)
+- `GET /lots`(latitude, longitude, radiusM, limit, sort, vehicleLengthMm+vehicleWidthMm+vehicleStatus=SUPPORTED, cursor)와 `GET /lots/{id}`는 bearer 토큰 필수. 401이면 액세스 토큰을 버리고 1회 재시도, 토큰이 없으면 목 데이터 + "서버 인증 안 됨".
+- 409 SEARCH_CHANGED는 커서를 버리고 1페이지부터 1회 재시작.
+- 서버 응답이 성공이지만 주차장 0개면(시드는 위경도 0,0 합성 1곳뿐) 목 데이터로 대체하고 "주변 서버 주차장 없음" 배너를 표시.
+- 난이도 점수가 null(INSUFFICIENT_DATA)이면 "정보 부족"으로 표시하고 쉬운 순 정렬에서 맨 뒤로 보낸다. 합성 좌표(navigation.usable=false)는 길안내 버튼을 비활성화.

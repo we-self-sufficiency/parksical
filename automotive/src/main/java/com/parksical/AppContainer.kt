@@ -31,7 +31,7 @@ class AppContainer(context: Context) {
     val navi: NaviGateway = PleosNaviGateway(context)
     val api = ApiClient(BuildConfig.PARKSICAL_API_BASE_URL)
     val auth = AuthRepository(context, api)
-    val parking: ParkingRepository = ServerParkingRepository(api, MockParkingRepository())
+    val parking: ParkingRepository = ServerParkingRepository(api, auth, MockParkingRepository())
     val parkedSync: ParkedLocationSync = ServerParkedLocationSync(api, auth)
     val session = SessionStore()
     val difficulty: DifficultyCalculator = DefaultDifficultyCalculator()

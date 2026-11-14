@@ -88,7 +88,7 @@ internal fun StageContent(
         }
         Box(Modifier.fillMaxWidth().height(4.dp).background(PixelColors.Paper))
         if (dungeon == null) {
-            NeedParkPanelLike("던전 정보를 찾을 수 없어요")
+            NeedParkPanelLike("도전 가능한 주차장이 없어요 · 서버에서 도전 정보를 아직 제공하지 않아요")
             return@Column
         }
         Row(Modifier.fillMaxSize().padding(32.dp), horizontalArrangement = Arrangement.spacedBy(32.dp)) {

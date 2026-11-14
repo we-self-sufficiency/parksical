@@ -35,6 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.parksical.LocalAppContainer
+import androidx.compose.ui.draw.alpha
+import com.parksical.domain.model.LotSource
 import com.parksical.domain.model.ParkingLot
 import com.parksical.domain.model.VehicleSize
 import com.parksical.ui.common.LocalVehicleState
@@ -81,9 +83,12 @@ fun LotDetailScreen(lotId: String, onBack: () -> Unit, onOpenMaxEntry: (lotId: S
                     Info("준공", lot.builtYear?.let { "${it}년" } ?: none, Modifier.weight(1f))
                 }
                 Column(Modifier.weight(1f)) {}
+                // Server lots navigate only to a usable navigation coordinate (synthetic lots have none).
+                val canNavigate = lot.source != LotSource.SERVER || lot.navigationLat != null
+                if (!canNavigate) Text("합성 좌표라 길안내를 할 수 없어요", color = GeneralColors.Muted, fontSize = 16.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(
-                        Modifier.weight(1f).height(72.dp).clip(RoundedCornerShape(14.dp)).background(GeneralColors.Link).clickable {
+                        Modifier.weight(1f).height(72.dp).clip(RoundedCornerShape(14.dp)).background(GeneralColors.Link).alpha(if (canNavigate) 1f else 0.4f).clickable(enabled = canNavigate) {
                             c.session.navigatingLotId.value = lot.id
                             c.navi.requestRoute(lot.name, lot.navigationLat ?: lot.lat, lot.navigationLng ?: lot.lng)
                         },
@@ -102,8 +107,12 @@ fun LotDetailScreen(lotId: String, onBack: () -> Unit, onOpenMaxEntry: (lotId: S
                         Column {
                             Text("내 차 기준 주차 난이도", color = GeneralColors.TextSub, fontSize = 16.sp)
                             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Text("★ ${fmt(mine.forMyCar)}", color = starColor(mine.forMyCar), fontSize = 52.sp, fontWeight = FontWeight.Bold)
-                                Text("/ 5 · ${mine.level.label}", color = GeneralColors.Muted, fontSize = 18.sp, modifier = Modifier.padding(bottom = 8.dp))
+                                if (mine.insufficient) {
+                                    Text("정보 부족", color = GeneralColors.Muted, fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                                } else {
+                                    Text("★ ${fmt(mine.forMyCar)}", color = starColor(mine.forMyCar), fontSize = 52.sp, fontWeight = FontWeight.Bold)
+                                    Text("/ 5 · ${mine.level.label}", color = GeneralColors.Muted, fontSize = 18.sp, modifier = Modifier.padding(bottom = 8.dp))
+                                }
                             }
                         }
                         Text(
@@ -117,7 +126,13 @@ fun LotDetailScreen(lotId: String, onBack: () -> Unit, onOpenMaxEntry: (lotId: S
                     if (!picked) SizePicker()
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         if (mine.fromServer) {
-                            Text("요소별 점수는 서버에서 아직 제공하지 않아요", color = GeneralColors.TextSub, fontSize = 16.sp)
+                            if (mine.insufficient) Text("점수를 계산할 데이터가 부족해요", color = GeneralColors.TextSub, fontSize = 16.sp)
+                            else {
+                                Factor("주차장 구조", mine.structure)
+                                Factor("이용자 리뷰", mine.review)
+                                Factor("주행 데이터 집계", mine.driving)
+                                Factor("건물 연식", mine.age)
+                            }
                             if (mine.missing.isNotEmpty()) Text("부족한 정보: " + mine.missing.joinToString { it.label }, color = GeneralColors.Muted, fontSize = 15.sp)
                         } else {
                             Factor("주차장 구조 40%", mine.structure)

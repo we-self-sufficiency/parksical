@@ -1,5 +1,7 @@
 package com.parksical.ui.general
 
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,6 +57,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
     val (size, picked) = mySize()
     var sort by remember { mutableStateOf(Sort.EASY) }
     var partnerOnly by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     val lots by c.parking.lots.collectAsStateWithLifecycle()
     val status by c.parking.status.collectAsStateWithLifecycle()
@@ -65,17 +68,18 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
         if (firstSize) firstSize = false else c.parking.refresh(dims)
     }
 
-    val rows = remember(lots, size) { lots.map { it to c.difficulty.calculate(it, size).forMyCar } }
+    val rows = remember(lots, size) { lots.map { it to c.difficulty.calculate(it, size) } }
     // shortcut: flat-earth distance (fine at city scale), swap for a real geo lib if lots span regions
     fun dist(l: ParkingLot) = l.distanceM?.toDouble() ?: hypot(
         (l.lat - c.parking.destinationLat) * 111_000.0,
         (l.lng - c.parking.destinationLng) * 111_000.0 * cos(Math.toRadians(l.lat)),
     )
-    val shown = rows.filter { !partnerOnly || it.first.prepayDiscountPercent > 0 }
-        .sortedBy { if (sort == Sort.EASY) it.second else dist(it.first).toFloat() }
+    val shown = rows.filter { !partnerOnly || it.first.isPartner || it.first.prepayDiscountPercent > 0 }
+        .sortedBy { if (sort != Sort.EASY) dist(it.first).toFloat() else if (it.second.insufficient) Float.MAX_VALUE else it.second.forMyCar }
     val pins = remember(rows) {
-        rows.map { (l, s) ->
-            MapPin(l.id, l.lat, l.lng, "★ ${fmt(s)}" + if (l.challengeOpen) " · 도전장" else "", starColor(s).toArgb())
+        rows.map { (l, b) ->
+            val s = b.forMyCar
+            MapPin(l.id, l.lat, l.lng, (if (b.insufficient) "정보 부족" else "★ ${fmt(s)}") + if (l.challengeOpen) " · 도전장" else "", (if (b.insufficient) GeneralColors.Muted else starColor(s)).toArgb())
         }
     }
 
@@ -139,12 +143,14 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("목적지 주변 ${shown.size}곳", color = GeneralColors.Text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         val st = status
-                        val (txt, col) = when (st) {
+                        val pill = when (st) {
                             LotsStatus.Loading -> "불러오는 중…" to GeneralColors.Muted
-                            LotsStatus.Server -> "서버 데이터" to GeneralColors.Link
-                            is LotsStatus.Fallback -> "목업 데이터 · ${st.reason}" to GeneralColors.Accent
+                            LotsStatus.Server -> null
+                            is LotsStatus.Error -> st.reason to GeneralColors.Accent
                         }
-                        Text(txt, color = col, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFF22262D)).padding(10.dp, 3.dp))
+                        pill?.let { (txt, col) ->
+                            Text(txt, color = col, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0xFF22262D)).padding(10.dp, 3.dp))
+                        }
                     }
                     Text(if (picked) "내 차(${size.label}) 기준" else "차급 선택 필요", color = if (picked) GeneralColors.TextSub else GeneralColors.Accent, fontSize = 16.sp)
                 }
@@ -154,8 +160,17 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     Pill("가까운 순", sort == Sort.NEAR, { sort = Sort.NEAR })
                     Pill("제휴 할인", partnerOnly, { partnerOnly = !partnerOnly })
                 }
+                if (shown.isEmpty() && status != LotsStatus.Loading) Text(
+                    when {
+                        status is LotsStatus.Error -> "주차장 정보를 불러오지 못했어요 (${(status as LotsStatus.Error).reason})"
+                        partnerOnly && lots.isNotEmpty() -> "제휴 할인 주차장이 없어요. 필터를 끄면 전체를 볼 수 있어요."
+                        else -> "목적지 주변에 주차장이 없어요"
+                    },
+                    color = GeneralColors.TextSub, fontSize = 16.sp, modifier = Modifier.padding(top = 24.dp),
+                )
+                if (status is LotsStatus.Error) Pill("다시 시도", false, { scope.launch { c.parking.refresh(dims) } })
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(shown, key = { it.first.id }) { (lot, stars) -> LotCard(lot, stars, onOpenLot, onOpenMaxEntry, parked) }
+                    items(shown, key = { it.first.id }) { (lot, b) -> LotCard(lot, b, onOpenLot, onOpenMaxEntry, parked) }
                 }
             }
         }
@@ -172,7 +187,7 @@ private fun Legend(color: Color, text: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LotCard(lot: ParkingLot, stars: Float, onOpen: (String) -> Unit, onChallenge: (String?) -> Unit, parked: Boolean) {
+private fun LotCard(lot: ParkingLot, b: com.parksical.domain.model.DifficultyBreakdown, onOpen: (String) -> Unit, onChallenge: (String?) -> Unit, parked: Boolean) {
     val shape = RoundedCornerShape(14.dp)
     Column(
         Modifier.fillMaxWidth().clip(shape).background(Color(0xFF1A1D22)).border(1.dp, GeneralColors.Border, shape)
@@ -182,8 +197,8 @@ private fun LotCard(lot: ParkingLot, stars: Float, onOpen: (String) -> Unit, onC
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(lot.name, color = GeneralColors.Text, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Text(
-                "★ ${fmt(stars)}", color = GeneralColors.Bg, fontSize = 16.sp, fontWeight = FontWeight.Bold,
-                modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(starColor(stars)).padding(horizontal = 10.dp, vertical = 4.dp),
+                if (b.insufficient) "정보 부족" else "★ ${fmt(b.forMyCar)}", color = GeneralColors.Bg, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (b.insufficient) GeneralColors.Muted else starColor(b.forMyCar)).padding(horizontal = 10.dp, vertical = 4.dp),
             )
         }
         val meta = listOfNotNull(

@@ -79,8 +79,9 @@ internal fun MaxEntryContent(
     Box(Modifier.fillMaxSize().background(Color(0xB8050608)).tap {}, contentAlignment = Alignment.Center) {
         when {
             pair == null -> GeneralPanel {
-                Text26("예약할 수 있는 던전이 없어요")
-                GButton("닫기", onDismiss, primary = false, dim = false)
+                Text26("도전 가능한 주차장이 없어요")
+                Text("서버에서 도전 정보를 아직 제공하지 않아요", color = GeneralColors.TextSub, fontSize = 20.sp)
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { GButton("일반 모드로", onDismiss, primary = false, dim = false) }
             }
             step == 1 -> ModeSwitchPanel(pair.second, parked, onDismiss) { step = 2 }
             else -> ReservationPanel(lots, pair, parked, { lotSel = it }, { step = 1 }, onConfirmed)
@@ -113,6 +114,7 @@ private fun GButton(text: String, onClick: () -> Unit, primary: Boolean, dim: Bo
         Text(
             text, color = if (primary) GeneralColors.Bg else GeneralColors.Text, fontSize = 20.sp,
             fontWeight = if (primary) FontWeight.Bold else FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 40.dp),
         )
     }
 }

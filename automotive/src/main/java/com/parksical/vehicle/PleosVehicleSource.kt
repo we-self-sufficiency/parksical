@@ -2,7 +2,11 @@ package com.parksical.vehicle
 
 import ai.pleos.playground.vehicle.Vehicle
 import ai.pleos.playground.vehicle.api.model.capability.AccessType
+import ai.pleos.playground.vehicle.api.model.area.SeatArea
 import ai.pleos.playground.vehicle.listener.BrakePedalStatusListener
+import ai.pleos.playground.vehicle.listener.DoorPositionListener
+import ai.pleos.playground.vehicle.api.model.area.DoorArea
+import ai.pleos.playground.vehicle.listener.SeatAirbagDeployedListener
 import ai.pleos.playground.vehicle.listener.SteeringWheelAngleListener
 import android.car.Car
 import android.car.VehicleGear
@@ -164,6 +168,77 @@ class PleosVehicleSource(private val context: Context) : VehicleSource {
         } catch (t: Throwable) {
             Log.w(TAG, "Pleos Vehicle SDK unavailable", t)
         }
+        startAirbag()
+        startDoors()
+    }
+
+    private val doorListeners = mutableListOf<Pair<DoorArea, DoorPositionListener>>()
+    private val doorOpenByArea = mutableMapOf<Int, Boolean>()
+
+    /** Six doors, hood and trunk; position above the area's minimum (closed) counts as open. */
+    private fun startDoors() {
+        try {
+            val door = vehicle?.getDoor() ?: return
+            door.checkDoorPositionCapabilities({ cfg, bounds ->
+                val ok = cfg.accessType != AccessType.NONE
+                setCap { it.copy(doors = ok) }
+                Log.i(TAG, "door capability=$ok areas=${bounds.size}")
+                if (!ok) return@checkDoorPositionCapabilities
+                bounds.entries.forEachIndexed { i, (area, b) ->
+                    val l = object : DoorPositionListener {
+                        override fun onPositionUpdated(pos: Int?) {
+                            if (pos == null) return
+                            synchronized(doorOpenByArea) {
+                                doorOpenByArea[i] = pos > b.minValue
+                                val any = doorOpenByArea.values.any { it }
+                                update { it.copy(doorOpen = any) }
+                            }
+                        }
+                        override fun onFailed(e: Exception) { Log.w(TAG, "door listener failed", e) }
+                    }
+                    try {
+                        door.registerDoorPosition(area, l)
+                        synchronized(doorListeners) { doorListeners += area to l }
+                    } catch (t: Throwable) { Log.w(TAG, "door register failed", t) }
+                }
+            }, { Log.w(TAG, "door capability check failed", it) })
+        } catch (t: Throwable) {
+            Log.w(TAG, "door setup failed", t)
+        }
+    }
+
+    private val airbagListeners = mutableListOf<Pair<SeatArea, SeatAirbagDeployedListener>>()
+    private val airbagByArea = mutableMapOf<Int, Boolean>()
+
+    private fun startAirbag() {
+        try {
+            val safety = vehicle?.getSafety() ?: return
+            safety.checkAirbagDeployedCapabilities({ cfg, areas ->
+                val ok = cfg.accessType != AccessType.NONE
+                setCap { it.copy(airbag = ok) }
+                Log.i(TAG, "airbag capability=$ok areas=${areas.size}")
+                if (!ok) return@checkAirbagDeployedCapabilities
+                areas.forEachIndexed { i, area ->
+                    val l = object : SeatAirbagDeployedListener {
+                        override fun onSeatAirbagDeployUpdated(deployed: Boolean?) {
+                            if (deployed == null) return
+                            synchronized(airbagByArea) {
+                                airbagByArea[i] = deployed
+                                val any = airbagByArea.values.any { it }
+                                update { it.copy(airbagDeployed = any) }
+                            }
+                        }
+                        override fun onFailed(e: Exception) { Log.w(TAG, "airbag listener failed", e) }
+                    }
+                    try {
+                        safety.registerSeatAirbagDeployed(area, l)
+                        synchronized(airbagListeners) { airbagListeners += area to l }
+                    } catch (t: Throwable) { Log.w(TAG, "airbag register failed", t) }
+                }
+            }, { Log.w(TAG, "airbag capability check failed", it) })
+        } catch (t: Throwable) {
+            Log.w(TAG, "airbag setup failed", t)
+        }
     }
 
     private val steeringListener = object : SteeringWheelAngleListener {
@@ -188,6 +263,14 @@ class PleosVehicleSource(private val context: Context) : VehicleSource {
         runCatching { propMgr?.unregisterCallback(propCallback) }
         runCatching { vehicle?.getSteeringWheel()?.unregisterSteeringWheelAngle(steeringListener) }
         runCatching { vehicle?.getBrake()?.unregisterBrakePedalStatus(brakeListener) }
+        synchronized(airbagListeners) {
+            airbagListeners.forEach { (a, l) -> runCatching { vehicle?.getSafety()?.unregisterSeatAirbagDeployed(a, l) } }
+            airbagListeners.clear()
+        }
+        synchronized(doorListeners) {
+            doorListeners.forEach { (a, l) -> runCatching { vehicle?.getDoor()?.unregisterDoorPosition(a, l) } }
+            doorListeners.clear()
+        }
         runCatching { vehicle?.release() }
         runCatching { car?.disconnect() }
         vehicle = null; car = null; propMgr = null; uxMgr = null

@@ -42,6 +42,12 @@ class DifficultyCalculatorTest {
 
     private val bare = ParkingLot(id = "x", name = "x", lat = 0.0, lng = 0.0, isPartner = false)
 
+    @Test fun serverInsufficient() {
+        val sd = ServerDifficulty(null, false, "v1", listOf(DifficultyFactor.REVIEW), 0, mapOf(DifficultyFactor.STRUCTURE to 2.5f))
+        val b = calc.calculate(bare.copy(serverDifficulty = sd), VehicleSize.SUV)
+        assertTrue(b.insufficient && b.fromServer); assertEquals(2.5f, b.structure!!, 0f)
+    }
+
     @Test fun serverDifficultyPassthrough() {
         val sd = ServerDifficulty(2.5f, true, "v1", listOf(DifficultyFactor.REVIEW), 3)
         val b = calc.calculate(bare.copy(serverDifficulty = sd), VehicleSize.SUV)

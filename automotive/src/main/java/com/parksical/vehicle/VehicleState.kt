@@ -11,6 +11,10 @@ data class VehicleState(
     val brakePressed: Boolean = false,
     /** CarUxRestrictions.isRequiresDistractionOptimization(): true while driving. */
     val uxRestricted: Boolean = false,
+    /** True once any seat airbag has deployed. */
+    val airbagDeployed: Boolean = false,
+    /** True while any door, the hood (frunk) or the trunk is open. */
+    val doorOpen: Boolean = false,
     val timestampMs: Long = 0L,
 ) {
     /** Entry buttons, confirm dialogs, payment and results are only allowed in this state. */
@@ -23,6 +27,8 @@ data class VehicleCapabilities(
     val speed: Boolean = false,
     val steering: Boolean = false,
     val brake: Boolean = false,
+    val airbag: Boolean = false,
+    val doors: Boolean = false,
 )
 
 data class VehicleDimensions(val lengthMm: Int, val widthMm: Int)

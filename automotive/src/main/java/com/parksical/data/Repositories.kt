@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.update
 
 /**
  * Lots near the destination. Real implementation: `ServerParkingRepository` (parksical-server `GET /lots`,
- * `GET /lots/{id}`), falling back to [MockParkingRepository] data when the server is unreachable or the
- * endpoint is not implemented yet. Dungeons have no server contract yet, so they always come from mock data.
+ * `GET /lots/{id}`). No mock fallback at runtime: on failure the list is empty and [LotsStatus.Error] says why.
+ * Dungeons have no server contract yet, so `dungeon()` returns null and MAX shows an unavailable state.
  */
 interface ParkingRepository {
     val destinationName: String
@@ -40,8 +40,8 @@ interface ParkingRepository {
 sealed interface LotsStatus {
     data object Loading : LotsStatus
     data object Server : LotsStatus
-    /** Showing mock data; [reason] is short Korean text for a small banner, e.g. "서버 연결 안 됨". */
-    data class Fallback(val reason: String) : LotsStatus
+    /** Load failed (list is empty); [reason] is short Korean text for a small banner, e.g. "서버 연결 안 됨". */
+    data class Error(val reason: String) : LotsStatus
 }
 
 /** Uploads the parked spot (`POST /parked-locations`) and user corrections (`PATCH`). Never throws. */
@@ -69,8 +69,8 @@ class SessionStore {
     private val _records = MutableStateFlow<List<RunRecord>>(emptyList())
     val records: StateFlow<List<RunRecord>> = _records
 
-    /** Mock history so the stamp count matches the mockup ("도장 7개째"). */
-    val baseStamps = 6
+    /** No pre-seeded history: stamps come only from real records. */
+    val baseStamps = 0
 
     fun addRecord(record: RunRecord) = _records.update { it + record }
 }

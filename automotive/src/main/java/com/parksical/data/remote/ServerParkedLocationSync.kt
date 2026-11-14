@@ -22,10 +22,17 @@ fun rfc3339Utc(epochMs: Long): String = Instant.ofEpochMilli(epochMs).toString()
 data class LocationIds(val floorId: String?, val zoneId: String?, val structureVersion: String?)
 
 fun locationIds(spot: ParkingSpotEstimate, structure: ServerStructure?): LocationIds {
-    val floor = structure?.floors?.firstOrNull { it.label == spot.floor } ?: return LocationIds(null, null, null)
-    val zone = floor.zoneIds.firstOrNull { it == spot.zone }
-        ?: floor.zoneIds.firstOrNull { it.endsWith(spot.zone) }
-    return LocationIds(floor.id, zone, structure.version)
+    val level = levelOf(spot.floor)
+    val floor = structure?.floors?.firstOrNull { it.label == spot.floor || (level != null && it.level == level) }
+        ?: return LocationIds(null, null, null)
+    val zone = floor.zones.firstOrNull { it.label == spot.zone } ?: floor.zones.firstOrNull { it.label.endsWith(spot.zone) }
+    return LocationIds(floor.id, zone?.id, structure.version)
+}
+
+/** "B2" -> -2, "1F" -> 0 (1F is ground level); null when unparseable. */
+fun levelOf(floor: String): Int? {
+    Regex("^B(\\d+)$").find(floor)?.let { return -it.groupValues[1].toInt() }
+    return Regex("^(\\d+)F$").find(floor)?.let { it.groupValues[1].toInt() - 1 }
 }
 
 class ServerParkedLocationSync(private val api: ApiClient, private val auth: AuthRepository) : ParkedLocationSync {

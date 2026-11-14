@@ -126,6 +126,45 @@ class MissionJudgeTest {
         assertEquals(false, st.partial.cleared)
     }
 
+    @Test fun airbagDuringStageTwoAbortsKeepingStageOne() {
+        begin()
+        drive(61f)
+        assertEquals(1, running().stageIndex)
+        t += 100
+        judge.onSample(VehicleState(gear = Gear.DRIVE, speedKmh = 7.2f, timestampMs = t, airbagDeployed = true))
+        val st = judge.status.value as RunStatus.Aborted
+        assertEquals("에어백이 전개되어 미션을 중단했어요", st.reason)
+        assertEquals(false, st.partial.cleared)
+        assertTrue(st.partial.stageResults[0].stars > 0)
+        assertEquals(listOf(0, 0), st.partial.stageResults.drop(1).map { it.stars })
+    }
+
+    @Test fun airbagWhileStillInParkAbortsImmediately() {
+        begin()
+        judge.onSample(VehicleState(gear = Gear.PARK, timestampMs = 100, airbagDeployed = true))
+        val st = judge.status.value as RunStatus.Aborted
+        assertEquals(0L, st.partial.durationMs)
+        assertEquals(false, st.partial.cleared)
+    }
+
+    @Test fun doorOpenWhileDrivingAborts() {
+        begin()
+        drive(61f)
+        t += 100
+        judge.onSample(VehicleState(gear = Gear.REVERSE, speedKmh = 3f, timestampMs = t, doorOpen = true))
+        val st = judge.status.value as RunStatus.Aborted
+        assertEquals("문이 열려 미션을 중단했어요", st.reason)
+        assertTrue(st.partial.stageResults[0].stars > 0)
+    }
+
+    @Test fun doorOpenInParkIsIgnoredUntilLeavingPark() {
+        begin()
+        judge.onSample(VehicleState(gear = Gear.PARK, timestampMs = 100, doorOpen = true))
+        assertTrue(judge.status.value is RunStatus.Running)
+        judge.onSample(VehicleState(gear = Gear.DRIVE, timestampMs = 200, doorOpen = true))
+        assertEquals(0L, (judge.status.value as RunStatus.Aborted).partial.durationMs)
+    }
+
     @Test fun shortSpeedSpikeDoesNotAbort() {
         begin()
         feed(Gear.DRIVE, 5f)

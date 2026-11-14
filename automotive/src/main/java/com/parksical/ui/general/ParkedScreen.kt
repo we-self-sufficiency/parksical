@@ -54,7 +54,7 @@ fun ParkedScreen(onDone: () -> Unit) {
         }
         val lot = c.parking.lot(s.lotId)
         // (label, zones) per floor: server structure first, else the local layout.
-        val floors = lot?.serverStructure?.floors?.map { it.label to it.zoneIds }
+        val floors = lot?.serverStructure?.floors?.map { f -> f.label to f.zones.map { it.label } }
             ?: lot?.layout?.floors?.map { it.label to it.zones }.orEmpty()
         val zones = floors.firstOrNull { it.first == s.floor }?.second.orEmpty()
         fun edit(floor: String, zone: String) = c.drive.correctSpot(s.copy(floor = floor, zone = zone, confidence = 1f, userEdited = true))

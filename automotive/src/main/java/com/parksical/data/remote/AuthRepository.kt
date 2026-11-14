@@ -34,7 +34,12 @@ class AuthRepository(context: Context, private val api: ApiClient) {
     val pairingCode: StateFlow<String?> = _pairingCode
 
     /** Valid access token, or null when no session can be established. */
+    /** Failure of the last [accessToken] call, so callers can tell "server down" from "not authorised". */
+    @Volatile var lastError: Exception? = null
+        private set
+
     suspend fun accessToken(): String? = mutex.withLock {
+        lastError = null
         try {
             val now = System.currentTimeMillis()
             val access = prefs.getString(K_ACCESS, null)
@@ -44,10 +49,14 @@ class AuthRepository(context: Context, private val api: ApiClient) {
             pair()
         } catch (e: Exception) {
             Log.d(ApiClient.TAG, "auth failed ${e.javaClass.simpleName}")
+            lastError = e
             if (_state.value !is AuthState.Pairing) _state.value = AuthState.Error(e.message ?: "인증 실패")
             null
         }
     }
+
+    /** Forget only the access token (server said 401); the next [accessToken] refreshes. */
+    fun invalidate() { prefs.edit().remove(K_ACCESS).remove(K_EXPIRY).apply() }
 
     private suspend fun refresh(refreshToken: String): String? = try {
         val r = api.request("POST", "/auth/refresh", body = JSONObject().put("refreshToken", refreshToken))

@@ -84,12 +84,15 @@ data class ParkingLot(
 enum class LotSource { SERVER, MOCK }
 
 data class ServerDifficulty(
-    val score: Float,
-    /** basis == VEHICLE_ADJUSTED (car size was sent) vs BASELINE. */
+    /** Null = INSUFFICIENT_DATA. */
+    val score: Float?,
+    /** vehicle.basis == PROVIDED_DIMENSIONS (car size was sent) vs REFERENCE_DEFAULT. */
     val vehicleAdjusted: Boolean,
     val ruleVersion: String,
     val missingFactors: List<DifficultyFactor>,
     val sampleCount: Int,
+    /** From `GET /lots/{id}` factors (INCLUDED only); empty for list items. */
+    val factorScores: Map<DifficultyFactor, Float?> = emptyMap(),
 )
 
 enum class DifficultyFactor(val label: String) {
@@ -98,7 +101,9 @@ enum class DifficultyFactor(val label: String) {
 
 data class ServerStructure(val version: String, val floors: List<ServerFloor>)
 
-data class ServerFloor(val id: String, val label: String, val zoneIds: List<String>)
+data class ServerFloor(val id: String, val label: String, val level: Int?, val zones: List<ServerZone>)
+
+data class ServerZone(val id: String, val label: String)
 
 /** Result of the difficulty index. All scores are 1..5 stars, higher = harder. Null factor = unknown input. */
 data class DifficultyBreakdown(
@@ -114,6 +119,8 @@ data class DifficultyBreakdown(
     val missing: List<DifficultyFactor> = emptyList(),
     /** True when [forMyCar] came from the server (`ServerDifficulty`), factor bars are then unknown. */
     val fromServer: Boolean = false,
+    /** Server answered INSUFFICIENT_DATA: [forMyCar] is meaningless, UI shows "정보 부족". */
+    val insufficient: Boolean = false,
 ) {
     val level: DifficultyLevel get() = DifficultyLevel.of(forMyCar)
 }

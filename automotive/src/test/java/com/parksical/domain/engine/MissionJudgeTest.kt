@@ -147,6 +147,24 @@ class MissionJudgeTest {
         assertEquals(false, st.partial.cleared)
     }
 
+    @Test fun doorOpenWhileDrivingAborts() {
+        begin()
+        drive(61f)
+        t += 100
+        judge.onSample(VehicleState(gear = Gear.REVERSE, speedKmh = 3f, timestampMs = t, doorOpen = true))
+        val st = judge.status.value as RunStatus.Aborted
+        assertEquals("문이 열려 미션을 중단했어요", st.reason)
+        assertTrue(st.partial.stageResults[0].stars > 0)
+    }
+
+    @Test fun doorOpenInParkIsIgnoredUntilLeavingPark() {
+        begin()
+        judge.onSample(VehicleState(gear = Gear.PARK, timestampMs = 100, doorOpen = true))
+        assertTrue(judge.status.value is RunStatus.Running)
+        judge.onSample(VehicleState(gear = Gear.DRIVE, timestampMs = 200, doorOpen = true))
+        assertEquals(0L, (judge.status.value as RunStatus.Aborted).partial.durationMs)
+    }
+
     @Test fun shortSpeedSpikeDoesNotAbort() {
         begin()
         feed(Gear.DRIVE, 5f)

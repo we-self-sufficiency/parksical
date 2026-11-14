@@ -30,7 +30,7 @@ OpenAPI 문서 버전은 **0.10.0**, 차량 contractVersion은 기존 **1.0**이
 
 | 미션 | 합성 스테이지 | 필수 S-04 capability | 정상 구간의 개발 점수 |
 |---|---|---|---|
-| NO_STOP_RAMP | ID순 첫 경사로의 시작 층/구역·rampId | speed,gear | stopCount=0이고 전체 구간 이동이면3, 정지 있으면0/FAILED |
+| NO_STOP_RAMP | ID순 첫 경사로의 시작 층/구역·rampId | speed,gear | stopCount=0이고 전체 구간 이동이면3, 정지 시0/ABORTED(STOPPED), 실패로 분류하지 않음 |
 | ONE_SHOT_REVERSE | ID순 첫 active GENERAL 주차면·층/구역/parkingSpaceId | speed,gear | reverseSegmentCount=1이면3, 그 외0/FAILED. 구간 진입/종료·이동 후 정지/P단/목적 구간을 앱이 확인했다는 parkingConfirmed 필요 |
 | SMOOTH_STEERING | ID순 첫 구역·층/zoneId | speed,gear,steeringAngle | max(0,3-abruptSteeringCount),1~3은SUCCESS,0은FAILED |
 | PILLAR_FOREST | 비활성 | 장애물/접촉 명세 미확인 | OBSTACLE_EVIDENCE_UNCONFIRMED |
@@ -74,10 +74,11 @@ metrics는 movingDurationMs·maxSpeedKph(음수 없는 **절대** 차속 최대�
 
 ## 중단·완료의 일관성
 
-유효한 요약 기준의 결정 우선순위는 UX RESTRICTED → 유효 speed>10 → 유효 danger>0 → UX UNKNOWN → 필수 품질/metrics 부족 → APP_RESTARTED → USER_CANCELLED → 구간 종료 offset>2시간 → 완료 근거/점수다. 여러 원인이 동시에 신고되면 이 순서로 결과를 비교한다. 실제 위험 이벤트 발생 순서를 입증하는 것은 아니다.
+유효한 요약 기준의 결정 우선순위는 UX RESTRICTED → 유효 speed>10 → 유효 danger>0 → UX UNKNOWN → 필수 품질/metrics 부족 → APP_RESTARTED → USER_CANCELLED → 구간 종료 offset>2시간 → 경사로 정지 → 완료 근거/점수다. 여러 원인이 동시에 신고되면 이 순서로 결과를 비교한다. 실제 위험 이벤트 발생 순서를 입증하는 것은 아니다.
 
 - RESTRICTED: ABORTED/UX_RESTRICTED, 절대 차속>10: ABORTED/SPEED_LIMIT, 위험>0: ABORTED/DANGER_EVENT. 1초/두 번째 경고를 기다리는 서버 제어는 없다.
 - UNKNOWN: UNVERIFIABLE/UX_UNKNOWN, 신호 부족/오래됨/측정 공백: UNVERIFIABLE/SIGNAL_QUALITY, 재시작: UNVERIFIABLE/APP_RESTARTED.
+- NO_STOP_RAMP에서 정지하면 ABORTED/STOPPED로 구분하며 FAILED/실패 횟수로 분류하지 않는다. 재촉/안전상 정지 회피를 유도하지 않고 연속성 세부 정책은 #14에서 중단과 실패를 분리한다.
 - 유효 구간의 취소: ABORTED/USER_CANCELLED. 정상 완료는 FINISHED이며 미션별 점수를 비교한다.
 - 마지막 완료 구간 뒤 elapsedMs가2시간을 넘으면 ABORTED/TIME_LIMIT로 무보상 종료할 수 있다. 스테이지 없는 초기 취소/UX 제한/재시작/품질 미확인도 명시적 무보상 결과로 보관할 수 있다.
 

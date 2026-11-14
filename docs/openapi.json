@@ -11368,7 +11368,8 @@
               "SIGNAL_QUALITY",
               "USER_CANCELLED",
               "APP_RESTARTED",
-              "TIME_LIMIT"
+              "TIME_LIMIT",
+              "STOPPED"
             ]
           },
           "stars": {
@@ -11538,7 +11539,8 @@
               "SIGNAL_QUALITY",
               "USER_CANCELLED",
               "APP_RESTARTED",
-              "TIME_LIMIT"
+              "TIME_LIMIT",
+              "STOPPED"
             ]
           },
           "finishedAt": {
@@ -11600,7 +11602,8 @@
               "SIGNAL_QUALITY",
               "USER_CANCELLED",
               "APP_RESTARTED",
-              "TIME_LIMIT"
+              "TIME_LIMIT",
+              "STOPPED"
             ]
           },
           "stars": {
@@ -11688,7 +11691,8 @@
               "SIGNAL_QUALITY",
               "USER_CANCELLED",
               "APP_RESTARTED",
-              "TIME_LIMIT"
+              "TIME_LIMIT",
+              "STOPPED"
             ]
           },
           "stars": {

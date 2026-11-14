@@ -55,6 +55,7 @@ export function validateStage(plan:StagePlan,stage:StageResultDto,rules:MissionR
   if(stage.reason==='APP_RESTARTED')return match(stage,'UNVERIFIABLE','APP_RESTARTED');
   if(stage.reason==='USER_CANCELLED')return match(stage,'ABORTED','USER_CANCELLED');
   if(stage.endOffsetMs>rules.maxElapsedMs)return match(stage,'ABORTED','TIME_LIMIT');
+  if(plan.missionCode==='NO_STOP_RAMP' && m.stopCount!==null && m.stopCount>0)return match(stage,'ABORTED','STOPPED');
   if(!stage.segmentEntered || !stage.segmentExited || m.movingDurationMs===null || m.movingDurationMs<=0 || m.maxSpeedKph===0 || (plan.missionCode==='ONE_SHOT_REVERSE' && (stage.parkingConfirmed!==true || m.movingDurationMs>=duration)))return match(stage,'UNVERIFIABLE','SIGNAL_QUALITY');
   if(plan.missionCode==='NO_STOP_RAMP' && m.stopCount===0 && m.movingDurationMs!==duration)reject('INVALID_MOVEMENT_DURATION');
   const count=m[metric]!;

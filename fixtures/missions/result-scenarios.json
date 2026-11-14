@@ -813,6 +813,72 @@
           }
         ]
       }
+    },
+    {
+      "name": "ramp-stopped",
+      "missionCode": "NO_STOP_RAMP",
+      "result": {
+        "expectedVersion": 1,
+        "clientResultId": "ramp-stopped",
+        "source": "SYNTHETIC",
+        "outcome": "ABORTED",
+        "reason": "STOPPED",
+        "finishedAt": "2026-11-15T00:00:01.000Z",
+        "elapsedMs": 1000,
+        "stars": 0,
+        "stages": [
+          {
+            "stageId": "NO_STOP_RAMP:ramp-b1",
+            "startOffsetMs": 0,
+            "endOffsetMs": 1000,
+            "outcome": "ABORTED",
+            "reason": "STOPPED",
+            "stars": 0,
+            "uxState": "ALLOWED",
+            "segmentEntered": true,
+            "segmentExited": false,
+            "parkingConfirmed": null,
+            "metrics": {
+              "movingDurationMs": 800,
+              "maxSpeedKph": 5,
+              "dangerEventCount": 0,
+              "reverseSegmentCount": null,
+              "stopCount": 1,
+              "abruptSteeringCount": null
+            },
+            "quality": [
+              {
+                "signal": "speed",
+                "status": "AVAILABLE",
+                "validSampleCount": 11,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "gear",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "segment",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              },
+              {
+                "signal": "riskEvents",
+                "status": "AVAILABLE",
+                "validSampleCount": 1,
+                "maxGapMs": 100,
+                "coveredMs": 1000
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

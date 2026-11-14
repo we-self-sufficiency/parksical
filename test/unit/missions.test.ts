@@ -41,6 +41,7 @@ test('strict nested input rejects raw signals, ambiguous nulls, numeric strings 
 });
 test('forged stars, stage reference/order, signal coverage, duration and terminal contradiction are rejected',()=>{
   for(const modify of [(r:RunResultDto)=>{r.stars=2;},(r:RunResultDto)=>{r.stages[0]!.stars=2;},(r:RunResultDto)=>{r.stages[0]!.stageId='ONE_SHOT_REVERSE:unknown';},(r:RunResultDto)=>{r.stages[0]!.endOffsetMs=0;},(r:RunResultDto)=>{r.stages[0]!.endOffsetMs=1001;},(r:RunResultDto)=>{r.finishedAt='2026-11-15T00:00:30.000Z';},(r:RunResultDto)=>{r.stages[0]!.quality[0]!.validSampleCount=1;},(r:RunResultDto)=>{r.stages[0]!.quality[0]!.coveredMs=1001;},(r:RunResultDto)=>{r.stages[0]!.segmentExited=false;},(r:RunResultDto)=>{r.stages[0]!.parkingConfirmed=false;}]){const r=scenario('reverse-success');modify(r);assert.throws(()=>check(r));}
+  const stopped=scenario('ramp-stopped');stopped.outcome='COMPLETED';stopped.reason='FINISHED';stopped.stages[0]!.outcome='FAILED';stopped.stages[0]!.reason='FINISHED';assert.throws(()=>check(stopped));
   const aborted=scenario('speed-abort');aborted.outcome='COMPLETED';assert.throws(()=>check(aborted));
   const noStage=scenario('reverse-success');noStage.stages=[];assert.throws(()=>check(noStage,plans));
 });

@@ -1,0 +1,19 @@
+{
+  "runId": "bdc44792-a15e-430c-b6c5-f881644c215f",
+  "version": 2,
+  "state": "ABORTED",
+  "source": "SYNTHETIC",
+  "receivedAt": "2026-11-14T18:40:17.546Z",
+  "outcome": "ABORTED",
+  "reason": "STOPPED",
+  "stars": 0,
+  "consistencyStatus": "CHECKED",
+  "recognitionStatus": "SYNTHETIC_NOT_ELIGIBLE",
+  "physicalVerification": "UNVERIFIED",
+  "operationalBlockers": [
+    "D-02",
+    "D-04"
+  ],
+  "rankingEligible": false,
+  "rewardEligible": false
+}

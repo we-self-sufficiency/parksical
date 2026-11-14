@@ -3,7 +3,7 @@ import { ArrayMaxSize,ArrayMinSize,ArrayUnique,IsArray,IsBoolean,IsDefined,IsIn,
 export const QUALITY_SIGNALS=['speed','gear','steeringAngle','segment','riskEvents'] as const;
 export type QualitySignal=typeof QUALITY_SIGNALS[number];
 export const QUALITY_STATUSES=['AVAILABLE','UNSUPPORTED','PERMISSION_DENIED','ERROR','MISSING','STALE','UNKNOWN'] as const;
-export const STAGE_REASONS=['FINISHED','SPEED_LIMIT','DANGER_EVENT','UX_RESTRICTED','UX_UNKNOWN','SIGNAL_QUALITY','USER_CANCELLED','APP_RESTARTED','TIME_LIMIT'] as const;
+export const STAGE_REASONS=['FINISHED','SPEED_LIMIT','DANGER_EVENT','UX_RESTRICTED','UX_UNKNOWN','SIGNAL_QUALITY','USER_CANCELLED','APP_RESTARTED','TIME_LIMIT','STOPPED'] as const;
 export type StageReason=typeof STAGE_REASONS[number];
 export type StageOutcome='SUCCESS'|'FAILED'|'ABORTED'|'UNVERIFIABLE';
 const integer=()=>Transform(({value}:{value:unknown})=>typeof value==='string' && /^\d{1,10}$/.test(value)?Number(value):value);

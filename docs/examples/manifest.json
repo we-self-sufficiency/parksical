@@ -92,7 +92,9 @@
     "run-cancel-abort-request.json": "RunResultSubmit",
     "run-cancel-abort-receipt.json": "RunReceipt",
     "run-stationary-not-success-request.json": "RunResultSubmit",
-    "run-stationary-not-success-receipt.json": "RunReceipt"
+    "run-stationary-not-success-receipt.json": "RunReceipt",
+    "run-ramp-stopped-request.json": "RunResultSubmit",
+    "run-ramp-stopped-receipt.json": "RunReceipt"
   },
   "cases": [
     {
@@ -545,6 +547,14 @@
       "schema": "RunReceipt",
       "example": "run-stationary-not-success-receipt.json",
       "requestExample": "run-stationary-not-success-request.json"
+    },
+    {
+      "name": "mission-ramp-stopped",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-ramp-stopped-receipt.json",
+      "requestExample": "run-ramp-stopped-request.json"
     }
   ],
   "negativeCases": [

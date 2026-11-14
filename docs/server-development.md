@@ -32,11 +32,11 @@ PostgreSQL 준비 → 일회 migration 성공 → API 순서다. migration 실�
 
 ## 설계와 구현
 
-구현한 경로는 health, 계약 문서, S-03 인증/차량 연결, S-04 capability/종료 메타데이터 수신, S-05 ADMIN+WEB 주차장·버전별 구조 관리, S-07 인증된 차량 크기별 난이도, S-06 인증된 주변 검색/상세 조회다. [가상 주차장 1곳의 시드](parking-lots.md)는 migration/build 뒤 비운영에서 명시적으로 실행한다. OpenAPI는 설계와 구현을 함께 담아 `X-Contract-Status: mixed`와 연산별 구현 상태를 제공한다. 원본 주행 신호·개인 위치 등은 후속/미정 범위다. [수신·재전송 안내](vehicle-ingestion.md)를 따른다.
+구현한 경로는 health, 계약 문서, S-03 인증/차량 연결, S-04 capability/종료 메타데이터 수신, S-05 ADMIN+WEB 주차장·버전별 구조 관리, S-07 인증된 차량 크기별 난이도, S-06 인증된 주변 검색/상세, S-08 개발 합성 리뷰, S-09 본인 위치·이력·비공개 사진 조회다. [가상 주차장 1곳의 시드](parking-lots.md)는 migration/build 뒤 비운영에서 명시적으로 실행한다. OpenAPI는 설계와 구현을 함께 담아 `X-Contract-Status: mixed`와 연산별 구현 상태를 제공한다. 원본 주행 신호·실제 개인 운전/위치 수집은 미정·비활성이다. [수신·재전송 안내](vehicle-ingestion.md)를 따른다.
 
 S-07의 인증된 `GET /lots/{lotId}/difficulty`는 [난이도 안내](difficulty.md)에 따라 구조/연식과 차량 크기를 계산한다. 현재 합성 자료만 사용하며 S-07 기본 설정은 리뷰/주행 표본을 만들지 않는다. S-08 개발 opt-in은 저장된 합성 리뷰 표본만 전달한다. 같은 계산기를 S-06 검색/상세에서 재사용하며 실제 SDK/실차 주차 가능 검증은 아니다. S-07에는 migration이 없었고 S-06에는 검색 색인/할인 코드 migration이 있다.
 
-공통 기반은 요청 ID·오류 envelope·JSON 64KiB 제한·ValidationPipe의 미지 필드 거절이다. HTTP 로그는 event/requestId/method/status/durationMs만 기록한다. URL·query·header·body·예외 원문을 기록하지 않아 QR 토큰/위치/자격 증명이 기본 로그에 남지 않는다. 시작 오류도 비밀을 포함할 수 있는 객체/stack을 출력하지 않는다.
+공통 기반은 요청 ID·오류 envelope·JSON 64KiB 제한(위치 사진 POST만3MiB)·ValidationPipe의 미지 필드 거절이다. HTTP 로그는 event/requestId/method/status/durationMs만 기록한다. URL·query·header·body·예외 원문을 기록하지 않아 QR 토큰/위치/자격 증명이 기본 로그에 남지 않는다. 시작 오류도 비밀을 포함할 수 있는 객체/stack을 출력하지 않는다.
 
 ## 검증
 
@@ -61,3 +61,5 @@ npm run test:integration
 S-06 #8: 인증된 주변 검색·상세 API, 차량별 난이도 정렬·불변 구조 조회는 [검색/상세 가이드](lot-search.md)를 따른다. 공유 서버/실제 SDK 검증은 별도다.
 
 S-08 #9의 리뷰/집계는 기본 비활성이다. DEV_REVIEWS_ENABLED=true는 비운영 개발 인증과 합성 방문 fixture에만 사용하며 [리뷰 가이드](reviews.md)의 명시적 준비·별도 CLI를 따른다. REAL_REVIEWS_ENABLED는 false만 허용한다. 새 migration 적용이 필요하고 startup에 리뷰/방문을 시드하지 않는다.
+
+S-09 #10은 [개인 위치·첨부 가이드](parked-locations.md)를 따른다. DEV_LOCATIONS_ENABLED 기본false이며 DEV_AUTH_ENABLED=true인 비운영에서만 켠다. REAL_LOCATIONS_ENABLED는 false만 허용한다. migration은 위치/원본·현재 선택·이력·사진 metadata/비공개 BYTEA·최소 변경 영수증을 추가하며 자동 시드는 없다. 사진 처리는 sharp0.35.5로 고정하고 JPEG/PNG 실제 디코딩·12MP·2MiB·EXIF 제거를 검증한다. 파일 어댑터는 DB 트랜잭션 범위이며 운영 저장소/보관 정책과 QR은 후속이다.

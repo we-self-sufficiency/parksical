@@ -1,0 +1,79 @@
+{
+  "items": [
+    {
+      "version": 3,
+      "kind": "CORRECTED",
+      "before": {
+        "note": "synthetic-manual-note",
+        "selection": {
+          "zoneId": "ground-a",
+          "floorId": "ground",
+          "zoneLabel": "지상 A",
+          "floorLabel": "1F (가상)",
+          "parkingSpace": {
+            "id": "ground-s01",
+            "type": "ACCESSIBLE",
+            "label": "1F-A01",
+            "active": true,
+            "center": {
+              "x": 8.15,
+              "y": 8.6
+            },
+            "zoneId": "ground-a",
+            "floorId": "ground",
+            "widthMm": 3500,
+            "approach": {
+              "side": "FRONT",
+              "aisleId": "ground-central",
+              "depthMm": 6800,
+              "lateralClearanceMm": 500
+            },
+            "lengthMm": 5200,
+            "headingDegrees": 90
+          },
+          "parkingSpaceId": "ground-s01",
+          "structureActive": true,
+          "structureStatus": "COMPLETE",
+          "structureVersion": 1
+        }
+      },
+      "after": {
+        "note": "synthetic-race-a",
+        "selection": {
+          "zoneId": "ground-a",
+          "floorId": "ground",
+          "zoneLabel": "지상 A",
+          "floorLabel": "1F (가상)",
+          "parkingSpace": {
+            "id": "ground-s01",
+            "type": "ACCESSIBLE",
+            "label": "1F-A01",
+            "active": true,
+            "center": {
+              "x": 8.15,
+              "y": 8.6
+            },
+            "zoneId": "ground-a",
+            "floorId": "ground",
+            "widthMm": 3500,
+            "approach": {
+              "side": "FRONT",
+              "aisleId": "ground-central",
+              "depthMm": 6800,
+              "lateralClearanceMm": 500
+            },
+            "lengthMm": 5200,
+            "headingDegrees": 90
+          },
+          "parkingSpaceId": "ground-s01",
+          "structureActive": true,
+          "structureStatus": "COMPLETE",
+          "structureVersion": 1
+        }
+      },
+      "actorKind": "WEB",
+      "createdAt": "2026-11-14T10:34:03.610Z"
+    }
+  ],
+  "nextBeforeVersion": 3
+}

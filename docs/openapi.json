@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.7.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed."
+    "version": "0.8.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending."
   },
   "servers": [
     {
@@ -799,47 +799,42 @@
     "/parked-locations": {
       "post": {
         "operationId": "createParkedLocation",
-        "description": "",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md. Owner+clientRecordId unique; same canonical original returns creation receipt even after corrections. Different original409 RECORD_CONFLICT, tombstone409 RESOURCE_DELETED. Latest uses occurredAt/id, not arrival/update time; historical offline inputs never overwrite corrections. Versioned floor/zone/space membership verified; null means unknown.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            },
+            "description": "Required. Owner+key scope across valid sessions; method/route/canonical body bound. Same key after parent deletion cannot resurrect data. Delete itself replays minimal receipt."
+          }
+        ],
         "responses": {
           "201": {
-            "description": "Success",
+            "description": "Owner resource or minimal immutable acknowledgement",
             "headers": {
-              "X-Request-Id": {
-                "description": "Server request correlation ID",
+              "Cache-Control": {
                 "schema": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "pattern": "^[A-Za-z0-9_.-]+$"
-                }
-              },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
-                "schema": {
-                  "type": "boolean"
+                  "const": "no-store"
                 }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Location"
-                },
-                "example": {
-                  "id": "parked_demo_1",
-                  "clientRecordId": "local_demo_1",
-                  "lotId": "lot_synthetic_1",
-                  "floorId": null,
-                  "zoneId": null,
-                  "confidence": "LOW",
-                  "distanceM": 120.5,
-                  "occurredAt": "2026-11-13T11:00:00Z",
-                  "structureVersion": null,
-                  "version": 1,
-                  "userEdited": false,
-                  "createdAt": "2026-11-13T11:00:00Z",
-                  "updatedAt": "2026-11-13T11:00:00Z",
-                  "note": null
+                  "$ref": "#/components/schemas/LocationReceipt"
                 }
               }
             }
@@ -870,6 +865,16 @@
           },
           "413": {
             "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -878,55 +883,51 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LocationCreate"
-              },
-              "example": {
-                "clientRecordId": "local_demo_1",
-                "lotId": "lot_synthetic_1",
-                "floorId": null,
-                "zoneId": null,
-                "confidence": "LOW",
-                "distanceM": 120.5,
-                "occurredAt": "2026-11-13T11:00:00Z",
-                "structureVersion": null
               }
             }
           }
-        },
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_.-]+$"
-            }
-          }
-        ],
-        "x-implementation-status": "design"
+        }
       },
       "get": {
         "operationId": "listMyParkedLocations",
-        "description": "",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Owner resource or minimal immutable acknowledgement",
             "headers": {
-              "X-Request-Id": {
-                "description": "Server request correlation ID",
+              "Cache-Control": {
                 "schema": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "pattern": "^[A-Za-z0-9_.-]+$"
-                }
-              },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
-                "schema": {
-                  "type": "boolean"
+                  "const": "no-store"
                 }
               }
             },
@@ -964,110 +965,31 @@
           },
           "413": {
             "$ref": "#/components/responses/Error413"
-          }
-        },
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20
-            }
           },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2048
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
-        ],
-        "x-implementation-status": "design"
+        }
       }
     },
     "/parked-locations/{locationId}": {
       "get": {
         "operationId": "getMyParkedLocation",
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server request correlation ID",
-                "schema": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "pattern": "^[A-Za-z0-9_.-]+$"
-                }
-              },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Location"
-                },
-                "example": {
-                  "id": "parked_demo_1",
-                  "clientRecordId": "local_demo_1",
-                  "lotId": "lot_synthetic_1",
-                  "floorId": null,
-                  "zoneId": null,
-                  "confidence": "LOW",
-                  "distanceM": 120.5,
-                  "occurredAt": "2026-11-13T11:00:00Z",
-                  "structureVersion": null,
-                  "version": 1,
-                  "userEdited": false,
-                  "createdAt": "2026-11-13T11:00:00Z",
-                  "updatedAt": "2026-11-13T11:00:00Z",
-                  "note": null
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/Error400"
-          },
-          "401": {
-            "$ref": "#/components/responses/Error401"
-          },
-          "403": {
-            "$ref": "#/components/responses/Error403"
-          },
-          "404": {
-            "$ref": "#/components/responses/Error404"
-          },
-          "409": {
-            "$ref": "#/components/responses/Error409"
-          },
-          "422": {
-            "$ref": "#/components/responses/Error422"
-          },
-          "429": {
-            "$ref": "#/components/responses/Error429"
-          },
-          "503": {
-            "$ref": "#/components/responses/Error503"
-          },
-          "413": {
-            "$ref": "#/components/responses/Error413"
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
           }
-        },
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
         "parameters": [
           {
             "name": "locationId",
@@ -1075,34 +997,17 @@
             "required": true,
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_.-]+$"
+              "format": "uuid"
             }
           }
         ],
-        "x-implementation-status": "design"
-      },
-      "patch": {
-        "operationId": "patchMyParkedLocation",
-        "description": "",
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Owner resource or minimal immutable acknowledgement",
             "headers": {
-              "X-Request-Id": {
-                "description": "Server request correlation ID",
+              "Cache-Control": {
                 "schema": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "pattern": "^[A-Za-z0-9_.-]+$"
-                }
-              },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
-                "schema": {
-                  "type": "boolean"
+                  "const": "no-store"
                 }
               }
             },
@@ -1140,24 +1045,29 @@
           },
           "413": {
             "$ref": "#/components/responses/Error413"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LocationPatch"
-              },
-              "example": {
-                "expectedVersion": 1,
-                "floorId": null,
-                "zoneId": null,
-                "note": "입구 근처, 층 확인 필요"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
-        },
+        }
+      },
+      "patch": {
+        "operationId": "patchMyParkedLocation",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
         "parameters": [
           {
             "name": "locationId",
@@ -1165,9 +1075,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_.-]+$"
+              "format": "uuid"
             }
           },
           {
@@ -1179,15 +1087,28 @@
               "minLength": 1,
               "maxLength": 64,
               "pattern": "^[A-Za-z0-9_.-]+$"
-            }
+            },
+            "description": "Required. Owner+key scope across valid sessions; method/route/canonical body bound. Same key after parent deletion cannot resurrect data. Delete itself replays minimal receipt."
           }
         ],
-        "x-implementation-status": "design"
-      },
-      "delete": {
-        "operationId": "deleteMyParkedLocation",
-        "description": "",
         "responses": {
+          "200": {
+            "description": "Owner resource or minimal immutable acknowledgement",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationReceipt"
+                }
+              }
+            }
+          },
           "400": {
             "$ref": "#/components/responses/Error400"
           },
@@ -1212,30 +1133,41 @@
           "503": {
             "$ref": "#/components/responses/Error503"
           },
-          "204": {
-            "description": "Deleted; no response body",
-            "headers": {
-              "X-Request-Id": {
-                "description": "Server request correlation ID",
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "pattern": "^[A-Za-z0-9_.-]+$"
-                }
-              },
-              "Idempotency-Replayed": {
-                "description": "Present and true on successful idempotent replay only",
-                "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
-          },
-          "413": {
-            "$ref": "#/components/responses/Error413"
           }
         },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationPatch"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMyParkedLocation",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md. Clears original/selection/note/session reference/history and all photo metadata/bytes atomically; accessEpoch increments. Minimal dedup/cursor tombstone remains for development. Future QR #11 must check deleted/epoch; no QR activation in this issue.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
         "parameters": [
           {
             "name": "locationId",
@@ -1243,13 +1175,88 @@
             "required": true,
             "schema": {
               "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
               "minLength": 1,
               "maxLength": 64,
               "pattern": "^[A-Za-z0-9_.-]+$"
-            }
+            },
+            "description": "Required. Owner+key scope across valid sessions; method/route/canonical body bound. Same key after parent deletion cannot resurrect data. Delete itself replays minimal receipt."
           }
         ],
-        "x-implementation-status": "design"
+        "responses": {
+          "200": {
+            "description": "Owner resource or minimal immutable acknowledgement",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationDelete"
+              }
+            }
+          }
+        }
       }
     },
     "/parked-locations/{locationId}/qr-tokens": {
@@ -3362,6 +3369,478 @@
           }
         }
       }
+    },
+    "/parked-locations/current": {
+      "get": {
+        "operationId": "getCurrentParkedLocation",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Owner resource or minimal immutable acknowledgement",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentLocation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/parked-locations/{locationId}/history": {
+      "get": {
+        "operationId": "getParkedLocationHistory",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "beforeVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owner resource or minimal immutable acknowledgement",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/parked-locations/{locationId}/photos": {
+      "post": {
+        "operationId": "addParkedLocationPhoto",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            },
+            "description": "Required. Owner+key scope across valid sessions; method/route/canonical body bound. Same key after parent deletion cannot resurrect data. Delete itself replays minimal receipt."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Owner resource or minimal immutable acknowledgement",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationPhotoReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationPhotoUpload"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/parked-locations/{locationId}/photos/{photoId}": {
+      "get": {
+        "operationId": "getParkedLocationPhoto",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "photoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private image bytes",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteParkedLocationPhoto",
+        "description": "Synthetic non-production private development only. Requires DEV_AUTH_ENABLED+DEV_LOCATIONS_ENABLED and own WEB/VEHICLE bearer. Default disabled, production/real collection blocked. No-store; account reads300/5min, writes100/5min. No admin bypass; no raw driving signals or public file URLs. See docs/parked-locations.md.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWN_SYNTHETIC_DEVELOPMENT_LOCATION",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "photoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            },
+            "description": "Required. Owner+key scope across valid sessions; method/route/canonical body bound. Same key after parent deletion cannot resurrect data. Delete itself replays minimal receipt."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owner resource or minimal immutable acknowledgement",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationPhotoReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "500": {
+            "description": "Atomic rollback on internal storage/database failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationDelete"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4106,17 +4585,27 @@
           },
           "lotId": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_.-]+$"
+            "format": "uuid"
+          },
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "floorId": {
             "anyOf": [
               {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
               },
               {
                 "type": "null"
@@ -4128,8 +4617,21 @@
               {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpaceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
               },
               {
                 "type": "null"
@@ -4150,7 +4652,8 @@
               {
                 "type": "number",
                 "minimum": 0,
-                "maximum": 100000
+                "maximum": 100000,
+                "multipleOf": 0.001
               },
               {
                 "type": "null"
@@ -4160,15 +4663,27 @@
           "occurredAt": {
             "type": "string",
             "format": "date-time",
-            "pattern": "Z$"
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
           },
-          "structureVersion": {
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "vehicleSessionId": {
             "anyOf": [
               {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
               },
               {
                 "type": "null"
@@ -4179,12 +4694,76 @@
         "required": [
           "clientRecordId",
           "lotId",
+          "structureVersion",
           "floorId",
           "zoneId",
+          "parkingSpaceId",
           "confidence",
           "distanceM",
           "occurredAt",
-          "structureVersion"
+          "source"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "structureVersion": {
+                  "type": "null"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "floorId": {
+                  "type": "null"
+                },
+                "zoneId": {
+                  "type": "null"
+                },
+                "parkingSpaceId": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "floorId": {
+                  "type": "null"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "zoneId": {
+                  "type": "null"
+                },
+                "parkingSpaceId": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "parkingSpaceId": {
+                  "type": "string"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "zoneId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32,
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                }
+              }
+            }
+          }
         ]
       },
       "LocationPatch": {
@@ -4193,15 +4772,28 @@
         "properties": {
           "expectedVersion": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "floorId": {
             "anyOf": [
               {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
               },
               {
                 "type": "null"
@@ -4213,8 +4805,21 @@
               {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpaceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
               },
               {
                 "type": "null"
@@ -4239,12 +4844,22 @@
         "anyOf": [
           {
             "required": [
+              "structureVersion"
+            ]
+          },
+          {
+            "required": [
               "floorId"
             ]
           },
           {
             "required": [
               "zoneId"
+            ]
+          },
+          {
+            "required": [
+              "parkingSpaceId"
             ]
           },
           {
@@ -4260,9 +4875,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_.-]+$"
+            "format": "uuid"
           },
           "clientRecordId": {
             "type": "string",
@@ -4272,35 +4885,27 @@
           },
           "lotId": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_.-]+$"
+            "format": "uuid"
           },
-          "floorId": {
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "vehicleSessionId": {
             "anyOf": [
               {
                 "type": "string",
-                "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
+                "format": "uuid"
               },
               {
                 "type": "null"
               }
             ]
           },
-          "zoneId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "original": {
+            "$ref": "#/components/schemas/OriginalLocationEstimate"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/ResolvedLocationSelection"
           },
           "confidence": {
             "type": "string",
@@ -4316,47 +4921,13 @@
               {
                 "type": "number",
                 "minimum": 0,
-                "maximum": 100000
+                "maximum": 100000,
+                "multipleOf": 0.001
               },
               {
                 "type": "null"
               }
             ]
-          },
-          "occurredAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "Z$"
-          },
-          "structureVersion": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 64,
-                "pattern": "^[A-Za-z0-9_.-]+$"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "userEdited": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "Z$"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "Z$"
           },
           "note": {
             "anyOf": [
@@ -4368,23 +4939,61 @@
                 "type": "null"
               }
             ]
+          },
+          "userEdited": {
+            "type": "boolean"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "accessEpoch": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "photos": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "$ref": "#/components/schemas/LocationPhoto"
+            }
           }
         },
         "required": [
           "id",
           "clientRecordId",
           "lotId",
-          "floorId",
-          "zoneId",
+          "source",
+          "vehicleSessionId",
+          "original",
+          "selection",
           "confidence",
           "distanceM",
-          "occurredAt",
-          "structureVersion",
-          "version",
+          "note",
           "userEdited",
-          "createdAt",
+          "occurredAt",
+          "receivedAt",
           "updatedAt",
-          "note"
+          "version",
+          "accessEpoch",
+          "photos"
         ]
       },
       "LocationPage": {
@@ -4393,6 +5002,7 @@
         "properties": {
           "items": {
             "type": "array",
+            "maxItems": 50,
             "items": {
               "$ref": "#/components/schemas/Location"
             }
@@ -4402,7 +5012,7 @@
               {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 2048
+                "maxLength": 256
               },
               {
                 "type": "null"
@@ -7475,6 +8085,691 @@
           "aggregateVersion",
           "ruleVersion"
         ]
+      },
+      "LocationSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "floorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpaceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "structureVersion",
+          "floorId",
+          "zoneId",
+          "parkingSpaceId"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "structureVersion": {
+                  "type": "null"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "floorId": {
+                  "type": "null"
+                },
+                "zoneId": {
+                  "type": "null"
+                },
+                "parkingSpaceId": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "floorId": {
+                  "type": "null"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "zoneId": {
+                  "type": "null"
+                },
+                "parkingSpaceId": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "parkingSpaceId": {
+                  "type": "string"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "zoneId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32,
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ResolvedLocationSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "floorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpaceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "floorLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ParkingSpace"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "structureStatus": {
+            "type": "string",
+            "enum": [
+              "UNRESOLVED",
+              "UNKNOWN",
+              "DRAFT",
+              "COMPLETE"
+            ]
+          },
+          "structureActive": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "structureVersion",
+          "floorId",
+          "zoneId",
+          "parkingSpaceId",
+          "floorLabel",
+          "zoneLabel",
+          "parkingSpace",
+          "structureStatus",
+          "structureActive"
+        ]
+      },
+      "OriginalLocationEstimate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "structureVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "floorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpaceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "floorLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "zoneLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parkingSpace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ParkingSpace"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "structureStatus": {
+            "type": "string",
+            "enum": [
+              "UNRESOLVED",
+              "UNKNOWN",
+              "DRAFT",
+              "COMPLETE"
+            ]
+          },
+          "structureActive": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW",
+              "UNKNOWN"
+            ]
+          },
+          "distanceM": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "structureVersion",
+          "floorId",
+          "zoneId",
+          "parkingSpaceId",
+          "floorLabel",
+          "zoneLabel",
+          "parkingSpace",
+          "structureStatus",
+          "structureActive",
+          "confidence",
+          "distanceM"
+        ]
+      },
+      "LocationDelete": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "LocationReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "accessEpoch": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "locationId",
+          "version",
+          "deleted",
+          "accessEpoch"
+        ]
+      },
+      "LocationPhoto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mimeType": {
+            "const": "image/jpeg"
+          },
+          "byteSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2097152
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          }
+        },
+        "required": [
+          "id",
+          "mimeType",
+          "byteSize",
+          "width",
+          "height",
+          "createdAt"
+        ]
+      },
+      "LocationPhotoUpload": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png"
+            ]
+          },
+          "dataBase64": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 3145728,
+            "contentEncoding": "base64",
+            "description": "Canonical padded base64 only. Decoded input max2MiB, JPEG/PNG magic and actual decode, max12MP. Re-encoded metadata-free JPEG <=2048x2048, <=2MiB. JSON photo route only3MiB; others64KiB."
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "contentType",
+          "dataBase64"
+        ]
+      },
+      "LocationPhotoReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "accessEpoch": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "photoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "photoDeleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "locationId",
+          "version",
+          "deleted",
+          "accessEpoch",
+          "photoId",
+          "photoDeleted"
+        ]
+      },
+      "CurrentLocation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Location"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "location"
+        ]
+      },
+      "LocationState": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "selection": {
+            "$ref": "#/components/schemas/ResolvedLocationSelection"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "selection",
+          "note"
+        ]
+      },
+      "LocationChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "CORRECTED",
+              "PHOTO_ADDED",
+              "PHOTO_DELETED"
+            ]
+          },
+          "before": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocationState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "after": {
+            "$ref": "#/components/schemas/LocationState"
+          },
+          "actorKind": {
+            "type": "string",
+            "enum": [
+              "WEB",
+              "VEHICLE"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          }
+        },
+        "required": [
+          "version",
+          "kind",
+          "before",
+          "after",
+          "actorKind",
+          "createdAt"
+        ]
+      },
+      "LocationHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/LocationChange"
+            }
+          },
+          "nextBeforeVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextBeforeVersion"
+        ]
+      },
+      "LocationPageQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": []
       }
     },
     "responses": {

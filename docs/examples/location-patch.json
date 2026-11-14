@@ -1,6 +1,8 @@
 {
   "expectedVersion": 1,
-  "floorId": null,
-  "zoneId": null,
-  "note": "입구 근처, 층 확인 필요"
+  "structureVersion": 1,
+  "floorId": "ground",
+  "zoneId": "ground-a",
+  "parkingSpaceId": "ground-s01",
+  "note": "가상 주차면을 사용자가 수정"
 }

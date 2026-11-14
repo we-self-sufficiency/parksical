@@ -1,0 +1,96 @@
+{
+  "location": {
+    "id": "99999999-9999-4999-8999-999999999999",
+    "clientRecordId": "first",
+    "lotId": "66666666-6666-4666-8666-666666666666",
+    "source": "SYNTHETIC",
+    "vehicleSessionId": null,
+    "original": {
+      "zoneId": null,
+      "floorId": null,
+      "distanceM": null,
+      "zoneLabel": null,
+      "confidence": "LOW",
+      "floorLabel": null,
+      "parkingSpace": null,
+      "parkingSpaceId": null,
+      "structureActive": null,
+      "structureStatus": "UNRESOLVED",
+      "structureVersion": null
+    },
+    "selection": {
+      "zoneId": "ground-a",
+      "floorId": "ground",
+      "zoneLabel": "지상 A",
+      "floorLabel": "1F (가상)",
+      "parkingSpace": {
+        "id": "ground-s01",
+        "type": "ACCESSIBLE",
+        "label": "1F-A01",
+        "active": true,
+        "center": {
+          "x": 8.15,
+          "y": 8.6
+        },
+        "zoneId": "ground-a",
+        "floorId": "ground",
+        "widthMm": 3500,
+        "approach": {
+          "side": "FRONT",
+          "aisleId": "ground-central",
+          "depthMm": 6800,
+          "lateralClearanceMm": 500
+        },
+        "lengthMm": 5200,
+        "headingDegrees": 90
+      },
+      "parkingSpaceId": "ground-s01",
+      "structureActive": true,
+      "structureStatus": "COMPLETE",
+      "structureVersion": 1
+    },
+    "confidence": "LOW",
+    "distanceM": null,
+    "note": "synthetic-race-a",
+    "userEdited": true,
+    "occurredAt": "2026-01-01T12:00:00.000Z",
+    "receivedAt": "2026-11-14T10:34:03.375Z",
+    "updatedAt": "2026-11-14T10:34:04.109Z",
+    "version": 9,
+    "accessEpoch": 1,
+    "photos": [
+      {
+        "id": "aaaaaaaa-aaaa-4aaa-8aaa-000000000001",
+        "mimeType": "image/jpeg",
+        "byteSize": 47032,
+        "width": 256,
+        "height": 256,
+        "createdAt": "2026-11-14T10:34:04.076Z"
+      },
+      {
+        "id": "aaaaaaaa-aaaa-4aaa-8aaa-000000000002",
+        "mimeType": "image/jpeg",
+        "byteSize": 47032,
+        "width": 256,
+        "height": 256,
+        "createdAt": "2026-11-14T10:34:04.034Z"
+      },
+      {
+        "id": "aaaaaaaa-aaaa-4aaa-8aaa-000000000003",
+        "mimeType": "image/jpeg",
+        "byteSize": 47032,
+        "width": 256,
+        "height": 256,
+        "createdAt": "2026-11-14T10:34:04.054Z"
+      },
+      {
+        "id": "aaaaaaaa-aaaa-4aaa-8aaa-000000000004",
+        "mimeType": "image/jpeg",
+        "byteSize": 47032,
+        "width": 256,
+        "height": 256,
+        "createdAt": "2026-11-14T10:34:04.011Z"
+      }
+    ]
+  }
+}

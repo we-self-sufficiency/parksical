@@ -79,7 +79,7 @@ metrics는 movingDurationMs·maxSpeedKph(음수 없는 **절대** 차속 최대�
 - RESTRICTED: ABORTED/UX_RESTRICTED, 절대 차속>10: ABORTED/SPEED_LIMIT, 위험>0: ABORTED/DANGER_EVENT. 1초/두 번째 경고를 기다리는 서버 제어는 없다.
 - UNKNOWN: UNVERIFIABLE/UX_UNKNOWN, 신호 부족/오래됨/측정 공백: UNVERIFIABLE/SIGNAL_QUALITY, 재시작: UNVERIFIABLE/APP_RESTARTED.
 - 유효 구간의 취소: ABORTED/USER_CANCELLED. 정상 완료는 FINISHED이며 미션별 점수를 비교한다.
-- 마지막 완료 구간 뒤 elapsedMs가2시간을 넘으면 ABORTED/TIME_LIMIT로 무보상 종료할 수 있다. 스테이지 없는 초기 취소/재시작/품질 미확인도 명시적 무보상 결과로 보관할 수 있다.
+- 마지막 완료 구간 뒤 elapsedMs가2시간을 넘으면 ABORTED/TIME_LIMIT로 무보상 종료할 수 있다. 스테이지 없는 초기 취소/UX 제한/재시작/품질 미확인도 명시적 무보상 결과로 보관할 수 있다.
 
 도전 전체 COMPLETED는 모든 스테이지 SUCCESS/FAILED와 합산 stars를 요구한다. ABORTED/UNVERIFIABLE는 마지막 스테이지와 같은 outcome/reason, 전체 stars0이다(명시적 초기 종료/timeout 예외 위 참조). UNKNOWN/결측은 성공으로 승격되지 않는다. startedAt~finishedAt UTC 차이와 elapsedMs의 차이는5초 이내, finishedAt은 startedAt 이후·과거72시간/미래5분 이내다. 2시간은 단조 증가 도전 제한이고72시간은 지연 결과 업로드 창이다. 서버는 미완료 ACTIVE를 background job으로 자동 성공/실패 확정하지 않는다. 앱이 로컬 종료와 결과 큐를 관리한다.
 

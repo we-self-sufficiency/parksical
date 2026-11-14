@@ -64,6 +64,7 @@ test('multiple stages require exact frozen order, no overlap, correct total, no 
 });
 test('pre-stage cancellation/restart and timeout are explicit zero-reward terminal records',()=>{
   const r=scenario('cancel-abort');r.stages=[];r.elapsedMs=0;r.finishedAt=fixture.startedAt;assert.equal(check(r,plans).outcome,'ABORTED');
+  r.reason='UX_RESTRICTED';assert.equal(check(r,plans).outcome,'ABORTED');
   r.reason='SPEED_LIMIT';assert.throws(()=>check(r,plans));
   r.reason='APP_RESTARTED';r.outcome='UNVERIFIABLE';assert.equal(check(r,plans).stars,0);
   r.reason='TIME_LIMIT';r.outcome='ABORTED';r.elapsedMs=7200001;r.finishedAt=new Date(start.getTime()+r.elapsedMs).toISOString();assert.equal(validateRunResult(plans,missionRules(),start,r,new Date(start.getTime()+r.elapsedMs)).stars,0);

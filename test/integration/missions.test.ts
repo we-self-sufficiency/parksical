@@ -75,6 +75,8 @@ test('real PG mission runs: strict HTTP contract, immutable versions, concurrenc
       const created=await request('/runs',vehicle.accessToken,'POST',create(s.name,[report.stages[0]!.stageId]),'scenario-'+s.name);assert.equal(created.status,201,await created.clone().text());const runId=(await created.json() as {runId:string}).runId;
       const r=await request('/runs/'+runId+'/result',vehicle.accessToken,'POST',report,'result-'+s.name);assert.equal(r.status,201,await r.clone().text());const body=await r.json() as Record<string,unknown>;assert.equal(body.state,report.outcome,s.name);assert.equal(body.stars,report.stars);evidence[s.name]=body;
     }
+    const preStage=(await (await request('/runs',vehicle.accessToken,'POST',create('pre-stage-ux'),'pre-stage-create')).json() as {runId:string}).runId;
+    const preStageResponse=await request('/runs/'+preStage+'/result',vehicle.accessToken,'POST',{...success(),stages:[],outcome:'ABORTED',reason:'UX_RESTRICTED',stars:0,elapsedMs:0,finishedAt:startedAt},'pre-stage-abort');assert.equal(preStageResponse.status,201);assert.equal((await preStageResponse.json() as {state:string}).state,'ABORTED');
     const competing=(await (await request('/runs',vehicle.accessToken,'POST',create('terminal-race'),'race-create')).json() as {runId:string}).runId;
     const otherFinal={...success(),clientResultId:'another'};
     const race=await Promise.all([request('/runs/'+competing+'/result',vehicle.accessToken,'POST',success(),'race-a'),request('/runs/'+competing+'/result',vehicle.accessToken,'POST',otherFinal,'race-b')]);assert.deepEqual(race.map(r=>r.status).sort(),[201,409]);

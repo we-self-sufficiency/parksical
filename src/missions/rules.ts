@@ -75,7 +75,7 @@ export function validateRunResult(plans:StagePlan[],rules:MissionRules,startedAt
     if(dto.stages.length!==plans.length || dto.reason!=='FINISHED' || dto.stages.some(s=>!['SUCCESS','FAILED'].includes(s.outcome)) || dto.elapsedMs>rules.maxElapsedMs || dto.stars!==dto.stages.reduce((n,s)=>n+s.stars,0))reject();
   }else{
     if(dto.stars!==0)reject('RUN_STARS_MISMATCH');
-    const early=dto.stages.length===0 && ((dto.outcome==='ABORTED' && dto.reason==='USER_CANCELLED') || (dto.outcome==='UNVERIFIABLE' && ['APP_RESTARTED','UX_UNKNOWN','SIGNAL_QUALITY'].includes(dto.reason)));
+    const early=dto.stages.length===0 && ((dto.outcome==='ABORTED' && ['USER_CANCELLED','UX_RESTRICTED'].includes(dto.reason)) || (dto.outcome==='UNVERIFIABLE' && ['APP_RESTARTED','UX_UNKNOWN','SIGNAL_QUALITY'].includes(dto.reason)));
     const timeout=dto.outcome==='ABORTED' && dto.reason==='TIME_LIMIT' && dto.elapsedMs>rules.maxElapsedMs && (!last || ['SUCCESS','FAILED'].includes(last.outcome));
     if(!early && !timeout && (!last || last.outcome!==dto.outcome || last.reason!==dto.reason))reject('RUN_OUTCOME_MISMATCH');
   }

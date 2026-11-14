@@ -79,6 +79,12 @@ class DefaultMissionJudge : MissionJudge {
     override fun onSample(s: VehicleState) {
         val d = dungeon ?: return
         if (done) return
+        if (s.airbagDeployed) {
+            done = true
+            val elapsed = if (begun) s.timestampMs - t0 else 0L
+            _status.value = RunStatus.Aborted("에어백이 전개되어 미션을 중단했어요", buildRecord(d, elapsed, "중단"))
+            return
+        }
         if (!begun) {
             if (s.gear == Gear.PARK) return
             begun = true; t0 = s.timestampMs; lastTs = s.timestampMs; last = s; recent.addLast(s)

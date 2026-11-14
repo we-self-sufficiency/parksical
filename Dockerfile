@@ -6,6 +6,7 @@ RUN npm ci
 COPY tsconfig*.json prisma.config.ts ./
 COPY prisma ./prisma
 COPY src ./src
+COPY public ./public
 RUN npm run generate && npm run build
 
 FROM build AS migrate
@@ -20,6 +21,7 @@ COPY --from=build /app/package.json /app/package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY docs/openapi.json ./docs/openapi.json
+COPY --from=build /app/public ./public
 USER node
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

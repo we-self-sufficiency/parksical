@@ -6,6 +6,8 @@ export interface AppConfig {
   devAuthEnabled: boolean;
   devReviewsEnabled: boolean;
   devLocationsEnabled: boolean;
+  devQrEnabled: boolean;
+  qrPublicOrigin?: string;
   devAuthSecret?: string;
 }
 
@@ -21,7 +23,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('Invalid DATABASE_URL');
   }
   // No feature needing a user policy is activated by this foundation.
-  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED', 'REAL_REVIEWS_ENABLED', 'REAL_LOCATIONS_ENABLED']) {
+  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED', 'REAL_REVIEWS_ENABLED', 'REAL_LOCATIONS_ENABLED', 'REAL_QR_ENABLED']) {
     if (env[name] !== undefined && env[name] !== 'false') throw new Error(`Unsupported ${name}`);
   }
   if (env.DEV_AUTH_ENABLED !== undefined && !['true', 'false'].includes(env.DEV_AUTH_ENABLED)) throw new Error('Invalid DEV_AUTH_ENABLED');
@@ -33,7 +35,17 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if(env.DEV_LOCATIONS_ENABLED!==undefined && !['true','false'].includes(env.DEV_LOCATIONS_ENABLED))throw new Error('Invalid DEV_LOCATIONS_ENABLED');
   const devLocationsEnabled=env.DEV_LOCATIONS_ENABLED==='true';
   if(devLocationsEnabled && (nodeEnv==='production' || !devAuthEnabled))throw new Error('Private development locations require non-production development authentication');
-  return { devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
+  if(env.DEV_QR_ENABLED!==undefined && !['true','false'].includes(env.DEV_QR_ENABLED))throw new Error('Invalid DEV_QR_ENABLED');
+  const devQrEnabled=env.DEV_QR_ENABLED==='true';
+  let qrPublicOrigin:string|undefined;
+  if(env.QR_PUBLIC_ORIGIN){
+    let origin:URL;
+    try{origin=new URL(env.QR_PUBLIC_ORIGIN);}catch{throw new Error('Invalid QR_PUBLIC_ORIGIN');}
+    if(origin.origin!==env.QR_PUBLIC_ORIGIN || origin.username || origin.password || (origin.protocol!=='https:' && !(origin.protocol==='http:' && ['127.0.0.1','localhost','[::1]'].includes(origin.hostname))))throw new Error('Invalid QR_PUBLIC_ORIGIN');
+    qrPublicOrigin=origin.origin;
+  }
+  if(devQrEnabled && (nodeEnv==='production' || !devAuthEnabled || !devLocationsEnabled || !qrPublicOrigin))throw new Error('Development QR requires synthetic locations, authentication and explicit origin');
+  return { devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');

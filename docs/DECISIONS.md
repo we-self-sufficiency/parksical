@@ -96,3 +96,11 @@ A-12 가역 개발 기본값 locations-v1: DEV_LOCATIONS_ENABLED 기본false·pr
 D-06은 PENDING이며 PrivatePhotoStore의 PostgreSQL BYTEA 개발 어댑터로만 검증한다. JPEG/PNG를 실제 디코딩해 회전·축소·metadata 제거 후 JPEG로 저장한다. 원본2MiB/12MP·결과2MiB/2048축·최대5장, 계정1000기록·기록200이력, 읽기300/쓰기100회·5분은 개발 자원 상한이다. 저장/삭제·사진 bytes·이력·버전·영수증은 하나의 DB 트랜잭션이다. 원격 파일 제공자는 staging/삭제 재시도/고아 정리 설계가 필요하다.
 
 D-02의 실제 수집·보관/완전 삭제는 미정이다. 삭제 시 위치 내용·차량 세션 참조·이력·첨부를 지우고 최소 dedup/cursor tombstone과 hash를 남긴다. accessEpoch를 증가시키고 owner/deleted 검사를 후속 QR의 무효화 경계로 제공하지만 QR 발급/교환은 #11 미구현이다. 기존 S-08 합성 방문은 자동 생성하지 않는다. 세부 API·오류·호환성과 검증은 [parked-locations.md](parked-locations.md)를 따른다.
+
+## S-10 QR·휴대폰 개발 계약 (2026-11-15 KST)
+
+A-13 가역 개발안 qr-phone-v1: DEV_QR_ENABLED 기본false·production 차단·합성 위치/개발 인증/정확한 origin을 명시한다. D-07은 PENDING이며24시간 안의1회 명시적 교환 후 같은 브라우저 쿠키로 원 기한까지 재조회한다. 링크는 /p#TOKEN이고 GET/HEAD/미리보기 비소모다. 운영 수신자/로그인·재조회 의미의 확정으로 확대하지 않는다.
+
+발급은256bit 원문1회 공개·DB hash만 저장하는 예외다. 사용자+key/body 동일 재시도409 QR_SECRET_ALREADY_ISSUED, 다른 body409 IDEMPOTENCY_CONFLICT이며 응답 유실은 새 키 재발급으로 이전 권한을 폐기한다. phone 교환은 Origin+CSRF/challenge+key에 바인딩하고 HMAC 파생 자격을 응답 유실 재시도에 재현한다. DB는 토큰/브라우저 자격 원문 없이 hash/binding만 보관하고 grant당1session을 원자 커밋한다.
+
+휴대폰은 원래 신뢰도·현재 수정 label·선택 층의 합성 평면도만 보며 계정/위치ID·메모/사진·좌표·다른 층을 받지 않는다. 발급자 로그아웃/설치 해제·refresh 만료/폐기·토큰 폐기/재발급·위치 삭제/epoch·파생세션 폐기와 기한을 매 조회에 재검사한다. access-token 정상 회전/15분 만료는 별도이며24시간을 연장하지 않는다. HTTPS의 __Host-/Secure/HttpOnly/Strict 쿠키·exact Origin/CSRF·no-store/CSP/referrer 방어와 개발 HTTP loopback 예외를 구분한다. D-06 운영 도메인/배포·D-02 실제 수집/보관·D-07 최종 정책은 계속 미정이다. 상세는 [location-qr.md](location-qr.md)를 따른다.

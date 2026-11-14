@@ -89,6 +89,17 @@ export class AuthService {
     });
   }
 
+  // Grants remain valid across access-token rotation, but not issuer logout/unlink/refresh expiry.
+  async forDelegatedUser<T>(sessionId:string,userId:string,work:(tx:Tx)=>Promise<T>):Promise<T> {
+    const found=await this.database.client.authSession.findUnique({where:{id:sessionId}});
+    if(!found)throw new ApiError(410,'QR_UNAVAILABLE');
+    return this.locked(this.sessionKey(found),async tx=>{
+      const row=await this.session(tx,sessionId);
+      if(!row || row.userId!==userId)throw new ApiError(410,'QR_UNAVAILABLE');
+      return work(tx);
+    });
+  }
+
   async forAdmin<T>(p: Principal, work: (tx: Tx) => Promise<T>): Promise<T> {
     return this.locked('session:' + p.sessionId, async tx => {
       const row = await this.principal(tx, p, true);

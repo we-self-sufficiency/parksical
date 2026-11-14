@@ -63,12 +63,12 @@ for path, methods in DOC['paths'].items():
         assert {'400', '401', '403', '404', '409', '413', '422', '429', '503'} <= set(operation['responses'])
         if method in ('post', 'patch', 'put'):
             if operation.get('x-idempotency-policy') == 'credential-flow':
-                assert path.startswith('/auth/'), 'Credential exception must be scoped to authentication'
+                assert path.startswith('/auth/') or (path in {'/qr/bootstrap','/qr/exchanges'} and oid in {'bootstrapQrPhone','exchangeQrGrant'}), 'Credential exception must be an approved authentication/QR flow'
             else:
                 assert any(p['name'] == 'Idempotency-Key' and p['required'] for p in operation['parameters'])
         if method != 'get':
             if not operation.get('security', DOC['security']):
-                assert oid in {'refreshAuthentication', 'startVehicleLink', 'exchangeVehicleLink'}, 'Unapproved public write'
+                assert oid in {'refreshAuthentication', 'startVehicleLink', 'exchangeVehicleLink', 'bootstrapQrPhone', 'exchangeQrGrant'}, 'Unapproved public write'
         for status, response in operation['responses'].items():
             response = resolve(response)
             if status == '204':

@@ -103,11 +103,12 @@ fun reservationReason(e: Throwable): String = when {
     e.status == 0 -> "서버 연결 안 됨"
     e.status == 403 -> "예약 기능이 꺼져 있어요"
     e.status == 404 -> "이 주차장은 예약을 받지 않아요"
-    e.status == 409 -> when (e.code) {
+    // server codes are prefixed, e.g. RESERVATION_USER_OVERLAP
+    e.status == 409 -> when (e.code?.removePrefix("RESERVATION_")) {
         "SLOT_FULL" -> "방금 다른 예약으로 찼어요"
-        "QUOTE_EXPIRED" -> "견적 시간이 지났어요"
-        "POLICY_CHANGED" -> "예약 정책이 바뀌었어요"
-        "USER_OVERLAP" -> "겹치는 예약이 이미 있어요"
+        "QUOTE_EXPIRED", "QUOTE_ALREADY_USED" -> "견적 시간이 지났어요"
+        "QUOTE_POLICY_CHANGED", "STRUCTURE_CHANGED" -> "예약 정책이 바뀌었어요"
+        "USER_OVERLAP" -> "이미 예약한 시간과 겹쳐요"
         else -> "예약 상태가 바뀌었어요"
     }
     e.status == 429 -> "잠시 후 다시 시도해 주세요"

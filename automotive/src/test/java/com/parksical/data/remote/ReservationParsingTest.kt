@@ -50,7 +50,8 @@ class ReservationParsingTest {
     }
 
     @Test fun reasons() {
-        assertEquals("방금 다른 예약으로 찼어요", reservationReason(ApiException(409, "SLOT_FULL")))
+        assertEquals("방금 다른 예약으로 찼어요", reservationReason(ApiException(409, "RESERVATION_SLOT_FULL")))
+        assertEquals("이미 예약한 시간과 겹쳐요", reservationReason(ApiException(409, "RESERVATION_USER_OVERLAP")))
         assertEquals("서버 연결 안 됨", reservationReason(ApiException(0)))
         assertEquals("예약 기능이 꺼져 있어요", reservationReason(ApiException(403, "RESERVATIONS_POLICY_DISABLED")))
     }

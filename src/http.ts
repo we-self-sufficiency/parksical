@@ -10,7 +10,7 @@ export function requestContext(sink: LogSink) {
   return (request: Request, response: Response, next: NextFunction) => {
     const incoming = request.get('X-Request-Id');
     const qr=request.path==='/p' || request.path.startsWith('/p/') || request.path.startsWith('/api/v1/qr') || request.path.includes('/qr-tokens');
-    const payment=request.path.startsWith('/api/v1/payment');
+    const payment=request.path.startsWith('/api/v1/payment') || request.path.startsWith('/api/v1/subscription') || request.path==='/api/v1/me/entitlements';
     const requestId = !qr && !payment && incoming && /^[A-Za-z0-9_.-]{1,64}$/.test(incoming) ? incoming : randomUUID();
     if(payment)response.setHeader('Cache-Control','no-store');
     response.locals.requestId = requestId;

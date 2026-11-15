@@ -1,0 +1,31 @@
+{
+  "id": "00000000-0000-4000-8000-000000000001",
+  "planCode": "MAX_PASS",
+  "priceVersion": "max-pass-4900-v1",
+  "policyVersion": "subscriptions-v1",
+  "state": "CANCEL_AT_PERIOD_END",
+  "renewalEnabled": false,
+  "cancelledAt": "2027-02-28T03:00:00.000Z",
+  "anchorAt": "2027-01-31T03:00:00.000Z",
+  "checkedAt": "2027-02-28T03:00:00.000Z",
+  "latestCycle": {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "cycleIndex": 1,
+    "startsAt": "2027-02-28T03:00:00.000Z",
+    "endsAt": "2027-03-31T03:00:00.000Z",
+    "chargeDeadline": "2027-02-28T03:05:00.000Z",
+    "amountKrw": 4900,
+    "currency": "KRW",
+    "paymentOrderId": "00000000-0000-4000-8000-000000000005",
+    "paymentState": "SUCCEEDED",
+    "paidAt": "2027-02-28T02:59:00.000Z",
+    "revokedAt": null
+  },
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

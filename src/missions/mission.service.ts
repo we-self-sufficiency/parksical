@@ -12,11 +12,13 @@ import type { CapabilitiesDto } from '../vehicle/dto.js';
 import { cursorLocation,locationCursor } from '../locations/pagination.js';
 import type { MissionQuery,RunCreateDto,RunPageQuery,RunResultDto } from './dto.js';
 import { missionCatalog,missionRules,validateRunResult,type MissionRules,type StagePlan } from './rules.js';
+import {requireSubscription} from '../subscriptions/projection.js';
+import {SubscriptionClock} from '../subscriptions/clock.js';
 
 type Tx=Prisma.TransactionClient;
 @Injectable()
 export class MissionService {
-  constructor(private readonly auth:AuthService,@Inject(APP_CONFIG)private readonly config:AppConfig,private readonly practice:PracticeService){}
+  constructor(private readonly auth:AuthService,@Inject(APP_CONFIG)private readonly config:AppConfig,private readonly practice:PracticeService,private readonly subscriptionClock:SubscriptionClock){}
   enabled(){if(!this.config.devMissionsEnabled || !this.config.devAuthEnabled || this.config.nodeEnv==='production')throw new ApiError(403,'MISSIONS_POLICY_DISABLED');}
   private async lock(tx:Tx,p:Principal){await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'mission-user:'+p.userId},0))`;}
   private async catalog(tx:Tx,q:MissionQuery){
@@ -52,6 +54,7 @@ export class MissionService {
       const creationHash=fingerprint(input);
       const old=await tx.missionRun.findUnique({where:{userId_installationId_clientRunId:{userId:p.userId,installationId:p.installationId!,clientRunId:dto.clientRunId}}});
       if(old){await this.owned(tx,p,old.id,true);if(old.creationHash!==creationHash)throw new ApiError(409,'RUN_CONFLICT');return {row:old,body:old.creationResponse,replayed:true};}
+      await requireSubscription(tx,p.userId,this.config,this.subscriptionClock);
       validateClock(input.startedAt,new Date());
       const session=await tx.vehicleSession.findFirst({where:{id:dto.vehicleSessionId,userId:p.userId,installationId:p.installationId!,authSessionId:p.sessionId,reportedSource:'SYNTHETIC',state:'ACTIVE'}});
       if(!session)throw new ApiError(404,'RESOURCE_NOT_FOUND');

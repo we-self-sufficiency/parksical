@@ -67,3 +67,7 @@
 OpenAPI0.14.0은 이전76연산/146스키마·차량 contractVersion1.0을 유지하고10연산을 추가한다. 기존 미연결 S-14 sandbox 명령은 유지하고 S-16 연결 이후에만 차단한다. 이전 서버는 새 결제 API를 제공하지 않으므로 migration 후 새 서버 배포가 필요하다. 기존 앱은 새 API를 선택적으로 호출하고 알 수 없는 상태를 성공으로 해석하지 않는다.
 
 단위 검증은 HMAC 정확한 bytes/기한, 제공자 식별/금액/통화 대조와 production 차단/일반 모드 독립성을 확인한다. 실제 PostgreSQL 통합은 두 pool의 중복 시도, 승인/환불 응답 유실, 영수증 실패 롤백/재시도, webhook 중복/위조/순서 역전, 타인/ADMIN/로그아웃, 독립 compiled API 조회, S-14 취소/만료·마지막 슬롯 재판매/늦은 승인 보상을 확인한다. 실제 PG 사업자·운영 청구·실제 SDK/실차·배포·D-05 승인은 검증하지 않았다. develop 머지 뒤 Wiki Home/Payments/Reservations와 API 준비 현황을 게시해야 이슈의 문서 완료 기준을 충족한다.
+
+## S-17 구독 결제
+
+[subscriptions.md](subscriptions.md)의 월별 cycle도 같은 결제 API/제공자·서명/서버 조회·영수증/환불 복구를 사용한다. 해당 주문에는 subscriptionCycleId·lotId=null·4900KRW 버전 구독 pricing이 있으며 일반/예약의 가격을 구독으로 변환하지 않는다. 검증된 결제/환불 변경과 기간/불변 이력은 한 DB 트랜잭션이다. 구독 해지는 향후 갱신 중단이고, cycle 전액 환불은 payment cancel→reconcile이다. 실제 정기 청구·D-05 운영 정책은 미구현/미승인이다.

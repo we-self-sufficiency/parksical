@@ -1,0 +1,36 @@
+{
+  "id": "00000000-0000-4000-8000-000000000003",
+  "quoteId": null,
+  "reservationId": null,
+  "lotId": null,
+  "subscriptionCycleId": "00000000-0000-4000-8000-000000000002",
+  "amountKrw": 4900,
+  "currency": "KRW",
+  "pricing": {
+    "code": "MAX_PASS",
+    "endsAt": "2027-02-28T03:00:00.000Z",
+    "period": "CALENDAR_MONTH_KST",
+    "currency": "KRW",
+    "startsAt": "2027-01-31T03:00:00.000Z",
+    "amountKrw": 4900,
+    "cycleIndex": 0,
+    "priceVersion": "max-pass-4900-v1",
+    "policyVersion": "subscriptions-v1"
+  },
+  "state": "SUCCEEDED",
+  "attempt": {
+    "state": "SUCCEEDED",
+    "transactionId": "00000000-0000-4000-8000-000000000008"
+  },
+  "refund": null,
+  "receiptId": "00000000-0000-4000-8000-000000000009",
+  "createdAt": "2027-01-31T03:00:00.000Z",
+  "expiresAt": "2027-01-31T03:05:00.000Z",
+  "source": "SYNTHETIC",
+  "provider": "SANDBOX",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

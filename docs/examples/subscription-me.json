@@ -1,0 +1,10 @@
+{
+  "subscription": null,
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

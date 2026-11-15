@@ -9,6 +9,8 @@ import { asJson } from '../lots/store.js';
 import { fingerprint } from '../vehicle/normalization.js';
 import type { RankingConsentDto, RankingPageQuery, RankingQuery, RankingRecordMutationDto } from './dto.js';
 import { bestCandidates, candidate, monthOf, nextConsentVersion, PUBLIC_POLICY_VERSION, ranked, rankingBoundary, rankingCohort, rankingMonth, RANKING_VERSION, recognition, type RankingCandidate } from './rules.js';
+import {paymentUserLock,requireSubscription} from '../subscriptions/projection.js';
+import {SubscriptionClock} from '../subscriptions/clock.js';
 
 type Tx = Prisma.TransactionClient;
 const included = { result: true, rankingRecord: true } as const;
@@ -17,12 +19,12 @@ const MAX_ROWS = 10000;
 
 @Injectable()
 export class RankingService {
-  constructor(private readonly auth: AuthService, private readonly database: DatabaseService, @Inject(APP_CONFIG) private readonly config: AppConfig) {}
+  constructor(private readonly auth: AuthService, private readonly database: DatabaseService, @Inject(APP_CONFIG) private readonly config: AppConfig,private readonly subscriptionClock:SubscriptionClock) {}
   enabled() { if (!this.config.devRankingsEnabled || !this.config.devAuthEnabled || this.config.nodeEnv === 'production') throw new ApiError(403, 'RANKINGS_POLICY_DISABLED'); }
   private async lock(tx: Tx) { await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended('synthetic-rankings-v1',0))`; }
   private async now(tx: Tx) { const rows = await tx.$queryRaw<{ epochMs: bigint }[]>`SELECT floor(extract(epoch FROM clock_timestamp())*1000)::bigint AS "epochMs"`; return new Date(Number(rows[0]!.epochMs)); }
   private async locked<T>(p: Principal, work: (tx: Tx) => Promise<T>) {
-    this.enabled(); return this.auth.forUser(p, async tx => { await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'mission-user:' + p.userId},0))`; await this.lock(tx); return work(tx); });
+    this.enabled(); return this.auth.forUser(p, async tx => { await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'mission-user:' + p.userId},0))`; if(this.config.devSubscriptionsEnabled)await paymentUserLock(tx,p.userId);await this.lock(tx); return work(tx); });
   }
   private async owned(tx: Tx, p: Principal, id: string) {
     const row = await tx.missionRun.findFirst({ where: { id, userId: p.userId, mode: 'CHALLENGE' }, include: included });
@@ -106,6 +108,7 @@ export class RankingService {
   }
   async board(p: Principal, lotId: string, q: RankingPageQuery) {
     return this.locked(p, async tx => {
+      await requireSubscription(tx,p.userId,this.config,this.subscriptionClock);
       const { visible, byUser, context } = await this.view(tx, lotId, q), limit = q.limit ?? 20;
       const items = visible.map(c => ({ entryId: c.publicEntryId, rank: c.rank, score: c.score, nickname: byUser.get(c.userId)!.nickname }));
       const publicContext = visible.length ? context : { ...context, cohort: null, snapshotId: null, finalizedAt: null, status: context.status === 'FINALIZED' ? 'READY_TO_FINALIZE' : context.status };
@@ -124,6 +127,7 @@ export class RankingService {
   }
   async me(p: Principal, lotId: string, q: RankingQuery) {
     return this.locked(p, async tx => {
+      await requireSubscription(tx,p.userId,this.config,this.subscriptionClock);
       const { candidates, visible, byUser, context } = await this.view(tx, lotId, q), self = candidates.find(c => c.userId === p.userId);
       // Private users compare only against opted-in participants plus themselves, never hidden peers.
       const population = bestCandidates([...visible.filter(c => c.userId !== p.userId), ...(self ? [self] : [])]);
@@ -133,6 +137,7 @@ export class RankingService {
   }
   async cohorts(p: Principal, lotId: string, month: string) {
     return this.locked(p, async tx => {
+      await requireSubscription(tx,p.userId,this.config,this.subscriptionClock);
       const { rows, bounds } = await this.source(tx, lotId, month), keys = new Set(rows.map(r => rankingCohort(r).cohortKey));
       const snapshots = await tx.rankingMonthSnapshot.findMany({ where: { lotId, month }, take: 101 });
       for (const snapshot of snapshots) keys.add(snapshot.cohortKey);

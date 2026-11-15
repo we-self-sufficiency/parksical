@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000006",
+      "cycleId": "00000000-0000-4000-8000-000000000004",
+      "kind": "PAYMENT_REFUNDED",
+      "observedAt": "2027-02-28T03:01:00.000Z",
+      "details": {
+        "state": "REFUNDED",
+        "orderId": "00000000-0000-4000-8000-000000000005"
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "cycleId": "00000000-0000-4000-8000-000000000004",
+      "kind": "PAYMENT_REFUND_PENDING",
+      "observedAt": "2027-02-28T03:01:00.000Z",
+      "details": {
+        "state": "REFUND_PENDING",
+        "orderId": "00000000-0000-4000-8000-000000000005"
+      }
+    }
+  ],
+  "nextCursor": "eyJpZCI6IjQzODAzM2E0LTRhM2UtNDA1OC1iZWFhLTA1ZDY3N2M1Yjg3ZSIsInF1ZXJ5IjoiNWNmOWM2OTliNGMyMGI0NzUyMThhYjgzYTQ2ODdhNDEwZmE1ZDVlODczZWY0MzljOGUyYzAzMjQ3ODEyODM4MyJ9",
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

@@ -44,6 +44,15 @@ test('real PG S-12/S-13 upgrade preserves immutable data through practice, reser
     await sql.query(await readFile('prisma/migrations/20261115050000_payments/migration.sql','utf8'));
     assert.deepEqual(await db.missionRun.findMany({include:{result:true},orderBy:{id:'asc'}}),before);
     assert.equal(await db.paymentOrder.count(),0);assert.equal(await db.paymentQuote.count(),0);assert.equal(await db.sandboxProviderPayment.count(),0);
+    const legacyQuote=randomUUID(),legacyOrder=randomUUID(),created=new Date(),start=new Date(created.getTime()+86400000),expires=new Date(created.getTime()+300000),pricing={currency:'KRW',priceVersion:'prepayment-v1',amountKrw:1000};
+    await sql.query('INSERT INTO "PaymentQuote" (id,"userId","lotId","structureVersion","startsAt","endsAt","amountKrw",details,"createdAt","expiresAt",receipt) VALUES ($1,$2,$3,1,$4,$5,1000,$6,$7,$8,$9)',[legacyQuote,user.id,lot.id,start,new Date(start.getTime()+1800000),pricing,created,expires,{}]);
+    await sql.query('INSERT INTO "PaymentOrder" (id,"userId","quoteId","lotId","amountKrw",currency,pricing,state,"createdAt","expiresAt","creationReceipt") VALUES ($1,$2,$3,$4,1000,\'KRW\',$5,\'CREATED\',$6,$7,$8)',[legacyOrder,user.id,legacyQuote,lot.id,pricing,created,expires,{}]);
+    const legacyBefore=(await sql.query('SELECT to_jsonb(o) AS row FROM "PaymentOrder" o WHERE id=$1',[legacyOrder])).rows[0];
+    await sql.query(await readFile('prisma/migrations/20261115060000_subscriptions/migration.sql','utf8'));
+    assert.deepEqual(await db.missionRun.findMany({include:{result:true},orderBy:{id:'asc'}}),before);
+    assert.equal(await db.subscription.count(),0);assert.equal(await db.subscriptionCycle.count(),0);assert.equal(await db.paymentOrder.count(),1);
+    assert.deepEqual((await sql.query('SELECT to_jsonb(o)-\'subscriptionCycleId\' AS row FROM "PaymentOrder" o WHERE id=$1',[legacyOrder])).rows[0],legacyBefore);
+    assert.equal((await db.paymentOrder.findUniqueOrThrow({where:{id:legacyOrder}})).subscriptionCycleId,null);
     await assert.rejects(db.rankingRecord.update({ where: { runId: rankingRecords[0]!.runId }, data: { rankingVersion: 'rankings-v2' } }));
     await assert.rejects(db.practiceRecord.update({ where: { runId: enrolled[0]!.runId }, data: { goalVersion: 'practice-v2' } }));
     await assert.rejects(db.missionRunResult.update({ where: { runId: enrolled[0]!.runId }, data: { stars: 1 } }));

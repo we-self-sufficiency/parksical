@@ -11,6 +11,7 @@ export interface AppConfig {
   devReservationsEnabled: boolean;
   devRankingsEnabled: boolean;
   devPaymentsEnabled: boolean;
+  devSubscriptionsEnabled: boolean;
   paymentWebhookSecret?: string;
   qrPublicOrigin?: string;
   devAuthSecret?: string;
@@ -63,7 +64,11 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const devPaymentsEnabled=env.DEV_PAYMENTS_ENABLED==='true';
   if(env.PAYMENT_PROVIDER!==undefined && env.PAYMENT_PROVIDER!=='SANDBOX')throw new Error('Unsupported PAYMENT_PROVIDER');
   if(devPaymentsEnabled && (nodeEnv==='production' || !devAuthEnabled || env.PAYMENT_PROVIDER!=='SANDBOX' || (env.PAYMENT_WEBHOOK_SECRET?.length ?? 0)<32))throw new Error('Synthetic payments require non-production authentication, sandbox provider and webhook secret');
-  return { devPaymentsEnabled, paymentWebhookSecret:env.PAYMENT_WEBHOOK_SECRET, devRankingsEnabled, devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
+  if(env.DEV_SUBSCRIPTIONS_ENABLED!==undefined && !['true','false'].includes(env.DEV_SUBSCRIPTIONS_ENABLED))throw new Error('Invalid DEV_SUBSCRIPTIONS_ENABLED');
+  if(env.REAL_SUBSCRIPTIONS_ENABLED!==undefined && env.REAL_SUBSCRIPTIONS_ENABLED!=='false')throw new Error('Unsupported REAL_SUBSCRIPTIONS_ENABLED');
+  const devSubscriptionsEnabled=env.DEV_SUBSCRIPTIONS_ENABLED==='true';
+  if(devSubscriptionsEnabled && (nodeEnv==='production' || !devPaymentsEnabled || !devAuthEnabled))throw new Error('Synthetic subscriptions require non-production authentication and sandbox payments');
+  return { devSubscriptionsEnabled, devPaymentsEnabled, paymentWebhookSecret:env.PAYMENT_WEBHOOK_SECRET, devRankingsEnabled, devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');

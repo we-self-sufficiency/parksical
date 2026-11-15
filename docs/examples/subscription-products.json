@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "code": "MAX_PASS",
+      "priceVersion": "max-pass-4900-v1",
+      "policyVersion": "subscriptions-v1",
+      "amountKrw": 4900,
+      "currency": "KRW",
+      "period": "CALENDAR_MONTH_KST"
+    }
+  ],
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

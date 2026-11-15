@@ -1,0 +1,22 @@
+{
+  "at": "2027-01-31T03:01:00.000Z",
+  "syntheticPassActive": true,
+  "capabilities": {
+    "challengeStart": true,
+    "practiceStart": true,
+    "reservationCreate": true,
+    "rankingRead": true
+  },
+  "evidenceCycleIds": [
+    "00000000-0000-4000-8000-000000000002"
+  ],
+  "policyVersion": "subscriptions-v1",
+  "settlementTimePolicy": "UNDECIDED",
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

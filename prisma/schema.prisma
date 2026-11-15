@@ -33,6 +33,8 @@ enum PairingStatus {
 }
 
 model User {
+  subscriptions Subscription[]
+  subscriptionMutations SubscriptionMutation[]
   paymentQuotes PaymentQuote[]
   paymentOrders PaymentOrder[]
   paymentMutations PaymentMutation[]
@@ -753,7 +755,9 @@ model PaymentOrder {
   quote PaymentQuote? @relation(fields:[quoteId],references:[id],onDelete:Restrict)
   reservationId String? @unique @db.Uuid
   reservation Reservation? @relation(fields:[reservationId],references:[id],onDelete:Restrict)
-  lotId String @db.Uuid
+  lotId String? @db.Uuid
+  subscriptionCycleId String? @unique @db.Uuid
+  subscriptionCycle SubscriptionCycle? @relation(fields:[subscriptionCycleId],references:[id],onDelete:Restrict)
   amountKrw Int
   currency String @default("KRW") @db.Char(3)
   pricing Json @db.JsonB
@@ -809,4 +813,54 @@ model SandboxProviderPayment {
   amountKrw Int
   outcome String @db.VarChar(16)
   status String @db.VarChar(16)
+}
+
+model Subscription {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  planCode String @db.VarChar(32)
+  priceVersion String @db.VarChar(32)
+  policyVersion String @db.VarChar(32)
+  anchorAt DateTime @db.Timestamptz(3)
+  renewalEnabled Boolean @default(true)
+  cancelledAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @db.Timestamptz(3)
+  cycles SubscriptionCycle[]
+  changes SubscriptionChange[]
+  @@index([userId,createdAt,id])
+}
+model SubscriptionCycle {
+  id String @id @default(uuid()) @db.Uuid
+  subscriptionId String @db.Uuid
+  subscription Subscription @relation(fields:[subscriptionId],references:[id],onDelete:Restrict)
+  cycleIndex Int
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt DateTime @db.Timestamptz(3)
+  chargeDeadline DateTime @db.Timestamptz(3)
+  amountKrw Int
+  pricing Json @db.JsonB
+  paidAt DateTime? @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  order PaymentOrder?
+  @@unique([subscriptionId,cycleIndex])
+}
+model SubscriptionChange {
+  id String @id @default(uuid()) @db.Uuid
+  subscriptionId String @db.Uuid
+  subscription Subscription @relation(fields:[subscriptionId],references:[id],onDelete:Restrict)
+  cycleId String? @db.Uuid
+  kind String @db.VarChar(32)
+  observedAt DateTime @db.Timestamptz(3)
+  details Json @db.JsonB
+  @@unique([cycleId,kind])
+  @@index([subscriptionId,observedAt,id])
+}
+model SubscriptionMutation {
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  key String @db.VarChar(64)
+  requestHash String @db.Char(64)
+  response Json @db.JsonB
+  @@id([userId,key])
 }

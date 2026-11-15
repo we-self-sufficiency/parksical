@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<title>주행 중 최소 HUD</title>
+<script src="1c25bea4-da3a-49a8-b244-ba22d6b997fb"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;family=Do+Hyeon&amp;family=Press+Start+2P&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; background: #08060F; color: #F7F1E3; font-family: 'Noto Sans KR', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; position: relative; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 64px">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <span style="font-family: 'Press Start 2P', monospace; font-size: 16px; color: #CFC6E8">STAGE</span>
+      <span style="font-family: 'Press Start 2P', monospace; font-size: 72px; color: #F7F1E3">2<span style="font-size: 32px; color: #6E6490">/3</span></span>
+    </div>
+    <div style="width: 4px; height: 160px; background: #2E2550"></div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <span style="font-family: 'Press Start 2P', monospace; font-size: 16px; color: #CFC6E8">TIME</span>
+      <span style="font-family: 'Press Start 2P', monospace; font-size: 72px; color: #FFD23F">41:12</span>
+    </div>
+  </div>
+
+  <div style="font-family: 'Do Hyeon', sans-serif; font-size: 34px; color: #F7F1E3">기둥 숲 무경고 통과</div>
+
+  <div style="display: flex; align-items: center; gap: 12px; padding: 14px 22px; border: 3px solid #2E2550; font-size: 18px; color: #CFC6E8">
+    <span style="width: 14px; height: 14px; background: #7FD99A"></span>
+    판정 중 · 정차하면 결과를 보여드려요
+  </div>
+
+  <div style="position: absolute; left: 24px; bottom: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #8E86AA">
+    <span>주행 중 화면 조작 잠김 · 애니메이션 정지</span>
+    <span style="font-family: 'Press Start 2P', monospace; font-size: 11px">LIMIT 10km/h</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:800}}">
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+
+
+</body></html>

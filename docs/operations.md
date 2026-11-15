@@ -48,3 +48,8 @@ SQL
 ## S-13 합성 연습 확장
 
 [practice.md](practice.md)의 실행/migration·호환성 절차를 따른다. 새 설정 없이 기존 DEV_AUTH_ENABLED/DEV_MISSIONS_ENABLED opt-in이며 기본 OFF다. `npm run migrate:deploy` 후 새 서버를 실행한다. 새 migration은 기존 PRACTICE에 불변 goalVersion membership만 backfill하며 미션 결과/영수증을 바꾸지 않는다. 새 선택 기어 횟수는 S-13 서버 배포 후 전송한다. PracticeRecognition은 재구성 가능한 파생 상태이며 진행도/도장 GET이 이전 서버의 지연 결과를 반영할 수 있다. 결과·무효/도장·영수증의 DB 원자성과 백업/복원 범위에 새3테이블이 포함된다. 이 구현이 배포/Base URL·실제 SDK/실차·D-02/D-04 또는 QR D-07 완료를 뜻하지 않는다.
+
+
+## S-14 합성 예약
+
+[reservations.md](reservations.md)의 migration/비운영 opt-in을 따른다. DEV_RESERVATIONS_ENABLED는 기본OFF, REAL_RESERVATIONS_ENABLED/REAL_PAYMENTS_ENABLED는 활성화 불가다. 새6테이블·DB 상태 guard/고유 제약을 migrate deploy 후 실행한다. 정책은 ADMIN+WEB으로 가상 장소에 명시하고 자동 예약/결제 시드를 만들지 않는다. 만료 정원은 DB UTC epoch/deadline 조건으로 즉시 제외하고 조회/후속 변경에서 상태와 점유를 재정리하므로 상시 만료 worker가 없어도 이중/영구 점유를 만들지 않는다. 결제 제공자/실제 청구/환불은 미구현이다. 원본 동의/금액/개인 예약·키/토큰을 로그에 넣지 않으며 정책/견적/이력/영수증/점유를 함께 백업·복원한다. 실제 운영/배포·D-04/D-05 승인은 별도다.

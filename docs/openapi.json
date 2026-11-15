@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.11.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval."
+    "version": "0.12.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval. S-14 explicit non-production synthetic venue policy/slots, integer-KRW quotes, expiring capacity holds, own cancellation and sandbox-only settlement commands are implemented-development. Real provider/charges/operation remain unavailable; see reservations.md."
   },
   "servers": [
     {
@@ -5897,6 +5897,743 @@
           }
         }
       }
+    },
+    "/lots/{lotId}/reservation-policy": {
+      "get": {
+        "operationId": "getReservationPolicy",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Latest immutable synthetic venue policy, including frozen ordinary fees, allowed hours/modes/capacity/dimension thresholds and displayed versioned synthetic safety rules. No policy404; unavailable policy is readable with currentlyAvailable=false. A policy is not actual parking occupancy or physical vehicle support.",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationPolicyView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/lots/{lotId}/reservation-policy": {
+      "put": {
+        "operationId": "putReservationPolicy",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. ADMIN+WEB only. expectedVersion0 creates the first policy, later versions append atomically. Pins current lot revision and copies fees from that revision; client prices are forbidden. Active venue requires active COMPLETE SYNTHETIC SELF_PARK, known fees/hours and enough active GENERAL spaces. Hours on30-minute boundaries within normal opening windows, no overlap. Capacity reduction below existing live future claims409. Policy/rule changes invalidate old quotes for new holds and prevent sandbox confirmation of old-version holds. No automatic synthetic venue approval.",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationPolicyWritten"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationPolicyWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lots/{lotId}/reservation-slots": {
+      "get": {
+        "operationId": "listReservationSlots",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. One KST date in current-date..+6-date window. Future 30-minute slots inside allowed hours, at most48. All modes and policy versions share lot capacity. Availability is a current advisory view; only holding a quote reserves capacity. Expired holds are logically excluded immediately and persisted/released under lot lock on access.",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CHALLENGE",
+                "PRACTICE"
+              ]
+            }
+          },
+          {
+            "name": "lengthMm",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "widthMm",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 500,
+              "maximum": 4000
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationSlots"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservation-quotes": {
+      "post": {
+        "operationId": "createReservationQuote",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Server-priced immutable quote, no capacity acquisition. Start on30-minute grid, duration30..240/multiple30, end no later than KST start-of-today+7days, vehicle/mode/hours eligibility required. price-v1: ordinary base+ceil(additional increments), daily cap per KST date, multiply mode basis points using integer BigInt then half-up1KRW once. Range0..100M KRW; TTL1..900s bounded by start, exclusive expiry. Same key replays even after expiry; hold rechecks current policy and expiry. Max1000 quotes/account.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationQuoteReceipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationQuoteInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations": {
+      "post": {
+        "operationId": "holdReservation",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Consumes own unexpired quote once, same current policy; no client price/date changes. Safety version must match and declared UTC acceptance within5min of DB clock; this is not physical stopped/UX proof. Acquires every occupied half-hour or none under shared user/lot DB locks, including cross-mode/version capacity and own-account overlap. HELD/NOT_STARTED is unpaid. TTL1..900s bounded by start. Same quote/exact body replays original creation across keys without reacquiring capacity; changed consent/body409. Max1000 reservations/account.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationView"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationHoldInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listReservations",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Own current records after deadline sweep. limit1..50/default20, cursor binds user/limit/API, startedAt DESC/UUID DESC. Includes cancelled/expired/refunded history; fresh upload can change current view. No raw payment credentials or other users are returned.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservationId}": {
+      "get": {
+        "operationId": "getReservation",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Own reservation with frozen quote price/safety agreement and live state. Expiration is exclusive, independent of worker/server restart. Past SANDBOX_CONFIRMED records are not physical attendance or no-show proof; occupied time interval ends automatically.",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservationId}/cancel": {
+      "post": {
+        "operationId": "cancelReservation",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Before start only, optimistic expectedVersion. HELD->CANCELLED; SANDBOX_CONFIRMED->REFUND_PENDING. Releases all claims immediately; sandbox refund remains separately pending, never claimed paid back before refund evidence. Same exact cancellation replays acknowledgement across keys; different old payload409. Confirmation/cancel and receipts are atomic. After start/no-show rules require D-05; this development endpoint rejects cancellation.",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationView"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationCancelInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservationId}/sandbox-events": {
+      "post": {
+        "operationId": "applySandboxReservationEvent",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Explicit synthetic test adapter command, NOT a real provider webhook/charge/verification. Server derives reservation/order/money/currency and generates providerEventId; body cannot inject amount/provider ID. HELD+success->SANDBOX_CONFIRMED; failure->PAYMENT_FAILED. Late success after expiry/cancel/failure or policy/venue change->REFUND_PENDING without reacquiring claims; refund success only REFUND_PENDING->REFUNDED. Duplicate kind replays original immutable evidence/acknowledgement; current state must be re-read. Incompatible events409. Real provider is unavailable until S-16 verification and D-04/D-05 approvals.",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic reservation result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationSandboxReceipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationSandboxEvent"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5920,6 +6657,991 @@
       }
     },
     "schemas": {
+      "ReservationPolicyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "allowedModes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "CHALLENGE",
+                "PRACTICE"
+              ]
+            }
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 32
+          },
+          "maxLengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 10000
+          },
+          "maxWidthMm": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 4000
+          },
+          "hours": {
+            "type": "array",
+            "maxItems": 14,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "day": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7
+                },
+                "openMinute": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439,
+                  "multipleOf": 30
+                },
+                "closeMinute": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1440,
+                  "multipleOf": 30
+                }
+              },
+              "required": [
+                "day",
+                "openMinute",
+                "closeMinute"
+              ]
+            }
+          },
+          "safetyRulesVersion": {
+            "const": "synthetic-safety-v1"
+          },
+          "challengeMultiplierBps": {
+            "type": "integer",
+            "minimum": 15000,
+            "maximum": 20000
+          },
+          "practiceMultiplierBps": {
+            "type": "integer",
+            "minimum": 12000,
+            "maximum": 15000
+          },
+          "quoteSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 900
+          },
+          "holdSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 900
+          }
+        },
+        "required": [
+          "source",
+          "active",
+          "structureVersion",
+          "allowedModes",
+          "capacity",
+          "maxLengthMm",
+          "maxWidthMm",
+          "hours",
+          "safetyRulesVersion",
+          "challengeMultiplierBps",
+          "practiceMultiplierBps",
+          "quoteSeconds",
+          "holdSeconds"
+        ]
+      },
+      "ReservationPolicySnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "allowedModes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "CHALLENGE",
+                "PRACTICE"
+              ]
+            }
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 32
+          },
+          "maxLengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 10000
+          },
+          "maxWidthMm": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 4000
+          },
+          "hours": {
+            "type": "array",
+            "maxItems": 14,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "day": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7
+                },
+                "openMinute": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439,
+                  "multipleOf": 30
+                },
+                "closeMinute": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1440,
+                  "multipleOf": 30
+                }
+              },
+              "required": [
+                "day",
+                "openMinute",
+                "closeMinute"
+              ]
+            }
+          },
+          "safetyRulesVersion": {
+            "const": "synthetic-safety-v1"
+          },
+          "challengeMultiplierBps": {
+            "type": "integer",
+            "minimum": 15000,
+            "maximum": 20000
+          },
+          "practiceMultiplierBps": {
+            "type": "integer",
+            "minimum": 12000,
+            "maximum": 15000
+          },
+          "quoteSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 900
+          },
+          "holdSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 900
+          },
+          "fees": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LotFees"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timezone": {
+            "const": "Asia/Seoul"
+          },
+          "safetyRules": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "maxLength": 300
+            }
+          }
+        },
+        "required": [
+          "source",
+          "active",
+          "structureVersion",
+          "allowedModes",
+          "capacity",
+          "maxLengthMm",
+          "maxWidthMm",
+          "hours",
+          "safetyRulesVersion",
+          "challengeMultiplierBps",
+          "practiceMultiplierBps",
+          "quoteSeconds",
+          "holdSeconds",
+          "fees",
+          "timezone",
+          "safetyRules"
+        ]
+      },
+      "ReservationPolicyWrite": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ReservationPolicyInput"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "snapshot"
+        ]
+      },
+      "ReservationPolicyWritten": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ReservationPolicySnapshot"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "version",
+          "snapshot",
+          "source",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "ReservationPolicyView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ReservationPolicySnapshot"
+          },
+          "currentlyAvailable": {
+            "type": "boolean"
+          },
+          "stepMinutes": {
+            "const": 30
+          },
+          "maxDurationMinutes": {
+            "const": 240
+          },
+          "horizonDays": {
+            "const": 7
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "version",
+          "snapshot",
+          "currentlyAvailable",
+          "stepMinutes",
+          "maxDurationMinutes",
+          "horizonDays",
+          "source",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "ReservationSlots": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "timezone": {
+            "const": "Asia/Seoul"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CHALLENGE",
+              "PRACTICE"
+            ]
+          },
+          "stepMinutes": {
+            "const": 30
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 32
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 48,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "startsAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+                },
+                "endsAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+                },
+                "remainingCapacity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 32
+                },
+                "available": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "startsAt",
+                "endsAt",
+                "remainingCapacity",
+                "available"
+              ]
+            }
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "policyVersion",
+          "structureVersion",
+          "date",
+          "timezone",
+          "mode",
+          "stepMinutes",
+          "capacity",
+          "items",
+          "source",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "ReservationQuoteInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CHALLENGE",
+              "PRACTICE"
+            ]
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 240,
+            "multipleOf": 30
+          },
+          "lengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 10000
+          },
+          "widthMm": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 4000
+          }
+        },
+        "required": [
+          "lotId",
+          "mode",
+          "startsAt",
+          "durationMinutes",
+          "lengthMm",
+          "widthMm"
+        ]
+      },
+      "ReservationPricing": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "const": "KRW"
+          },
+          "priceVersion": {
+            "const": "reservation-price-v1"
+          },
+          "generalAmountKrw": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "multiplierBps": {
+            "type": "integer",
+            "minimum": 12000,
+            "maximum": 20000
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "rounding": {
+            "const": "HALF_UP_WON"
+          },
+          "dailyCapScope": {
+            "const": "GENERAL_FARE_PER_KST_DATE"
+          },
+          "days": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": 30,
+                  "maximum": 240,
+                  "multipleOf": 30
+                },
+                "generalAmountKrw": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000000
+                }
+              },
+              "required": [
+                "date",
+                "minutes",
+                "generalAmountKrw"
+              ]
+            }
+          },
+          "lengthMm": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 10000
+          },
+          "widthMm": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 4000
+          },
+          "safetyRulesVersion": {
+            "const": "synthetic-safety-v1"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "currency",
+          "priceVersion",
+          "generalAmountKrw",
+          "multiplierBps",
+          "amountKrw",
+          "rounding",
+          "dailyCapScope",
+          "days",
+          "lengthMm",
+          "widthMm",
+          "safetyRulesVersion",
+          "structureVersion"
+        ]
+      },
+      "ReservationQuoteReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CHALLENGE",
+              "PRACTICE"
+            ]
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "details": {
+            "$ref": "#/components/schemas/ReservationPricing"
+          },
+          "capacityReserved": {
+            "const": false
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "quoteId",
+          "lotId",
+          "policyVersion",
+          "mode",
+          "startsAt",
+          "endsAt",
+          "createdAt",
+          "expiresAt",
+          "details",
+          "capacityReserved",
+          "source",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "ReservationHoldInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "safetyRulesVersion": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,32}$"
+          },
+          "safetyAgreedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          }
+        },
+        "required": [
+          "quoteId",
+          "safetyRulesVersion",
+          "safetyAgreedAt"
+        ]
+      },
+      "ReservationView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CHALLENGE",
+              "PRACTICE"
+            ]
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "HELD",
+              "SANDBOX_CONFIRMED",
+              "CANCELLED",
+              "EXPIRED",
+              "PAYMENT_FAILED",
+              "REFUND_PENDING",
+              "REFUNDED"
+            ]
+          },
+          "paymentStatus": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "SANDBOX_SUCCEEDED",
+              "SANDBOX_FAILED",
+              "SANDBOX_REFUND_REQUIRED",
+              "SANDBOX_REFUNDED"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "holdExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "safetyRulesVersion": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,32}$"
+          },
+          "safetyAgreedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/ReservationPricing"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "quoteId",
+          "lotId",
+          "policyVersion",
+          "mode",
+          "startsAt",
+          "endsAt",
+          "state",
+          "paymentStatus",
+          "version",
+          "holdExpiresAt",
+          "safetyRulesVersion",
+          "safetyAgreedAt",
+          "createdAt",
+          "updatedAt",
+          "pricing",
+          "source",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "ReservationPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ReservationView"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,256}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "ReservationCancelInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "reason": {
+            "const": "USER_REQUEST"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "ReservationSandboxEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PAYMENT_SUCCEEDED",
+              "PAYMENT_FAILED",
+              "REFUND_SUCCEEDED"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "ReservationSandboxEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "providerEventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "const": "SANDBOX"
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "reservationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PAYMENT_SUCCEEDED",
+              "PAYMENT_FAILED",
+              "REFUND_SUCCEEDED"
+            ]
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000
+          }
+        },
+        "required": [
+          "providerEventId",
+          "source",
+          "realPaymentVerified",
+          "reservationId",
+          "kind",
+          "currency",
+          "amountKrw"
+        ]
+      },
+      "ReservationSandboxReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reservation": {
+            "$ref": "#/components/schemas/ReservationView"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/ReservationSandboxEvidence"
+          }
+        },
+        "required": [
+          "reservation",
+          "evidence"
+        ]
+      },
       "Error": {
         "type": "object",
         "additionalProperties": false,

@@ -33,6 +33,9 @@ enum PairingStatus {
 }
 
 model User {
+  reservationQuotes ReservationQuote[]
+  reservations Reservation[]
+  reservationMutations ReservationMutation[]
   missionRuns MissionRun[]
   id            String @id @default(uuid()) @db.Uuid
   role          UserRole @default(USER)
@@ -199,6 +202,7 @@ model ParkingLot {
 }
 
 model LotRevision {
+  reservationPolicies ReservationPolicy[]
   missionRuns MissionRun[]
   lotId           String @db.Uuid
   lot             ParkingLot @relation(fields: [lotId], references: [id], onDelete: Restrict)
@@ -580,4 +584,82 @@ model PracticeMutation {
   requestHash String @db.Char(64)
   response Json @db.JsonB
   @@id([userId, key])
+}
+
+// Explicit non-production venue policy, immutable per version.
+model ReservationPolicy {
+  lotId String @db.Uuid
+  version Int
+  structureVersion Int
+  revision LotRevision @relation(fields:[lotId,structureVersion],references:[lotId,version],onDelete:Restrict)
+  snapshot Json @db.JsonB
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  quotes ReservationQuote[]
+  @@id([lotId,version])
+}
+model ReservationQuote {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  lotId String @db.Uuid
+  policyVersion Int
+  policy ReservationPolicy @relation(fields:[lotId,policyVersion],references:[lotId,version],onDelete:Restrict)
+  mode String @db.VarChar(16)
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt DateTime @db.Timestamptz(3)
+  amountKrw Int
+  details Json @db.JsonB
+  createdAt DateTime @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  receipt Json @db.JsonB
+  reservation Reservation?
+  @@index([userId,createdAt,id])
+}
+model Reservation {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  quoteId String @unique @db.Uuid
+  quote ReservationQuote @relation(fields:[quoteId],references:[id],onDelete:Restrict)
+  lotId String @db.Uuid
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt DateTime @db.Timestamptz(3)
+  state String @db.VarChar(24)
+  paymentStatus String @db.VarChar(32)
+  version Int @default(1)
+  holdExpiresAt DateTime @db.Timestamptz(3)
+  safetyRulesVersion String @db.VarChar(32)
+  safetyAgreedAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @db.Timestamptz(3)
+  updatedAt DateTime @db.Timestamptz(3)
+  creationHash String @db.Char(64)
+  creationReceipt Json @db.JsonB
+  claims ReservationClaim[]
+  actions ReservationAction[]
+  @@index([lotId,state,holdExpiresAt])
+  @@index([userId,startsAt,id])
+}
+model ReservationClaim {
+  reservationId String @db.Uuid
+  reservation Reservation @relation(fields:[reservationId],references:[id],onDelete:Cascade)
+  lotId String @db.Uuid
+  startsAt DateTime @db.Timestamptz(3)
+  @@id([reservationId,startsAt])
+  @@index([lotId,startsAt])
+}
+model ReservationAction {
+  reservationId String @db.Uuid
+  reservation Reservation @relation(fields:[reservationId],references:[id],onDelete:Cascade)
+  action String @db.VarChar(32)
+  requestHash String @db.Char(64)
+  response Json @db.JsonB
+  @@id([reservationId,action])
+}
+model ReservationMutation {
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  key String @db.VarChar(64)
+  requestHash String @db.Char(64)
+  response Json @db.JsonB
+  @@id([userId,key])
 }

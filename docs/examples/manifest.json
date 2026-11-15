@@ -101,7 +101,22 @@
     "practice-awards.json": "PracticeAwardPage",
     "practice-invalidate.json": "PracticeInvalidate",
     "practice-invalidated.json": "PracticeInvalidated",
-    "practice-result.json": "RunResultSubmit"
+    "practice-result.json": "RunResultSubmit",
+    "reservation-policy.json": "ReservationPolicyView",
+    "reservation-policy-write.json": "ReservationPolicyWrite",
+    "reservation-policy-written.json": "ReservationPolicyWritten",
+    "reservation-slots.json": "ReservationSlots",
+    "reservation-quote-request.json": "ReservationQuoteInput",
+    "reservation-quote.json": "ReservationQuoteReceipt",
+    "reservation-challenge-quote.json": "ReservationQuoteReceipt",
+    "reservation-hold.json": "ReservationHoldInput",
+    "reservation-held.json": "ReservationView",
+    "reservation-cancel.json": "ReservationCancelInput",
+    "reservation-cancelled.json": "ReservationView",
+    "reservation-sandbox-event.json": "ReservationSandboxEvent",
+    "reservation-sandbox-receipt.json": "ReservationSandboxReceipt",
+    "reservation-page.json": "ReservationPage",
+    "reservation-detail.json": "ReservationView"
   },
   "cases": [
     {
@@ -606,6 +621,74 @@
       "schema": "RunReceipt",
       "example": "run-receipt.json",
       "requestExample": "practice-result.json"
+    },
+    {
+      "name": "synthetic-getReservationPolicy",
+      "operationId": "getReservationPolicy",
+      "status": 200,
+      "schema": "ReservationPolicyView",
+      "example": "reservation-policy.json"
+    },
+    {
+      "name": "synthetic-putReservationPolicy",
+      "operationId": "putReservationPolicy",
+      "status": 200,
+      "schema": "ReservationPolicyWritten",
+      "example": "reservation-policy-written.json",
+      "requestExample": "reservation-policy-write.json"
+    },
+    {
+      "name": "synthetic-listReservationSlots",
+      "operationId": "listReservationSlots",
+      "status": 200,
+      "schema": "ReservationSlots",
+      "example": "reservation-slots.json"
+    },
+    {
+      "name": "synthetic-createReservationQuote",
+      "operationId": "createReservationQuote",
+      "status": 201,
+      "schema": "ReservationQuoteReceipt",
+      "example": "reservation-quote.json",
+      "requestExample": "reservation-quote-request.json"
+    },
+    {
+      "name": "synthetic-holdReservation",
+      "operationId": "holdReservation",
+      "status": 201,
+      "schema": "ReservationView",
+      "example": "reservation-held.json",
+      "requestExample": "reservation-hold.json"
+    },
+    {
+      "name": "synthetic-listReservations",
+      "operationId": "listReservations",
+      "status": 200,
+      "schema": "ReservationPage",
+      "example": "reservation-page.json"
+    },
+    {
+      "name": "synthetic-getReservation",
+      "operationId": "getReservation",
+      "status": 200,
+      "schema": "ReservationView",
+      "example": "reservation-detail.json"
+    },
+    {
+      "name": "synthetic-cancelReservation",
+      "operationId": "cancelReservation",
+      "status": 201,
+      "schema": "ReservationView",
+      "example": "reservation-cancelled.json",
+      "requestExample": "reservation-cancel.json"
+    },
+    {
+      "name": "synthetic-applySandboxReservationEvent",
+      "operationId": "applySandboxReservationEvent",
+      "status": 201,
+      "schema": "ReservationSandboxReceipt",
+      "example": "reservation-sandbox-receipt.json",
+      "requestExample": "reservation-sandbox-event.json"
     }
   ],
   "negativeCases": [
@@ -1151,6 +1234,94 @@
         "rankingEligible": true
       },
       "reason": "practice never operational ranking eligible"
+    },
+    {
+      "baseExample": "reservation-quote-request.json",
+      "schema": "ReservationQuoteInput",
+      "set": {
+        "amountKrw": 1
+      },
+      "reason": "client cannot set quote price"
+    },
+    {
+      "baseExample": "reservation-quote-request.json",
+      "schema": "ReservationQuoteInput",
+      "set": {
+        "durationMinutes": 29
+      },
+      "reason": "minimum30"
+    },
+    {
+      "baseExample": "reservation-quote-request.json",
+      "schema": "ReservationQuoteInput",
+      "set": {
+        "durationMinutes": 45
+      },
+      "reason": "multiple30"
+    },
+    {
+      "baseExample": "reservation-quote-request.json",
+      "schema": "ReservationQuoteInput",
+      "set": {
+        "durationMinutes": "30"
+      },
+      "reason": "body integer only"
+    },
+    {
+      "baseExample": "reservation-policy-write.json",
+      "schema": "ReservationPolicyWrite",
+      "set": {
+        "expectedVersion": -1
+      },
+      "reason": "policy version nonnegative"
+    },
+    {
+      "baseExample": "reservation-hold.json",
+      "schema": "ReservationHoldInput",
+      "set": {
+        "parked": true
+      },
+      "reason": "body cannot prove physical stop"
+    },
+    {
+      "baseExample": "reservation-hold.json",
+      "schema": "ReservationHoldInput",
+      "set": {
+        "safetyRulesVersion": null
+      },
+      "reason": "safety version required"
+    },
+    {
+      "baseExample": "reservation-sandbox-event.json",
+      "schema": "ReservationSandboxEvent",
+      "set": {
+        "amountKrw": 1
+      },
+      "reason": "sandbox money is server bound"
+    },
+    {
+      "baseExample": "reservation-sandbox-event.json",
+      "schema": "ReservationSandboxEvent",
+      "set": {
+        "providerEventId": "forged"
+      },
+      "reason": "sandbox ID not caller supplied"
+    },
+    {
+      "baseExample": "reservation-sandbox-event.json",
+      "schema": "ReservationSandboxEvent",
+      "set": {
+        "kind": "REAL_PAID"
+      },
+      "reason": "real payments unavailable"
+    },
+    {
+      "baseExample": "reservation-held.json",
+      "schema": "ReservationView",
+      "set": {
+        "operationalAllowed": true
+      },
+      "reason": "synthetic booking not venue approval"
     }
   ]
 }

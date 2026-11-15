@@ -6,7 +6,7 @@
 
 비운영 `DEV_AUTH_ENABLED=true`와 `DEV_MISSIONS_ENABLED=true`를 명시하고 migration/build를 적용한다. 기본은 false다. production·개발 인증 없는 활성화·`REAL_MISSIONS_ENABLED=true`는 기동 시 거절한다. 서버가 차량 SDK를 호출하거나 앱의 로컬 제한/판정을 대신하지 않는다. 원본 차속/기어/조향 시계열은 받지 않는다.
 
-OpenAPI 문서 버전은 **0.11.0**, 차량 contractVersion은 기존 **1.0**이다. 기존 인증/이벤트/주차장/위치/QR의 입력은 유지한다. S-04의 이벤트 두 종류는 바꾸지 않고 미션 결과는 아래 개별 자원 API에만 저장한다. source는 SYNTHETIC만 허용한다. 실제 앱/실차 지원, 운영 게임 HUD/백그라운드·장소 허가·개인 운전 수집/보관·랭킹/금전 자격은 승인되지 않았다.
+현재 OpenAPI 문서 버전은 **0.12.0**, 차량 contractVersion은 기존 **1.0**이다. 기존 인증/이벤트/주차장/위치/QR의 입력은 유지한다. S-04의 이벤트 두 종류는 바꾸지 않고 미션 결과는 아래 개별 자원 API에만 저장한다. source는 SYNTHETIC만 허용한다. 실제 앱/실차 지원, 운영 게임 HUD/백그라운드·장소 허가·개인 운전 수집/보관·랭킹/금전 자격은 승인되지 않았다.
 
 가상 한 곳·32면 시드를 준비한다([주차장 가이드](parking-lots.md)). `challengeAllowed=false`는 그대로이며 합성 도전 개발이 실제 장소 도전 허가로 표시되지 않는다. 별도 실제 방문·리뷰 방문·위치·운영 랭킹·쿠폰을 생성하지 않는다. PRACTICE는 [S-13/#14](practice.md)의 합성 도장/칭호 projection을 갱신하며 CHALLENGE와 분리한다. 예약은 #15, 랭킹은 #16 후속이다.
 
@@ -106,3 +106,5 @@ D-02 실제 수집·동의·보관/완전 삭제가 미정이므로 운영 삭�
 ## S-13 연습 확장 호환성
 
 [practice.md](practice.md)는 기존 mode=PRACTICE 기록만 사용해 리포트·3연속 목표·합성 도장/칭호를 제공한다. OpenAPI0.11.0의 StageMetrics 선택 필드 `gearTransitionCount`는 최초 관측을 제외한 유효 선택 기어 변화 횟수이며 미확인은null/누락이다. 기존 입력의 필수 필드·룰 판정·불변 영수증은 유지한다. 기존 재전송에는 선택 필드를 새로 추가하지 않고 원래 body를 보낸다. 원래 차량 AuthSession만 결과를 쓸 수 있으며 본인 연습 무효 처리는 별도 API다. 실제 운영 도전·랭킹·금전 보상은 활성화하지 않는다.
+
+S-14의 [합성 예약](reservations.md)은 별도 DEV_RESERVATIONS_ENABLED opt-in이며 미션/연습 기록·결과 또는 운영 자격을 자동 생성하지 않는다. 기존 미션·연습 입력은 변경하지 않는다.

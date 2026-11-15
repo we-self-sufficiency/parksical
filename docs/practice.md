@@ -103,3 +103,5 @@ OpenAPI0.11.0은5연산을 추가하고 MissionStageMetrics에 선택적 gearTra
 검증은 `npm run verify`, 실제 PostgreSQL의 `npm run test:integration`, `python scripts/check_contract.py`를 사용한다. 공통 [6개 합성 연속 사례](../fixtures/practice/streak-scenarios.json), 발생/동시 시각 순서·지연/무효·목표 버전 격리, 회차 비교/미확인 값, 소유권/설치·모드 분리, 동시 재전송·트랜잭션 롤백·지연 projection 재구성·재기동·이전 스키마 업그레이드 테스트를 포함한다. 운영 실제 SDK/실차 검증과 구분한다.
 
 develop 통합 후 Wiki Home의 준비 현황/기록과 별도 Practice 가이드를 게시하고 Missions/MAX 문서에서 연결한다. 통합 전에는 Wiki를 연동 완료로 표시하거나 #14 Wiki 완료 체크를 하지 않는다.
+
+S-14 통합 계약은 OpenAPI0.12.0이며 기존 연습5연산/목표·결과 스키마는 그대로다. [합성 예약](reservations.md)은 별도 기본OFF 기능으로 예약을 연습 성공/실제 도전 자격으로 승격하지 않는다.

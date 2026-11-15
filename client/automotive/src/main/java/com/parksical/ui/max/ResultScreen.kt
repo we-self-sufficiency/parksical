@@ -75,6 +75,7 @@ internal fun ResultContent(
                 record.submit.ko + (record.receiptOutcome?.let { " · $it" } ?: ""),
                 16, PixelColors.Lavender, false, align = TextAlign.Center,
             )
+            PixelMockBadge()
             Ko(
                 "도장 ${stamps}개째 · " + (next?.let { "다음 칭호 '${it.label}'까지 ${it.minStamps - stamps}개" } ?: "최고 칭호 달성"),
                 18, PixelColors.Lavender, false, align = TextAlign.Center,

@@ -81,7 +81,7 @@ class MockParkingRepository : ParkingRepository {
         ),
     )
 
-    private val _lots = MutableStateFlow(seed.map { it.copy(synthetic = true) })
+    private val _lots = MutableStateFlow(seed.map { it.copy(synthetic = true, challengeOpen = it.id in dungeons) })
     override val lots: StateFlow<List<ParkingLot>> = _lots
     override val status: StateFlow<LotsStatus> = MutableStateFlow(LotsStatus.Error("테스트용 데이터"))
 

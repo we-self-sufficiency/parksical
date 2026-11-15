@@ -24,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.parksical.LocalAppContainer
+import com.parksical.ui.common.LocalMockInfo
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import com.parksical.domain.model.VehicleSize
 import com.parksical.ui.theme.GeneralColors
 
@@ -84,5 +87,18 @@ fun SizePicker(modifier: Modifier = Modifier) {
         VehicleSize.entries.forEach { v ->
             Pill(v.label, picked && v == size, { session.vehicleSize.value = v })
         }
+    }
+}
+
+/** "목업 데이터 · 사유" + retry; nothing when the data comes from the server. */
+@Composable
+fun MockBadge(modifier: Modifier = Modifier) {
+    val m = LocalMockInfo.current ?: return
+    Row(
+        modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color(0xFF22262D)).padding(start = 14.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text("목업 데이터 · ${m.reason}", color = GeneralColors.Accent, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Pill("서버 다시 연결", false, m.retry)
     }
 }

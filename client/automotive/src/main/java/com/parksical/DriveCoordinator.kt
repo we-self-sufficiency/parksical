@@ -37,6 +37,8 @@ class DriveCoordinator(
     private val spotEstimator: ParkingSpotEstimator,
     private val parkedSync: ParkedLocationSync,
     private val runSync: ServerRunSync,
+    /** Mock data mode: no server calls for runs or parked locations. */
+    private val isMock: () -> Boolean = { false },
     /** True while a run is judged, false once it ends; keeps the process alive (see RunKeepAliveService). */
     private val onRunActive: (Boolean) -> Unit = {},
 ) {
@@ -52,6 +54,7 @@ class DriveCoordinator(
     private var runActive = false
     private var clientRunId = ""
     private var startedAtEpochMs = 0L
+    private var mockRun = false
     private var runCreate: Deferred<String?>? = null
 
     /** Lot of the run in progress (Running judge status), for navigating back to its stage screen. */
@@ -89,7 +92,7 @@ class DriveCoordinator(
                             session.savedSpot.value = spot
                             _events.tryEmit(Event.Parked)
                             // Local save first; upload never blocks or undoes it.
-                            scope.launch {
+                            if (!isMock()) scope.launch {
                                 val synced = parkedSync.upload(spot, parking.lot(spot.lotId))
                                 if (session.savedSpot.value?.clientRecordId == synced.clientRecordId) session.savedSpot.value = synced
                             }
@@ -107,10 +110,10 @@ class DriveCoordinator(
                     activeRun = null
                     onRunActive(false)
                     val raw = if (st is RunStatus.Finished) st.record else (st as RunStatus.Aborted).partial
-                    val record = raw.copy(clientRunId = clientRunId, startedAtEpochMs = startedAtEpochMs, submit = SubmitState.PENDING)
+                    val record = raw.copy(clientRunId = clientRunId, startedAtEpochMs = startedAtEpochMs, submit = if (mockRun) SubmitState.MOCK else SubmitState.PENDING)
                     session.addRecord(record)
                     _events.tryEmit(Event.RunEnded(st))
-                    submit(record, runCreate)
+                    if (!mockRun) submit(record, runCreate)
                 }
             }
         }
@@ -119,7 +122,7 @@ class DriveCoordinator(
     /** Called by ParkedScreen after the user fixes floor/zone (confidence 1.0, userEdited = true). */
     fun correctSpot(spot: com.parksical.domain.model.ParkingSpotEstimate) {
         session.savedSpot.value = spot
-        scope.launch {
+        if (!isMock()) scope.launch {
             val synced = parkedSync.correct(spot, parking.lot(spot.lotId))
             if (session.savedSpot.value?.clientRecordId == synced.clientRecordId) session.savedSpot.value = synced
         }
@@ -137,7 +140,8 @@ class DriveCoordinator(
         startedAtEpochMs = System.currentTimeMillis()
         // Judging never waits for this; a failed create just leaves the run "서버 미제출".
         val id = clientRunId; val at = startedAtEpochMs; val caps = vehicle.capabilities.value
-        runCreate = scope.async { runSync.createRun(dungeon, mode, id, at, caps) }
+        mockRun = isMock()
+        runCreate = if (mockRun) null else scope.async { runSync.createRun(dungeon, mode, id, at, caps) }
     }
 
     /** User gave up while parked; the judge ends the run as USER_CANCELLED and the normal RunEnded flow follows. */

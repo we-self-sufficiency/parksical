@@ -30,7 +30,7 @@ enum class RunReason(val ko: String) {
 
 /** Where a finished run stands with the server. */
 enum class SubmitState(val ko: String) {
-    NOT_SUBMITTED("서버 미제출"), PENDING("서버 제출 중"), SUBMITTED("서버 제출 완료")
+    NOT_SUBMITTED("서버 미제출"), PENDING("서버 제출 중"), SUBMITTED("서버 제출 완료"), MOCK("목업 · 서버 제출 안 함")
 }
 
 data class Stage(

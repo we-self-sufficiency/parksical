@@ -20,13 +20,24 @@ android {
         minSdk = 28
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Empty when not issued yet: build still works, the map area shows a placeholder.
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProps.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
         // 10.0.2.2 = host machine from the Android emulator (parksical-server on :3000).
         buildConfigField("String", "PARKSICAL_API_BASE_URL", "\"${localProps.getProperty("PARKSICAL_API_BASE_URL", "http://10.0.2.2:3000/api/v1")}\"")
+    }
+
+    // Release signing comes from local.properties (never committed); without it the release APK is unsigned.
+    val releaseStore = localProps.getProperty("RELEASE_STORE_FILE")?.let(::file)?.takeIf { it.exists() }
+    signingConfigs {
+        if (releaseStore != null) create("release") {
+            storeFile = releaseStore
+            storePassword = localProps.getProperty("RELEASE_STORE_PASSWORD")
+            keyAlias = localProps.getProperty("RELEASE_KEY_ALIAS")
+            keyPassword = localProps.getProperty("RELEASE_KEY_PASSWORD")
+        }
     }
 
     buildTypes {
@@ -36,6 +47,7 @@ android {
         }
         release {
             buildConfigField("String", "PARKSICAL_DEV_AUTH_KEY", "\"\"")
+            if (releaseStore != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

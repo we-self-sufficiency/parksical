@@ -9,7 +9,7 @@ import type { LotCreateDto } from '../../src/lots/dto.js';
 import { writeRevision, asJson } from '../../src/lots/store.js';
 import { missionCatalog } from '../../src/missions/rules.js';
 
-test('real PG S-12/S-13 upgrade preserves immutable data through practice backfill and reservation schema addition', async () => {
+test('real PG S-12/S-13 upgrade preserves immutable data through practice, reservations and ranking membership without consent or fabricated recognition', async () => {
   const schema = 'practice_upgrade_' + randomUUID().replaceAll('-', ''), sql = new Client({ connectionString: process.env.DATABASE_URL });
   await sql.connect(); await sql.query('CREATE SCHEMA "' + schema + '"'); await sql.query('SET search_path TO "' + schema + '"');
   const url = new URL(process.env.DATABASE_URL!); url.searchParams.set('options', '-c search_path=' + schema);
@@ -36,6 +36,12 @@ test('real PG S-12/S-13 upgrade preserves immutable data through practice backfi
     await sql.query(await readFile('prisma/migrations/20261115030000_reservations/migration.sql', 'utf8'));
     assert.deepEqual(await db.missionRun.findMany({ include: { result: true }, orderBy: { id: 'asc' } }), before);
     assert.equal(await db.reservation.count(), 0); assert.equal(await db.reservationPolicy.count(), 0); assert.equal(await db.reservationQuote.count(), 0);
+    await sql.query(await readFile('prisma/migrations/20261115040000_rankings/migration.sql', 'utf8'));
+    assert.deepEqual(await db.missionRun.findMany({ include: { result: true }, orderBy: { id: 'asc' } }), before);
+    const rankingRecords = await db.rankingRecord.findMany({ include: { run: true } });
+    assert.equal(rankingRecords.length, 1); assert.equal(rankingRecords[0]!.run.mode, 'CHALLENGE'); assert.equal(rankingRecords[0]!.version, 1); assert.equal(rankingRecords[0]!.deletedAt, null);
+    assert.equal(await db.rankingConsent.count(), 0); assert.equal(await db.rankingMonthSnapshot.count(), 0);
+    await assert.rejects(db.rankingRecord.update({ where: { runId: rankingRecords[0]!.runId }, data: { rankingVersion: 'rankings-v2' } }));
     await assert.rejects(db.practiceRecord.update({ where: { runId: enrolled[0]!.runId }, data: { goalVersion: 'practice-v2' } }));
     await assert.rejects(db.missionRunResult.update({ where: { runId: enrolled[0]!.runId }, data: { stars: 1 } }));
   } finally { await db.$disconnect(); await sql.query('DROP SCHEMA "' + schema + '" CASCADE'); await sql.end(); }

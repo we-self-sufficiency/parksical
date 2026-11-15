@@ -138,3 +138,14 @@ A-17 **비운영 SYNTHETIC 개발 기본값**: [reservations.md](reservations.md
 같은 lot의 모든 모드/정책 버전은 정원을 공유하고 전체 슬롯을 한 번에 점유하거나 거절한다. HELD는 미결제, 샌드박스 성공은 SANDBOX_CONFIRMED이며 실제 결제 검증/운영 자격은false다. 취소/만료/실패는 해제하고 늦은 샌드박스 성공은 재점유 없이 환불 대기다. 환불 완료는 별도 증거까지 분리한다. 시작 전 취소만 지원하고 시작 후/노쇼·실제 환불 약정은 미정이다. 실제 정차·사용/출차·주차 가능/신호를 서버 body나 예약으로 증명하지 않는다.
 
 S-16은 제공자 서명과 서버 조회·주문/금액/통화·이벤트 유일성/순서·실제 청구/환불을 구현해야 한다. 현재 실제 제공자 포트는 미구현이고 클라이언트의 성공/가격/검증 boolean은 받지 않는다. **D-04/D-05 PENDING**이며 A-17은 실제 요금·장소 운영/청구·금전 의무 승인이나 S-16 완료가 아니다. 기존 E1~E8·D-02 및 QR D-07도 별도로 유지한다.
+
+
+## S-15 합성 랭킹 기본값 — 2026-11-15(KST)
+
+A-18 제안: 비운영 개발 인증+DEV_RANKINGS_ENABLED 기본OFF에서만 SYNTHETIC CHALLENGE 월간 보드를 제공한다. same lot/구조 version/전체 미션 룰/순서 있는 전체 stage plan/rankings-v1로 비교 그룹을 분리하고 개인 최고 stars를 선택한다. 동일 별점은 공동 dense rank, 먼저 시작/UUID는 표시/대표 시도 선택에만 쓴다. 시간/속도 가산은 없고 검증된 차체 정보가 없으므로 차량 보정은 UNAVAILABLE다. 실제 차종 간 공정성/실차 인정은 승인하지 않았다.
+
+발생 startedAt의 KST 월, 다음 KST 월 시작+72h 미만 서버 수신(도전·결과 모두)을 가역적인 개발 cutoff로 둔다. 기존 미션72h 지연 한도도 적용한다. cutoff 뒤 내부 합성 확정은 lot/month/cohort 고유 불변 snapshot/hash를 저장한다. 확정 후 무효/참여 소프트 삭제·공개 철회를 현재 뷰에 적용하고 제거된 최고 기록의 대체 승격은 하지 않는다. S-18 내부 포트는 syntheticCandidates만 제공하고 operationalCandidates=[]/rewardEligible=false를 강제하며 실제 쿠폰/cron/무인증 정산 API는 없다.
+
+rankings-public-v1은 과거/미래 모든 합성 월의 최소 공개 opt-in이며 defaultfalse다. 서버 가명·별도 공개 entry UUID·score/rank만 제공하고 user/run/installation/session/정확한 시각을 노출하지 않는다. 동의 version·클라이언트 agreedAt(±5분)·서버 changedAt/철회 이력을 원자 저장한다. 영수증 누적으로 철회/참여 삭제를 차단하지 않고 마지막 동의 Int 버전은 철회에 남긴다. 이미 비공개인 철회는 no-op이다. 과거 rankingPublic boolean만으로 공개하지 않으며 /me 표시도 버전 동의를 따른다. 공개 OFF와 내부 합성 최고 기록 보관은 다르고 본인 비교 모집단은 공개 참가자+본인뿐이다. 삭제는 랭킹 참여 tombstone이며 원래 불변 미션/영수증의 완전 삭제가 아니다.
+
+이 기본값은 D-02 실제 수집/인정·동의/보관/완전 삭제, D-04 실제 장소/주행/차량 지원, D-05 실제 동점·기준점수·구독 시점·업로드 마감/쿠폰 비용을 확정하지 않는다. E1~E8/QR D-07과 실제 SDK/실차·배포도 미완료다. 변경 시 새 registry/계약/migration과 호환성 검증이 필요하다. 상세는 [rankings.md](rankings.md).

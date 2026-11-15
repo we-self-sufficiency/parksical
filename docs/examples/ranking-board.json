@@ -1,0 +1,56 @@
+{
+  "lotId": "a763b6a6-7053-4997-ba85-ef5db94653c7",
+  "month": "2026-10",
+  "timezone": "Asia/Seoul",
+  "startsAt": "2026-09-30T15:00:00.000Z",
+  "endsAt": "2026-10-31T15:00:00.000Z",
+  "cutoffAt": "2026-11-03T15:00:00.000Z",
+  "cohortKey": "044538d9583ddac658c99f589af05f573c55975debe801597bfd2e12a720ebb8",
+  "rankingVersion": "rankings-v1",
+  "cohort": {
+    "cohortKey": "044538d9583ddac658c99f589af05f573c55975debe801597bfd2e12a720ebb8",
+    "structureVersion": 1,
+    "ruleVersion": "missions-v1",
+    "stageIds": [
+      "ONE_SHOT_REVERSE:basement1-s03"
+    ],
+    "vehicleCorrection": "UNAVAILABLE",
+    "comparability": "SYNTHETIC_EQUAL_INPUTS_ONLY"
+  },
+  "status": "READY_TO_FINALIZE",
+  "finalizedAt": null,
+  "snapshotId": null,
+  "tiePolicy": "DENSE_SHARED_SCORE_EARLIEST_START_UUID_DISPLAY",
+  "scorePolicy": "PERSONAL_BEST_STARS_NO_SPEED_BONUS",
+  "source": "SYNTHETIC",
+  "physicalVerification": "UNVERIFIED",
+  "operationalAllowed": false,
+  "rankingEligible": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ],
+  "items": [
+    {
+      "entryId": "3b3b96c2-54b7-441d-8e68-fbeb0d96ebd4",
+      "rank": 1,
+      "score": 3,
+      "nickname": "P-1ee7528826b9"
+    },
+    {
+      "entryId": "53b808a1-f16b-490b-b082-f28ba734bf0b",
+      "rank": 1,
+      "score": 3,
+      "nickname": "P-f15d81919953"
+    },
+    {
+      "entryId": "2b6418ea-ee9c-4837-a210-afb6840948e3",
+      "rank": 2,
+      "score": 0,
+      "nickname": "P-c061d24d83af"
+    }
+  ],
+  "nextCursor": null
+}

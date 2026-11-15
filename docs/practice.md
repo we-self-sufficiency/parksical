@@ -105,3 +105,6 @@ OpenAPI0.11.0은5연산을 추가하고 MissionStageMetrics에 선택적 gearTra
 develop 통합 후 Wiki Home의 준비 현황/기록과 별도 Practice 가이드를 게시하고 Missions/MAX 문서에서 연결한다. 통합 전에는 Wiki를 연동 완료로 표시하거나 #14 Wiki 완료 체크를 하지 않는다.
 
 S-14 통합 계약은 OpenAPI0.12.0이며 기존 연습5연산/목표·결과 스키마는 그대로다. [합성 예약](reservations.md)은 별도 기본OFF 기능으로 예약을 연습 성공/실제 도전 자격으로 승격하지 않는다.
+
+
+S-15의 [합성 월간 랭킹·공개 동의](rankings.md)는 별도 DEV_RANKINGS_ENABLED 기본OFF 기능이다. PRACTICE/예약/합성 결제가 운영 랭킹·실제 보상 자격을 만들지 않는다. 기존 미션/연습/예약의 입력과 불변 영수증은 유지하며 랭킹 참여 표식은 원본 데이터 완전 삭제와 다르다. OpenAPI0.13.0에 새8연산이 추가되고 기존68연산의 의미는 유지된다. D-02/D-04/D-05·실제 SDK/실차는 계속 별도 미완료다.

@@ -1,0 +1,19 @@
+{
+  "version": 0,
+  "policyVersion": "rankings-public-v1",
+  "enabled": false,
+  "nickname": null,
+  "agreedAt": null,
+  "changedAt": null,
+  "scope": "ALL_SYNTHETIC_MONTHS",
+  "source": "SYNTHETIC",
+  "physicalVerification": "UNVERIFIED",
+  "operationalAllowed": false,
+  "rankingEligible": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ]
+}

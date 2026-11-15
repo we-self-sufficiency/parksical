@@ -33,6 +33,9 @@ enum PairingStatus {
 }
 
 model User {
+  rankingConsent RankingConsent?
+  rankingConsentChanges RankingConsentChange[]
+  rankingMutations RankingMutation[]
   reservationQuotes ReservationQuote[]
   reservations Reservation[]
   reservationMutations ReservationMutation[]
@@ -518,6 +521,7 @@ model MissionRun {
   capabilities Json @db.JsonB
   startedAt DateTime @db.Timestamptz(3)
   receivedAt DateTime @default(now()) @db.Timestamptz(3)
+  rankingRecord RankingRecord?
   practiceRecord PracticeRecord?
   practiceRecognitions PracticeRecognition[]
   practiceMutations PracticeMutation[]
@@ -525,6 +529,7 @@ model MissionRun {
   mutations MissionRunMutation[]
   @@unique([userId,installationId,clientRunId])
   @@index([userId,startedAt,id])
+  @@index([lotId,startedAt,id])
 }
 model MissionRunResult {
   runId String @id @db.Uuid
@@ -662,4 +667,60 @@ model ReservationMutation {
   requestHash String @db.Char(64)
   response Json @db.JsonB
   @@id([userId,key])
+}
+
+// Ranking participation is separate from immutable mission results and from public consent.
+model RankingRecord {
+  runId String @id @db.Uuid
+  run MissionRun @relation(fields:[runId],references:[id],onDelete:Cascade)
+  publicId String @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rankingVersion String @default("rankings-v1") @db.VarChar(32)
+  version Int @default(1)
+  invalidatedAt DateTime? @db.Timestamptz(3)
+  invalidationReason String? @db.VarChar(32)
+  deletedAt DateTime? @db.Timestamptz(3)
+  deletionReason String? @db.VarChar(32)
+}
+model RankingConsent {
+  userId String @id @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  version Int
+  policyVersion String @db.VarChar(32)
+  enabled Boolean
+  nickname String @db.VarChar(16)
+  agreedAt DateTime? @db.Timestamptz(3)
+  changedAt DateTime @db.Timestamptz(3)
+}
+model RankingConsentChange {
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  version Int
+  policyVersion String @db.VarChar(32)
+  enabled Boolean
+  agreedAt DateTime? @db.Timestamptz(3)
+  changedAt DateTime @db.Timestamptz(3)
+  @@id([userId,version])
+}
+model RankingMutation {
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  key String @db.VarChar(64)
+  requestHash String @db.Char(64)
+  response Json @db.JsonB
+  @@id([userId,key])
+  @@index([userId,requestHash])
+}
+// Internal synthetic S-18 input. Never serialized directly to the public API.
+model RankingMonthSnapshot {
+  id String @id @default(uuid()) @db.Uuid
+  lotId String @db.Uuid
+  month String @db.Char(7)
+  cohortKey String @db.Char(64)
+  rankingVersion String @db.VarChar(32)
+  cutoffAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @db.Timestamptz(3)
+  inputHash String @db.Char(64)
+  candidates Json @db.JsonB
+  cohort Json @db.JsonB
+  @@unique([lotId,month,cohortKey])
 }

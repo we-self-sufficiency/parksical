@@ -116,7 +116,20 @@
     "reservation-sandbox-event.json": "ReservationSandboxEvent",
     "reservation-sandbox-receipt.json": "ReservationSandboxReceipt",
     "reservation-page.json": "ReservationPage",
-    "reservation-detail.json": "ReservationView"
+    "reservation-detail.json": "ReservationView",
+    "ranking-consent-off.json": "RankingConsentView",
+    "ranking-consent-write.json": "RankingConsentInput",
+    "ranking-consent-on.json": "RankingConsentView",
+    "ranking-consent-withdraw.json": "RankingConsentInput",
+    "ranking-cohorts.json": "RankingCohorts",
+    "ranking-record.json": "RankingRecordView",
+    "ranking-board.json": "RankingBoard",
+    "ranking-finalized.json": "RankingBoard",
+    "ranking-me.json": "RankingMe",
+    "ranking-invalidate.json": "RankingRecordMutation",
+    "ranking-invalidated.json": "RankingRecordReceipt",
+    "ranking-delete.json": "RankingRecordMutation",
+    "ranking-deleted.json": "RankingRecordReceipt"
   },
   "cases": [
     {
@@ -689,6 +702,72 @@
       "schema": "ReservationSandboxReceipt",
       "example": "reservation-sandbox-receipt.json",
       "requestExample": "reservation-sandbox-event.json"
+    },
+    {
+      "name": "S-15 listRankings ranking-board.json",
+      "operationId": "listRankings",
+      "status": 200,
+      "schema": "RankingBoard",
+      "example": "ranking-board.json"
+    },
+    {
+      "name": "S-15 listRankings ranking-finalized.json",
+      "operationId": "listRankings",
+      "status": 200,
+      "schema": "RankingBoard",
+      "example": "ranking-finalized.json"
+    },
+    {
+      "name": "S-15 listRankingCohorts ranking-cohorts.json",
+      "operationId": "listRankingCohorts",
+      "status": 200,
+      "schema": "RankingCohorts",
+      "example": "ranking-cohorts.json"
+    },
+    {
+      "name": "S-15 getMyRanking ranking-me.json",
+      "operationId": "getMyRanking",
+      "status": 200,
+      "schema": "RankingMe",
+      "example": "ranking-me.json"
+    },
+    {
+      "name": "S-15 getRankingRecord ranking-record.json",
+      "operationId": "getRankingRecord",
+      "status": 200,
+      "schema": "RankingRecordView",
+      "example": "ranking-record.json"
+    },
+    {
+      "name": "S-15 getRankingConsent ranking-consent-off.json",
+      "operationId": "getRankingConsent",
+      "status": 200,
+      "schema": "RankingConsentView",
+      "example": "ranking-consent-off.json"
+    },
+    {
+      "name": "S-15 putRankingConsent ranking-consent-on.json",
+      "operationId": "putRankingConsent",
+      "status": 200,
+      "schema": "RankingConsentView",
+      "example": "ranking-consent-on.json",
+      "requestExample": "ranking-consent-write.json"
+    },
+    {
+      "name": "S-15 invalidateRankingRecord ranking-invalidated.json",
+      "operationId": "invalidateRankingRecord",
+      "status": 201,
+      "schema": "RankingRecordReceipt",
+      "example": "ranking-invalidated.json",
+      "requestExample": "ranking-invalidate.json"
+    },
+    {
+      "name": "S-15 deleteRankingParticipation ranking-deleted.json",
+      "operationId": "deleteRankingParticipation",
+      "status": 201,
+      "schema": "RankingRecordReceipt",
+      "example": "ranking-deleted.json",
+      "requestExample": "ranking-delete.json"
     }
   ],
   "negativeCases": [
@@ -1322,6 +1401,121 @@
         "operationalAllowed": true
       },
       "reason": "synthetic booking not venue approval"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "enabled": "true"
+      },
+      "reason": "S-15 Boolean must not coerce string"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "expectedVersion": -1
+      },
+      "reason": "S-15 Consent version bounded"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "expectedVersion": 2147483648
+      },
+      "reason": "S-15 Consent version exceeds PostgreSQL Int"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "policyVersion": "future"
+      },
+      "reason": "S-15 Unsupported consent version"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "nickname": "email@example.invalid"
+      },
+      "reason": "S-15 No arbitrary nickname/private identifiers"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "userId": "11111111-1111-4111-8111-111111111111"
+      },
+      "reason": "S-15 Owner obtained from auth"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "agreedAt": null
+      },
+      "reason": "S-15 Enabled consent needs timestamp"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-write.json",
+      "set": {
+        "agreedAt": "2026-11-15T18:00:00+09:00"
+      },
+      "reason": "S-15 Explicit UTC Z required"
+    },
+    {
+      "schema": "RankingConsentInput",
+      "baseExample": "ranking-consent-withdraw.json",
+      "set": {
+        "agreedAt": "2026-11-15T09:00:00Z"
+      },
+      "reason": "S-15 Withdrawal has no agreement timestamp"
+    },
+    {
+      "schema": "RankingRecordMutation",
+      "baseExample": "ranking-invalidate.json",
+      "set": {
+        "expectedVersion": "1"
+      },
+      "reason": "S-15 Body version is integer"
+    },
+    {
+      "schema": "RankingRecordMutation",
+      "baseExample": "ranking-invalidate.json",
+      "set": {
+        "reason": "RESTORE"
+      },
+      "reason": "S-15 No restoration command"
+    },
+    {
+      "schema": "RankingRecordMutation",
+      "baseExample": "ranking-delete.json",
+      "set": {
+        "expectedVersion": 3
+      },
+      "reason": "S-15 No deletion after deleted version3"
+    },
+    {
+      "schema": "RankingRecordMutation",
+      "baseExample": "ranking-delete.json",
+      "set": {
+        "rawSignals": [
+          1,
+          2
+        ]
+      },
+      "reason": "S-15 No raw upload"
+    },
+    {
+      "schema": "RankingRecordMutation",
+      "baseExample": "ranking-invalidate.json",
+      "set": {
+        "rankingEligible": true
+      },
+      "reason": "S-15 Client cannot assert operational eligibility"
     }
   ]
 }

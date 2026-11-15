@@ -2,7 +2,7 @@
 
 상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07/S-08/S-09/S-10 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.9.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.10.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -115,7 +115,7 @@ S-10은 비운영 DEV_QR_ENABLED와 명시 QR_PUBLIC_ORIGIN의 합성 개발 범
 |---|---|---|
 | 인증 | `/auth/*`, `/me`, 차량 연결 승인/폐기: S-03 | 개발 구현은 제공됨. 운영 제공자·활성화 D-01은 미정 |
 | 구조·첨부·리뷰 | `/lots/{id}` 구조 확장, `/reviews`, 위치 첨부: S-05/08/09 | 구조·이용 권한 D-03, 파일 저장 D-06 |
-| 미션·기록 | `/missions`, `/runs`, 본인 리포트: S-12/13 | 구간·판정·신호 품질·수집 D-02/04 |
+| 미션·기록 | [S-12 합성 미션/도전·최종 결과](missions.md) 구현, 본인 리포트 S-13 후속 | 구간·판정·신호 품질·수집 D-02/04 |
 | 예약 | `/reservations`, 슬롯/취소: S-14 | 수용량·견적·동의·만료 D-04/05 |
 | 랭킹 | `/rankings/{lotId}?month=YYYY-MM`: S-15 | 인정 수준·동점·공개 철회 D-02/04/05 |
 | 거래 | `/payments`, `/subscriptions`, 제공자 webhook: S-16/17 | 실제 제공자·환불·자격 D-05 |
@@ -138,3 +138,7 @@ examples는 전부 합성 데이터다. 정상, steeringAngle 미지원, 순서 
 ## S-09 구현 범위와 이전 설계 전환
 
 본인 위치 CRUD/current/목록/이력과 비공개 사진 추가/조회/삭제의10개 경로를 개발 opt-in으로 제공한다. S-01의 미구현 위치 DTO를 정수 structureVersion·명시 nullable 주차면/층/구역·SYNTHETIC source로 구체화했다. 생성/변경은 원문 Location 대신 최소 LocationReceipt/LocationPhotoReceipt를 반환하고 별도 GET으로 현재 상태를 조회한다. 원본과 현재 selection·수신 시각·photo metadata를 응답하며 외부 사진 URL은 없다. DELETE는 JSON expectedVersion이 필요하다. 기존에 구현된 인증/이벤트/주차장/난이도/리뷰 요청 계약은 바꾸지 않는다. 실제 SDK/실차·공유 Base URL은 미검증/미정이며 각 작업 develop 통합 뒤 Wiki에 반영한다.
+
+## S-12 합성 미션·도전 기록
+
+OpenAPI0.10.0은 비운영 DEV_MISSIONS_ENABLED·개발 인증·SYNTHETIC 카탈로그/도전/조회/최종 결과5연산을 추가한다. VEHICLE 쓰기는 원래 AuthSession/설치/사용자에 고정하고 WEB은 본인 이력 조회만 한다. 룰·구조/스테이지/지원 snapshot과 단일 최종 결과/영수증은 불변이다. 별/기간/순서·신호 품질·중복/충돌을 검증하며 report/정합성 CHECKED/물리 UNVERIFIED·SYNTHETIC_NOT_ELIGIBLE를 분리한다. S-04 이벤트는 그대로이고 원본 시계열 업로드를 추가하지 않는다. 구체적 단위·룰/오류·재시도·호환성은 [missions.md](missions.md), 실제 운영 D-02/D-04와 앱 E1~E8 확인은 [DECISIONS.md](DECISIONS.md) 및 [vehicle-contract-notes.md](vehicle-contract-notes.md)를 따른다.

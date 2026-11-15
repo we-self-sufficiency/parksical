@@ -33,6 +33,7 @@ enum PairingStatus {
 }
 
 model User {
+  missionRuns MissionRun[]
   id            String @id @default(uuid()) @db.Uuid
   role          UserRole @default(USER)
   rankingPublic Boolean @default(false)
@@ -58,6 +59,7 @@ model AuthIdentity {
 }
 
 model Installation {
+  missionRuns MissionRun[]
   id             String @id @default(uuid()) @db.Uuid
   secretHash     String @db.Char(64)
   linkedUserId   String? @db.Uuid
@@ -71,6 +73,7 @@ model Installation {
 }
 
 model AuthSession {
+  missionRuns MissionRun[]
   id               String @id @default(uuid()) @db.Uuid
   userId           String @db.Uuid
   user             User @relation(fields: [userId], references: [id], onDelete: Restrict)
@@ -143,6 +146,7 @@ enum ReportedSource {
 }
 
 model VehicleSession {
+  missionRuns MissionRun[]
   id                    String @id @default(uuid()) @db.Uuid
   userId                String @db.Uuid
   user                  User @relation(fields: [userId], references: [id], onDelete: Restrict)
@@ -195,6 +199,7 @@ model ParkingLot {
 }
 
 model LotRevision {
+  missionRuns MissionRun[]
   lotId           String @db.Uuid
   lot             ParkingLot @relation(fields: [lotId], references: [id], onDelete: Restrict)
   version         Int
@@ -482,4 +487,60 @@ model QrPhoneSession {
   createdAt   DateTime @db.Timestamptz(3)
   expiresAt   DateTime @db.Timestamptz(3)
   revokedAt   DateTime? @db.Timestamptz(3)
+}
+
+// Immutable, synthetic development attempts. A single append-only terminal result determines state.
+model MissionRun {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  installationId String @db.Uuid
+  installation Installation @relation(fields:[installationId],references:[id],onDelete:Restrict)
+  authSessionId String @db.Uuid
+  authSession AuthSession @relation(fields:[authSessionId],references:[id],onDelete:Restrict)
+  vehicleSessionId String @db.Uuid
+  vehicleSession VehicleSession @relation(fields:[vehicleSessionId],references:[id],onDelete:Restrict)
+  clientRunId String @db.VarChar(64)
+  creationHash String @db.Char(64)
+  creationResponse Json @db.JsonB
+  source String @default("SYNTHETIC") @db.VarChar(16)
+  mode String @db.VarChar(16)
+  lotId String @db.Uuid
+  structureVersion Int
+  revision LotRevision @relation(fields:[lotId,structureVersion],references:[lotId,version],onDelete:Restrict)
+  ruleVersion String @db.VarChar(32)
+  rules Json @db.JsonB
+  stages Json @db.JsonB
+  capabilities Json @db.JsonB
+  startedAt DateTime @db.Timestamptz(3)
+  receivedAt DateTime @default(now()) @db.Timestamptz(3)
+  result MissionRunResult?
+  mutations MissionRunMutation[]
+  @@unique([userId,installationId,clientRunId])
+  @@index([userId,startedAt,id])
+}
+model MissionRunResult {
+  runId String @id @db.Uuid
+  run MissionRun @relation(fields:[runId],references:[id],onDelete:Restrict)
+  clientResultId String @db.VarChar(64)
+  requestHash String @db.Char(64)
+  source String @default("SYNTHETIC") @db.VarChar(16)
+  outcome String @db.VarChar(16)
+  stars Int
+  finishedAt DateTime @db.Timestamptz(3)
+  elapsedMs Int
+  report Json @db.JsonB
+  assessment Json @db.JsonB
+  receipt Json @db.JsonB
+  receivedAt DateTime @default(now()) @db.Timestamptz(3)
+}
+model MissionRunMutation {
+  userId String @db.Uuid
+  installationId String @db.Uuid
+  key String @db.VarChar(64)
+  runId String @db.Uuid
+  run MissionRun @relation(fields:[runId],references:[id],onDelete:Restrict)
+  requestHash String @db.Char(64)
+  response Json @db.JsonB
+  @@id([userId,installationId,key])
 }

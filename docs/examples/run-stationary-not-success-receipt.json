@@ -1,0 +1,19 @@
+{
+  "runId": "b23902ad-9619-4d1e-acf0-d0da17a42217",
+  "version": 2,
+  "state": "UNVERIFIABLE",
+  "source": "SYNTHETIC",
+  "receivedAt": "2026-11-14T18:20:44.253Z",
+  "outcome": "UNVERIFIABLE",
+  "reason": "SIGNAL_QUALITY",
+  "stars": 0,
+  "consistencyStatus": "CHECKED",
+  "recognitionStatus": "SYNTHETIC_NOT_ELIGIBLE",
+  "physicalVerification": "UNVERIFIED",
+  "operationalBlockers": [
+    "D-02",
+    "D-04"
+  ],
+  "rankingEligible": false,
+  "rewardEligible": false
+}

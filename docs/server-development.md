@@ -67,3 +67,5 @@ S-09 #10은 [개인 위치·첨부 가이드](parked-locations.md)를 따른다.
 S-10 #11은 [QR·휴대폰 가이드](location-qr.md)를 따른다. DEV_QR_ENABLED=true에는 비운영 개발 인증·위치 opt-in과 정확한 QR_PUBLIC_ORIGIN이 필요하다. REAL_QR_ENABLED는 false만 허용한다. 새 migration 적용 후 소유자 발급/폐기·/p 휴대폰 웹·1회 교환/쿠키 조회를 검증한다. build는 public/qr/app.js 구문도 검사하고 Docker에 정적 자산을 포함한다. GET/HEAD는 비소모이며 운영 D-06/D-07은 미정이다.
 
 S-11 #12는 [MAX 적용 가능성](max-feasibility.md)과 [SDK 근거/앱 확인 질문](vehicle-contract-notes.md)을 기록했다. 새 실행 경로·설정·migration·API는 없다. S-12~S-15는 비운영 SYNTHETIC 계약/판정 정합성을 개발할 수 있으며 실제 MAX 수집·주행 게임 HUD/백그라운드·랭킹/보상은 D-02/D-04와 실차/외부 근거 전 활성화하지 않는다. 문서의 상태 전이·한계값은 A-14 제안이며 설치 SDK 계약/제품 승인으로 취급하지 않는다.
+
+S-12 #13의 [미션·도전 기록 가이드](missions.md)는 DEV_MISSIONS_ENABLED=true와 비운영 개발 인증에서만 검증한다. migration은 MissionRun/단일 최종 결과/중복 영수증과 불변 UPDATE trigger를 추가한다. 자동 미션/도전 시드는 없고 기존 가상 구조와 SYNTHETIC 전송 세션을 명시적으로 준비한다. REAL_MISSIONS_ENABLED는 false만 허용한다. OpenAPI0.10.0의5개 업무 연산이며 기존 이벤트 종류·개인 위치/QR DTO를 바꾸지 않는다. 실제 수집·랭킹·보상·SDK 인증은 미승인이다.

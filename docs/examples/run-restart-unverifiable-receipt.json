@@ -1,0 +1,19 @@
+{
+  "runId": "dfbb6414-04a8-4f1a-aea5-43f6136a0f40",
+  "version": 2,
+  "state": "UNVERIFIABLE",
+  "source": "SYNTHETIC",
+  "receivedAt": "2026-11-14T18:20:44.128Z",
+  "outcome": "UNVERIFIABLE",
+  "reason": "APP_RESTARTED",
+  "stars": 0,
+  "consistencyStatus": "CHECKED",
+  "recognitionStatus": "SYNTHETIC_NOT_ELIGIBLE",
+  "physicalVerification": "UNVERIFIED",
+  "operationalBlockers": [
+    "D-02",
+    "D-04"
+  ],
+  "rankingEligible": false,
+  "rewardEligible": false
+}

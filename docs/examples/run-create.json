@@ -1,0 +1,14 @@
+{
+  "contractVersion": "1.0",
+  "clientRunId": "example-run",
+  "vehicleSessionId": "e0a9beae-05a3-4e11-9c7c-6a756f73e948",
+  "lotId": "b9239e04-5d3d-4551-bdb5-b650399b449e",
+  "structureVersion": 1,
+  "ruleVersion": "missions-v1",
+  "source": "SYNTHETIC",
+  "mode": "CHALLENGE",
+  "startedAt": "2026-11-14T18:19:43.130Z",
+  "stageIds": [
+    "ONE_SHOT_REVERSE:basement1-s03"
+  ]
+}

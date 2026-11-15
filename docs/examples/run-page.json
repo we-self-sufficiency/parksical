@@ -1,0 +1,317 @@
+{
+  "items": [
+    {
+      "id": "dfbb6414-04a8-4f1a-aea5-43f6136a0f40",
+      "clientRunId": "restart-unverifiable",
+      "vehicleSessionId": "e0a9beae-05a3-4e11-9c7c-6a756f73e948",
+      "source": "SYNTHETIC",
+      "mode": "CHALLENGE",
+      "lotId": "b9239e04-5d3d-4551-bdb5-b650399b449e",
+      "structureVersion": 1,
+      "ruleVersion": "missions-v1",
+      "rules": {
+        "scoring": {
+          "noStopStars": 3,
+          "smoothMaxStars": 3,
+          "oneReverseStars": 3
+        },
+        "version": "missions-v1",
+        "maxGapMs": 1000,
+        "maxSpeedKph": 10,
+        "maxElapsedMs": 7200000,
+        "clockToleranceMs": 5000,
+        "minContinuousSamples": 2
+      },
+      "stages": [
+        {
+          "rampId": null,
+          "zoneId": "basement-a",
+          "floorId": "basement1",
+          "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+          "missionCode": "ONE_SHOT_REVERSE",
+          "parkingSpaceId": "basement1-s03",
+          "requiredQuality": [
+            "speed",
+            "gear",
+            "segment",
+            "riskEvents"
+          ],
+          "requiredCapabilities": [
+            "speed",
+            "gear"
+          ]
+        }
+      ],
+      "capabilities": {
+        "gear": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "brake": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "speed": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "carProfile": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "navigation": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "steeringAngle": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "safetyWarnings": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        }
+      },
+      "startedAt": "2026-11-14T18:19:43.130Z",
+      "receivedAt": "2026-11-14T18:20:44.113Z",
+      "version": 2,
+      "state": "UNVERIFIABLE",
+      "result": {
+        "report": {
+          "stars": 0,
+          "reason": "APP_RESTARTED",
+          "source": "SYNTHETIC",
+          "stages": [
+            {
+              "stars": 0,
+              "reason": "APP_RESTARTED",
+              "metrics": {
+                "stopCount": null,
+                "maxSpeedKph": 5,
+                "dangerEventCount": 0,
+                "movingDurationMs": 800,
+                "abruptSteeringCount": null,
+                "reverseSegmentCount": 1
+              },
+              "outcome": "UNVERIFIABLE",
+              "quality": [
+                {
+                  "signal": "speed",
+                  "status": "AVAILABLE",
+                  "maxGapMs": 100,
+                  "coveredMs": 1000,
+                  "validSampleCount": 11
+                },
+                {
+                  "signal": "gear",
+                  "status": "AVAILABLE",
+                  "maxGapMs": 100,
+                  "coveredMs": 1000,
+                  "validSampleCount": 1
+                },
+                {
+                  "signal": "segment",
+                  "status": "AVAILABLE",
+                  "maxGapMs": 100,
+                  "coveredMs": 1000,
+                  "validSampleCount": 1
+                },
+                {
+                  "signal": "riskEvents",
+                  "status": "AVAILABLE",
+                  "maxGapMs": 100,
+                  "coveredMs": 1000,
+                  "validSampleCount": 1
+                }
+              ],
+              "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+              "uxState": "ALLOWED",
+              "endOffsetMs": 1000,
+              "segmentExited": true,
+              "startOffsetMs": 0,
+              "segmentEntered": true,
+              "parkingConfirmed": true
+            }
+          ],
+          "outcome": "UNVERIFIABLE",
+          "elapsedMs": 1000,
+          "finishedAt": "2026-11-14T18:19:44.130Z",
+          "clientResultId": "restart-unverifiable",
+          "expectedVersion": 1
+        },
+        "assessment": {
+          "stars": 0,
+          "reason": "APP_RESTARTED",
+          "outcome": "UNVERIFIABLE",
+          "rewardEligible": false,
+          "rankingEligible": false,
+          "consistencyStatus": "CHECKED",
+          "recognitionStatus": "SYNTHETIC_NOT_ELIGIBLE",
+          "operationalBlockers": [
+            "D-02",
+            "D-04"
+          ],
+          "physicalVerification": "UNVERIFIED"
+        },
+        "receivedAt": "2026-11-14T18:20:44.128Z"
+      }
+    },
+    {
+      "id": "d81f5aa0-71d8-474b-b212-ab57f8a62ba4",
+      "clientRunId": "stale-unverifiable",
+      "vehicleSessionId": "e0a9beae-05a3-4e11-9c7c-6a756f73e948",
+      "source": "SYNTHETIC",
+      "mode": "CHALLENGE",
+      "lotId": "b9239e04-5d3d-4551-bdb5-b650399b449e",
+      "structureVersion": 1,
+      "ruleVersion": "missions-v1",
+      "rules": {
+        "scoring": {
+          "noStopStars": 3,
+          "smoothMaxStars": 3,
+          "oneReverseStars": 3
+        },
+        "version": "missions-v1",
+        "maxGapMs": 1000,
+        "maxSpeedKph": 10,
+        "maxElapsedMs": 7200000,
+        "clockToleranceMs": 5000,
+        "minContinuousSamples": 2
+      },
+      "stages": [
+        {
+          "rampId": null,
+          "zoneId": "basement-a",
+          "floorId": "basement1",
+          "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+          "missionCode": "ONE_SHOT_REVERSE",
+          "parkingSpaceId": "basement1-s03",
+          "requiredQuality": [
+            "speed",
+            "gear",
+            "segment",
+            "riskEvents"
+          ],
+          "requiredCapabilities": [
+            "speed",
+            "gear"
+          ]
+        }
+      ],
+      "capabilities": {
+        "gear": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "brake": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "speed": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "carProfile": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "navigation": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "steeringAngle": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        },
+        "safetyWarnings": {
+          "status": "SUPPORTED",
+          "checkedAt": "2026-11-14T18:19:43.130Z"
+        }
+      },
+      "startedAt": "2026-11-14T18:19:43.130Z",
+      "receivedAt": "2026-11-14T18:20:44.084Z",
+      "version": 2,
+      "state": "UNVERIFIABLE",
+      "result": {
+        "report": {
+          "stars": 0,
+          "reason": "SIGNAL_QUALITY",
+          "source": "SYNTHETIC",
+          "stages": [
+            {
+              "stars": 0,
+              "reason": "SIGNAL_QUALITY",
+              "metrics": {
+                "stopCount": null,
+                "maxSpeedKph": null,
+                "dangerEventCount": 0,
+                "movingDurationMs": 800,
+                "abruptSteeringCount": null,
+                "reverseSegmentCount": 1
+              },
+              "outcome": "UNVERIFIABLE",
+              "quality": [
+                {
+                  "signal": "speed",
+                  "status": "STALE",
+                  "maxGapMs": null,
+                  "coveredMs": 0,
+                  "validSampleCount": 0
+                },
+                {
+                  "signal": "gear",
+                  "status": "AVAILABLE",
+                  "maxGapMs": 100,
+                  "coveredMs": 1000,
+                  "validSampleCount": 1
+                },
+                {
+                  "signal": "segment",
+                  "status": "AVAILABLE",
+                  "maxGapMs": 100,
+                  "coveredMs": 1000,
+                  "validSampleCount": 1
+                },
+                {
+                  "signal": "riskEvents",
+                  "status": "AVAILABLE",
+                  "maxGapMs": 100,
+                  "coveredMs": 1000,
+                  "validSampleCount": 1
+                }
+              ],
+              "stageId": "ONE_SHOT_REVERSE:basement1-s03",
+              "uxState": "ALLOWED",
+              "endOffsetMs": 1000,
+              "segmentExited": true,
+              "startOffsetMs": 0,
+              "segmentEntered": true,
+              "parkingConfirmed": true
+            }
+          ],
+          "outcome": "UNVERIFIABLE",
+          "elapsedMs": 1000,
+          "finishedAt": "2026-11-14T18:19:44.130Z",
+          "clientResultId": "stale-unverifiable",
+          "expectedVersion": 1
+        },
+        "assessment": {
+          "stars": 0,
+          "reason": "SIGNAL_QUALITY",
+          "outcome": "UNVERIFIABLE",
+          "rewardEligible": false,
+          "rankingEligible": false,
+          "consistencyStatus": "CHECKED",
+          "recognitionStatus": "SYNTHETIC_NOT_ELIGIBLE",
+          "operationalBlockers": [
+            "D-02",
+            "D-04"
+          ],
+          "physicalVerification": "UNVERIFIED"
+        },
+        "receivedAt": "2026-11-14T18:20:44.096Z"
+      }
+    }
+  ],
+  "nextCursor": "eyJpZCI6ImQ4MWY1YWEwLTcxZDgtNDc0Yi1iMjEyLWFiNTdmOGE2MmJhNCIsInF1ZXJ5IjoiM2MzYzQ4Y2E1NWVmNmVkZDg3OTYxZTU0NTA4ODU0N2I3NDg4ZjZlZDBhOWEyMGFlNGI5YTE4YjcwYTgzOGZiNyJ9"
+}

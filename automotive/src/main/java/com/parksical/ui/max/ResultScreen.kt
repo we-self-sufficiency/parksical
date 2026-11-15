@@ -1,6 +1,5 @@
 package com.parksical.ui.max
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,13 +35,11 @@ fun ResultScreen(onBackToGeneral: () -> Unit) {
     val parked = LocalVehicleState.current.isParked
     if (!parked) { NeedParkPanel(); return }
     val records by c.session.records.collectAsState()
-    val ctx = LocalContext.current
     val record = records.lastOrNull { it.mode == RunMode.CHALLENGE }
     ResultContent(
         record = record,
         dungeon = record?.let { c.parking.dungeon(it.lotId) },
         stamps = stampsOf(c.session.baseStamps, records, c.parking::dungeon),
-        onShare = parkedOnly { Toast.makeText(ctx, "기록을 공유했어요 (데모)", Toast.LENGTH_SHORT).show() },
         onBack = parkedOnly(onBackToGeneral),
     )
 }
@@ -54,7 +50,6 @@ internal fun ResultContent(
     record: RunRecord?,
     dungeon: Dungeon?,
     stamps: Int,
-    onShare: () -> Unit,
     onBack: () -> Unit,
 ) {
     if (record == null) {
@@ -105,7 +100,8 @@ internal fun ResultContent(
             }
             Box(Modifier.weight(1f))
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                PixelButton("기록 공유", onShare, Modifier.weight(1f), filled = true)
+                // no record-sharing API on the server yet (ranking S-15 is not built), so the button stays disabled
+                PixelButton("기록 공유", {}, Modifier.weight(1f), filled = true, dim = true)
                 PixelButton("일반 모드로", onBack, Modifier.weight(1f))
             }
         }
@@ -123,9 +119,9 @@ private val PreviewDungeon = MockParkingRepository().dungeon("daon")!!
 
 @Preview(widthDp = 1682, heightDp = 1210)
 @Composable
-private fun PreviewClear() = ResultContent(SampleData.record(RunMode.CHALLENGE, 3, 1), PreviewDungeon, 7, {}, {})
+private fun PreviewClear() = ResultContent(SampleData.record(RunMode.CHALLENGE, 3, 1), PreviewDungeon, 7, {})
 
 @Preview(widthDp = 1682, heightDp = 1210)
 @Composable
 private fun PreviewAborted() =
-    ResultContent(SampleData.record(RunMode.CHALLENGE, 0, 0, full = false), PreviewDungeon, 6, {}, {})
+    ResultContent(SampleData.record(RunMode.CHALLENGE, 0, 0, full = false), PreviewDungeon, 6, {})

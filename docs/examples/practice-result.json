@@ -39,7 +39,7 @@
         {
           "signal": "gear",
           "status": "AVAILABLE",
-          "validSampleCount": 1,
+          "validSampleCount": 3,
           "maxGapMs": 100,
           "coveredMs": 1000
         },

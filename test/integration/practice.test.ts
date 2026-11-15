@@ -47,7 +47,7 @@ test('real PG practice: sixth-run award, late records/revocation, concurrent rec
     function report(index: number, name = 'reverse-success', count?: number) {
       const dto = structuredClone(scenarios.scenarios.find(s => s.name === name)!.result);
       dto.finishedAt = new Date(origin + index * 2000 + dto.elapsedMs).toISOString();
-      if (count !== undefined) dto.stages[0]!.metrics.gearTransitionCount = count;
+      if (count !== undefined) { dto.stages[0]!.metrics.gearTransitionCount = count; dto.stages[0]!.quality.find(q => q.signal === 'gear')!.validSampleCount = count + 1; }
       return dto;
     }
     const finish = async (id: string, index: number, name = 'reverse-success', count?: number) => json(await request('/runs/' + id + '/result', vehicle.accessToken, 'POST', report(index, name, count), 'result-' + randomUUID()), 201);
@@ -102,6 +102,8 @@ test('real PG practice: sixth-run award, late records/revocation, concurrent rec
     await error(await request(invalidatePath, owner.accessToken, 'POST', { ...invalidation, reason: 'USER_REQUEST' }, 'invalidate-a'), 409, 'IDEMPOTENCY_CONFLICT');
     await error(await request(invalidatePath, owner.accessToken, 'POST', { ...invalidation, reason: 'USER_REQUEST' }, 'different'), 409, 'PRACTICE_ALREADY_INVALIDATED');
     await assert.rejects(db.practiceRecord.update({ where: { runId: ids[0]! }, data: { goalVersion: 'practice-v2' } })); await assert.rejects(db.practiceRecord.update({ where: { runId: target }, data: { invalidatedAt: null, invalidationReason: null } }));
+    const impossible = (await create(14)).runId, impossibleResult = report(14, 'reverse-success', 2); impossibleResult.stages[0]!.quality.find(q => q.signal === 'gear')!.validSampleCount = 1;
+    await error(await request('/runs/' + impossible + '/result', vehicle.accessToken, 'POST', impossibleResult, 'impossible-gear-count'), 422, 'INVALID_GEAR_TRANSITION_COUNT');
     const pending = (await create(15)).runId; await error(await request('/practice/runs/' + pending + '/invalidation', vehicle.accessToken, 'POST', invalidation, 'pending'), 422, 'PRACTICE_RESULT_REQUIRED');
     const smoothRun = (await create(16, { stageIds: [smooth] })).runId; await finish(smoothRun, 16, 'smooth-two-stars', 3);
     const smoothReport = await json<{ summary: { abruptSteeringCount: number }; goalSucceeded: boolean }>(await request('/practice/runs/' + smoothRun, owner.accessToken)); assert.equal(smoothReport.summary.abruptSteeringCount, 1); assert.equal(smoothReport.goalSucceeded, false); assert.equal((await progress(smoothRun)).recognition, null);

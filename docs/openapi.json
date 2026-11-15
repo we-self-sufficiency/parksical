@@ -12331,7 +12331,7 @@
           "stopCount",
           "abruptSteeringCount"
         ],
-        "description": "Optional gearTransitionCount is an app-local synthetic count of changes between valid selected-gear samples, excluding the initial observation; unknown or unsupported is null/omitted. Never inferred from reverseSegmentCount. Added in 0.11.0; unchanged required fields allow older clients."
+        "description": "Optional gearTransitionCount is an app-local synthetic count of changes between valid selected-gear samples, excluding the initial observation; unknown or unsupported is null/omitted. Never inferred from reverseSegmentCount. If present/non-null, gear quality must be AVAILABLE and count cannot exceed validSampleCount minus one (422 INVALID_GEAR_TRANSITION_COUNT). Added in 0.11.0; unchanged required fields allow older clients."
       },
       "MissionStageResult": {
         "type": "object",

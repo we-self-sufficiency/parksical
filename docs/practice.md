@@ -65,7 +65,7 @@ WEB은 본인 계정 전체, VEHICLE은 본인 **현재 인증한 설치**만 �
 [리포트 예제](examples/practice-report.json), [목록 예제](examples/practice-page.json), [진행도 예제](examples/practice-progress.json), [도장 목록 예제](examples/practice-awards.json)는 실제 합성 HTTP 테스트 응답이다. 예제의 UUID/시간은 테스트용이며 실제 발급값으로 바꾼다.
 
 - `elapsedMs`: 앱 단조 시간 기반 총 시도 시간. 중단 결과에도 보고한 시간은 보존하되 완료 회차 간 비교만 제공한다.
-- `gearTransitionCount`: 각 스테이지의 선택 기어 **유효 관측 사이 값이 바뀐 횟수** 합계. 최초 관측은 전환이 아니며 결측/재시작 구간을 이어 붙이지 않는다. S-13에서 `StageMetrics`에 선택적인0~10,000 정수/null을 추가했다. 원본 기어 배열·새 SDK API 이름을 요구하지 않는다. `reverseSegmentCount`로 기어 전환을 역산하지 않는다.
+- `gearTransitionCount`: 각 스테이지의 선택 기어 **유효 관측 사이 값이 바뀐 횟수** 합계. 최초 관측은 전환이 아니며 결측/재시작 구간을 이어 붙이지 않는다. 값이 있으면 gear 품질은 AVAILABLE이고 전환 횟수는 validSampleCount−1 이하여야 하며 모순된 요청은422 INVALID_GEAR_TRANSITION_COUNT다. S-13에서 `StageMetrics`에 선택적인0~10,000 정수/null을 추가했다. 원본 기어 배열·새 SDK API 이름을 요구하지 않는다. `reverseSegmentCount`로 기어 전환을 역산하지 않는다.
 - `abruptSteeringCount`: 기존 로컬 미션 요약값 합계. 조향 품질이 없는 reverse/ramp 회차에서0으로 꾸미지 않는다.
 - 횟수는 전 단계가 완료되었고 해당 필드와 AVAILABLE 신호가 모두 있을 때만 합계다. 누락/null/부분 중단/품질 저하는 `null`이며 오래된 S-12 기록도 소급해 숫자를 만들어 넣지 않는다.
 - 비교 대상은 같은 그룹의 **직전 무효가 아닌 COMPLETED 회차**(실패 완료 포함)다. 변화량은 현재−직전 값, 어느 쪽이 미확인이면null이다. 무효/미완료 회차의 비교 변화량도null. 시간 변화는 관측 비교이며 빠름 보상이 아니다.

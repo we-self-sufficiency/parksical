@@ -69,15 +69,33 @@ class ServerReservationRepository(private val api: ApiClient, private val auth: 
         "POST", "/reservation-quotes", body = quoteBody(lotId, mode, startsAt, minutes, dims), key = "quote-${java.util.UUID.randomUUID()}",
     ))
 
-    /** HELD, then the sandbox success event -> SANDBOX_CONFIRMED. Keys derive from ids so a retry replays instead of duplicating. */
+    /**
+     * HELD, then payment -> SANDBOX_CONFIRMED. S-16: bind an order to the hold and run a sandbox attempt; the server
+     * confirms the reservation only after verifying the provider. Falls back to the S-14 sandbox command when the
+     * payments feature is off. Keys derive from ids so a retry replays instead of duplicating.
+     */
     suspend fun reserve(quote: ReservationQuote, safetyRulesVersion: String, agreedAt: Instant): ConfirmedReservation {
         val held = call("POST", "/reservations", body = holdBody(quote.quoteId, safetyRulesVersion, agreedAt), key = "hold-${quote.quoteId}")
         val id = held["id"] as String
-        val receipt = call("POST", "/reservations/$id/sandbox-events", body = mapOf("kind" to "PAYMENT_SUCCEEDED"), key = "pay-$id")
-        @Suppress("UNCHECKED_CAST")
-        val r = receipt["reservation"] as Map<String, Any?>
-        check(r["state"] == "SANDBOX_CONFIRMED") { "unexpected state" }
-        return ConfirmedReservation(id, quote.amountKrw)
+        val order = try {
+            call("POST", "/payments/reservations", body = mapOf("reservationId" to id), key = "order-$id")
+        } catch (e: ApiException) {
+            if (e.status != 403 || e.code != "PAYMENTS_POLICY_DISABLED") throw e
+            null
+        }
+        if (order == null) {
+            val receipt = call("POST", "/reservations/$id/sandbox-events", body = mapOf("kind" to "PAYMENT_SUCCEEDED"), key = "pay-$id")
+            @Suppress("UNCHECKED_CAST")
+            check((receipt["reservation"] as Map<String, Any?>)["state"] == "SANDBOX_CONFIRMED") { "unexpected state" }
+            return ConfirmedReservation(id, quote.amountKrw)
+        }
+        val orderId = order["id"] as String
+        var paid = call("POST", "/payments/$orderId/attempts", body = mapOf("sandboxOutcome" to "SUCCEEDED"), key = "attempt-$orderId")
+        if (paid["state"] == "PENDING") paid = call("GET", "/payments/$orderId")
+        if (paid["state"] != "SUCCEEDED") throw ApiException(402, "PAYMENT_NOT_APPROVED")
+        // the attempt response is a snapshot; read the reservation's current state
+        if (call("GET", "/reservations/$id")["state"] != "SANDBOX_CONFIRMED") throw ApiException(402, "PAYMENT_NOT_APPROVED")
+        return ConfirmedReservation(id, (paid["amountKrw"] as? Number)?.toInt() ?: quote.amountKrw)
     }
 
     private suspend fun call(
@@ -112,6 +130,7 @@ fun reservationReason(e: Throwable): String = when {
         "USER_OVERLAP" -> "이미 예약한 시간과 겹쳐요"
         else -> "예약 상태가 바뀌었어요"
     }
+    e.status == 402 -> "결제가 승인되지 않았어요"
     e.status == 429 -> "잠시 후 다시 시도해 주세요"
     else -> "서버 오류"
 }

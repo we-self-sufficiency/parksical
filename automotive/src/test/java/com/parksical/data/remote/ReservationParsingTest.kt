@@ -54,6 +54,7 @@ class ReservationParsingTest {
         assertEquals("이미 예약한 시간과 겹쳐요", reservationReason(ApiException(409, "RESERVATION_USER_OVERLAP")))
         assertEquals("서버 연결 안 됨", reservationReason(ApiException(0)))
         assertEquals("예약 기능이 꺼져 있어요", reservationReason(ApiException(403, "RESERVATIONS_POLICY_DISABLED")))
+        assertEquals("결제가 승인되지 않았어요", reservationReason(ApiException(402, "PAYMENT_NOT_APPROVED")))
         assertEquals("P지컬 MAX 이용권이 필요해요", reservationReason(ApiException(403, "SYNTHETIC_PASS_REQUIRED")))
     }
 }

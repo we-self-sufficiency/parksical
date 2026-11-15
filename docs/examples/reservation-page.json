@@ -1,0 +1,49 @@
+{
+  "items": [
+    {
+      "id": "ab7622b4-5b02-41a1-ba10-1ce212cd5ea2",
+      "quoteId": "6176a9bf-ad58-4e1d-b776-2f868f01540c",
+      "lotId": "2f765ba2-d37e-488d-9301-ed4e5183ecad",
+      "policyVersion": 2,
+      "mode": "PRACTICE",
+      "startsAt": "2026-11-16T15:00:00.000Z",
+      "endsAt": "2026-11-16T15:30:00.000Z",
+      "state": "CANCELLED",
+      "paymentStatus": "NOT_STARTED",
+      "version": 2,
+      "holdExpiresAt": "2026-11-15T08:40:59.952Z",
+      "safetyRulesVersion": "synthetic-safety-v1",
+      "safetyAgreedAt": "2026-11-15T08:35:59.939Z",
+      "createdAt": "2026-11-15T08:35:59.952Z",
+      "updatedAt": "2026-11-15T08:36:00.038Z",
+      "pricing": {
+        "days": [
+          {
+            "date": "2026-11-17",
+            "minutes": 30,
+            "generalAmountKrw": 1000
+          }
+        ],
+        "widthMm": 1850,
+        "currency": "KRW",
+        "lengthMm": 4800,
+        "rounding": "HALF_UP_WON",
+        "amountKrw": 1250,
+        "priceVersion": "reservation-price-v1",
+        "dailyCapScope": "GENERAL_FARE_PER_KST_DATE",
+        "multiplierBps": 12500,
+        "generalAmountKrw": 1000,
+        "structureVersion": 1,
+        "safetyRulesVersion": "synthetic-safety-v1"
+      },
+      "source": "SYNTHETIC",
+      "operationalAllowed": false,
+      "realPaymentVerified": false,
+      "operationalBlockers": [
+        "D-04",
+        "D-05"
+      ]
+    }
+  ],
+  "nextCursor": "eyJpZCI6ImFiNzYyMmI0LTViMDItNDFhMS1iYTEwLTFjZTIxMmNkNWVhMiIsInF1ZXJ5IjoiNjlmMzJmNjk5ZTRmNGIyZTA5N2FmZjg2MzE3MjMxNDQwOGE1OWM2N2M1OTkwOGNhYzdlZGUxNzI3ODg0MzlkYyJ9"
+}

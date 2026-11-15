@@ -1,0 +1,38 @@
+{
+  "quoteId": "571e3bf3-5a01-4588-b408-c0b83bdc4fd1",
+  "lotId": "2f765ba2-d37e-488d-9301-ed4e5183ecad",
+  "policyVersion": 1,
+  "mode": "PRACTICE",
+  "startsAt": "2026-11-16T01:00:00.000Z",
+  "endsAt": "2026-11-16T01:30:00.000Z",
+  "createdAt": "2026-11-15T08:35:58.856Z",
+  "expiresAt": "2026-11-15T08:40:58.856Z",
+  "details": {
+    "currency": "KRW",
+    "priceVersion": "reservation-price-v1",
+    "generalAmountKrw": 1000,
+    "multiplierBps": 12500,
+    "amountKrw": 1250,
+    "rounding": "HALF_UP_WON",
+    "dailyCapScope": "GENERAL_FARE_PER_KST_DATE",
+    "days": [
+      {
+        "date": "2026-11-16",
+        "minutes": 30,
+        "generalAmountKrw": 1000
+      }
+    ],
+    "lengthMm": 4800,
+    "widthMm": 1850,
+    "safetyRulesVersion": "synthetic-safety-v1",
+    "structureVersion": 1
+  },
+  "capacityReserved": false,
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "operationalBlockers": [
+    "D-04",
+    "D-05"
+  ]
+}

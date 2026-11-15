@@ -1,0 +1,55 @@
+{
+  "evidence": {
+    "kind": "PAYMENT_SUCCEEDED",
+    "source": "SANDBOX",
+    "currency": "KRW",
+    "amountKrw": 1250,
+    "reservationId": "cf471604-104e-486f-aae0-5b1a026bde73",
+    "providerEventId": "093df19e-6ac0-4927-9a8f-d1c8660fb1bf",
+    "realPaymentVerified": false
+  },
+  "reservation": {
+    "id": "cf471604-104e-486f-aae0-5b1a026bde73",
+    "mode": "PRACTICE",
+    "lotId": "2f765ba2-d37e-488d-9301-ed4e5183ecad",
+    "state": "SANDBOX_CONFIRMED",
+    "endsAt": "2026-11-16T01:30:00.000Z",
+    "source": "SYNTHETIC",
+    "pricing": {
+      "days": [
+        {
+          "date": "2026-11-16",
+          "minutes": 30,
+          "generalAmountKrw": 1000
+        }
+      ],
+      "widthMm": 1850,
+      "currency": "KRW",
+      "lengthMm": 4800,
+      "rounding": "HALF_UP_WON",
+      "amountKrw": 1250,
+      "priceVersion": "reservation-price-v1",
+      "dailyCapScope": "GENERAL_FARE_PER_KST_DATE",
+      "multiplierBps": 12500,
+      "generalAmountKrw": 1000,
+      "structureVersion": 1,
+      "safetyRulesVersion": "synthetic-safety-v1"
+    },
+    "quoteId": "571e3bf3-5a01-4588-b408-c0b83bdc4fd1",
+    "version": 2,
+    "startsAt": "2026-11-16T01:00:00.000Z",
+    "createdAt": "2026-11-15T08:35:58.947Z",
+    "updatedAt": "2026-11-15T08:35:59.179Z",
+    "holdExpiresAt": "2026-11-15T08:40:58.947Z",
+    "paymentStatus": "SANDBOX_SUCCEEDED",
+    "policyVersion": 1,
+    "safetyAgreedAt": "2026-11-15T08:35:58.923Z",
+    "operationalAllowed": false,
+    "safetyRulesVersion": "synthetic-safety-v1",
+    "operationalBlockers": [
+      "D-04",
+      "D-05"
+    ],
+    "realPaymentVerified": false
+  }
+}

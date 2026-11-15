@@ -9,7 +9,7 @@ import type { LotCreateDto } from '../../src/lots/dto.js';
 import { writeRevision, asJson } from '../../src/lots/store.js';
 import { missionCatalog } from '../../src/missions/rules.js';
 
-test('real PG S-12 upgrade backfills practice-v1 membership without changing immutable runs, old metrics or receipts', async () => {
+test('real PG S-12/S-13 upgrade preserves immutable data through practice backfill and reservation schema addition', async () => {
   const schema = 'practice_upgrade_' + randomUUID().replaceAll('-', ''), sql = new Client({ connectionString: process.env.DATABASE_URL });
   await sql.connect(); await sql.query('CREATE SCHEMA "' + schema + '"'); await sql.query('SET search_path TO "' + schema + '"');
   const url = new URL(process.env.DATABASE_URL!); url.searchParams.set('options', '-c search_path=' + schema);
@@ -33,6 +33,9 @@ test('real PG S-12 upgrade backfills practice-v1 membership without changing imm
     assert.deepEqual(await db.missionRun.findMany({ include: { result: true }, orderBy: { id: 'asc' } }), before);
     const enrolled = await db.practiceRecord.findMany({ include: { run: true } }); assert.equal(enrolled.length, 3); assert.ok(enrolled.every(r => r.goalVersion === 'practice-v1' && r.run.mode === 'PRACTICE' && r.invalidatedAt === null));
     assert.equal(await db.practiceRecognition.count(), 0, 'backfill membership is separate from lazy award projection');
+    await sql.query(await readFile('prisma/migrations/20261115030000_reservations/migration.sql', 'utf8'));
+    assert.deepEqual(await db.missionRun.findMany({ include: { result: true }, orderBy: { id: 'asc' } }), before);
+    assert.equal(await db.reservation.count(), 0); assert.equal(await db.reservationPolicy.count(), 0); assert.equal(await db.reservationQuote.count(), 0);
     await assert.rejects(db.practiceRecord.update({ where: { runId: enrolled[0]!.runId }, data: { goalVersion: 'practice-v2' } }));
     await assert.rejects(db.missionRunResult.update({ where: { runId: enrolled[0]!.runId }, data: { stars: 1 } }));
   } finally { await db.$disconnect(); await sql.query('DROP SCHEMA "' + schema + '" CASCADE'); await sql.end(); }

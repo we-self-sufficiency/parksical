@@ -33,6 +33,9 @@ enum PairingStatus {
 }
 
 model User {
+  rewardGrants RewardGrant[]
+  coupons SandboxCoupon[]
+  rewardMutations RewardMutation[]
   subscriptions Subscription[]
   subscriptionMutations SubscriptionMutation[]
   paymentQuotes PaymentQuote[]
@@ -201,6 +204,7 @@ model VehicleEvent {
 
 // Stable identity; all editable information lives in immutable revision snapshots.
 model ParkingLot {
+  rewardGrants RewardGrant[]
   id             String @id @default(uuid()) @db.Uuid
   code           String @unique @db.VarChar(64)
   currentVersion Int
@@ -504,6 +508,7 @@ model QrPhoneSession {
 
 // Immutable, synthetic development attempts. A single append-only terminal result determines state.
 model MissionRun {
+  rewardGrants RewardGrant[]
   id String @id @default(uuid()) @db.Uuid
   userId String @db.Uuid
   user User @relation(fields:[userId],references:[id],onDelete:Restrict)
@@ -719,6 +724,7 @@ model RankingMutation {
 }
 // Internal synthetic S-18 input. Never serialized directly to the public API.
 model RankingMonthSnapshot {
+  rewardGrants RewardGrant[]
   id String @id @default(uuid()) @db.Uuid
   lotId String @db.Uuid
   month String @db.Char(7)
@@ -748,6 +754,7 @@ model PaymentQuote {
   order PaymentOrder?
 }
 model PaymentOrder {
+  couponClaim CouponClaim?
   id String @id @default(uuid()) @db.Uuid
   userId String @db.Uuid
   user User @relation(fields:[userId],references:[id],onDelete:Restrict)
@@ -862,5 +869,102 @@ model SubscriptionMutation {
   key String @db.VarChar(64)
   requestHash String @db.Char(64)
   response Json @db.JsonB
+  @@id([userId,key])
+}
+
+model RewardSettlement {
+  id String @id @default(uuid()) @db.Uuid
+  sourceMonth String @unique @db.Char(7)
+  policyVersion String @db.VarChar(32)
+  state String @db.VarChar(24)
+  cutoffAt DateTime @db.Timestamptz(3)
+  eligibilityAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  manifest Json? @db.JsonB
+  inputHash String? @db.Char(64)
+  grants RewardGrant[]
+}
+model RewardGrant {
+  id String @id @default(uuid()) @db.Uuid
+  settlementId String @db.Uuid
+  settlement RewardSettlement @relation(fields:[settlementId],references:[id],onDelete:Restrict)
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  lotId String @db.Uuid
+  lot ParkingLot @relation(fields:[lotId],references:[id],onDelete:Restrict)
+  runId String @db.Uuid
+  run MissionRun @relation(fields:[runId],references:[id],onDelete:Restrict)
+  snapshotId String @db.Uuid
+  snapshot RankingMonthSnapshot @relation(fields:[snapshotId],references:[id],onDelete:Restrict)
+  slot Int
+  state String @db.VarChar(16)
+  decision Json @db.JsonB
+  coupon SandboxCoupon?
+  @@unique([settlementId,userId,slot])
+  @@unique([settlementId,userId,lotId])
+}
+model SandboxCoupon {
+  id String @id @default(uuid()) @db.Uuid
+  grantId String @unique @db.Uuid
+  grant RewardGrant @relation(fields:[grantId],references:[id],onDelete:Restrict)
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  lotId String @db.Uuid
+  sourceMonth String @db.Char(7)
+  issuedMonth String @db.Char(7)
+  slot Int
+  policyVersion String @db.VarChar(32)
+  state String @db.VarChar(16)
+  maxAmountKrw Int
+  maxDurationMinutes Int
+  issuedAt DateTime @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  claims CouponClaim[]
+  notification RewardNotification?
+  @@unique([userId,sourceMonth,slot])
+  @@unique([userId,sourceMonth,lotId])
+  @@index([userId,issuedAt,id])
+}
+model CouponClaim {
+  id String @id @default(uuid()) @db.Uuid
+  couponId String @db.Uuid
+  coupon SandboxCoupon @relation(fields:[couponId],references:[id],onDelete:Restrict)
+  orderId String @unique @db.Uuid
+  order PaymentOrder @relation(fields:[orderId],references:[id],onDelete:Restrict)
+  state String @db.VarChar(16)
+  amountKrw Int
+  durationMinutes Int
+  createdAt DateTime @db.Timestamptz(3)
+  holdExpiresAt DateTime @db.Timestamptz(3)
+  consumedAt DateTime? @db.Timestamptz(3)
+  receipt Json? @db.JsonB
+  @@index([couponId,state])
+}
+model RewardNotification {
+  id String @id @default(uuid()) @db.Uuid
+  couponId String @unique @db.Uuid
+  coupon SandboxCoupon @relation(fields:[couponId],references:[id],onDelete:Restrict)
+  state String @db.VarChar(16)
+  attempts Int @default(0)
+  nextAttemptAt DateTime @db.Timestamptz(3)
+  leaseId String? @db.Uuid
+  leaseUntil DateTime? @db.Timestamptz(3)
+  deliveredAt DateTime? @db.Timestamptz(3)
+  lastError String? @db.VarChar(32)
+  @@index([state,nextAttemptAt])
+}
+model SandboxNotificationDelivery {
+  notificationId String @id @db.Uuid
+  deliveryId String @unique @db.Uuid
+  deliveredAt DateTime @default(now()) @db.Timestamptz(3)
+}
+model RewardMutation {
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  key String @db.VarChar(64)
+  requestHash String @db.Char(64)
+  work Json? @db.JsonB
+  response Json? @db.JsonB
   @@id([userId,key])
 }

@@ -154,7 +154,24 @@
     "subscription-cancelled.json": "SubscriptionView",
     "subscription-history.json": "SubscriptionHistoryPage",
     "subscription-entitlements.json": "SubscriptionEntitlements",
-    "subscription-payment.json": "PaymentOrderView"
+    "subscription-payment.json": "PaymentOrderView",
+    "reward-prepare.json": "RewardPrepareInput",
+    "reward-batch.json": "RewardBatchInput",
+    "coupon-action.json": "CouponActionInput",
+    "reward-waiting.json": "RewardSettlementView",
+    "reward-completed.json": "RewardSettlementView",
+    "coupon-page.json": "CouponPage",
+    "coupon-view.json": "CouponView",
+    "coupon-hold.json": "CouponHoldView",
+    "coupon-redemption.json": "CouponRedemptionView",
+    "coupon-released.json": "CouponView",
+    "coupon-cancelled.json": "CouponView",
+    "reward-dispatch.json": "RewardDispatchView",
+    "reward-notifications.json": "RewardNotificationPage",
+    "coupon-payment.json": "PaymentOrderView",
+    "coupon-payment-voided.json": "PaymentOrderView",
+    "coupon-payment-receipt.json": "PaymentReceiptView",
+    "coupon-hold-input.json": "CouponHoldInput"
   },
   "cases": [
     {
@@ -929,6 +946,90 @@
       "status": 200,
       "schema": "SubscriptionEntitlements",
       "example": "subscription-entitlements.json"
+    },
+    {
+      "name": "S-18 prepareRewardSettlement",
+      "operationId": "prepareRewardSettlement",
+      "status": 201,
+      "schema": "RewardSettlementView",
+      "example": "reward-waiting.json",
+      "requestExample": "reward-prepare.json"
+    },
+    {
+      "name": "S-18 getRewardSettlement",
+      "operationId": "getRewardSettlement",
+      "status": 200,
+      "schema": "RewardSettlementView",
+      "example": "reward-completed.json"
+    },
+    {
+      "name": "S-18 processRewardSettlement",
+      "operationId": "processRewardSettlement",
+      "status": 201,
+      "schema": "RewardSettlementView",
+      "example": "reward-completed.json",
+      "requestExample": "reward-batch.json"
+    },
+    {
+      "name": "S-18 dispatchRewardNotifications",
+      "operationId": "dispatchRewardNotifications",
+      "status": 201,
+      "schema": "RewardDispatchView",
+      "example": "reward-dispatch.json",
+      "requestExample": "reward-batch.json"
+    },
+    {
+      "name": "S-18 listOwnCoupons",
+      "operationId": "listOwnCoupons",
+      "status": 200,
+      "schema": "CouponPage",
+      "example": "coupon-page.json"
+    },
+    {
+      "name": "S-18 getOwnCoupon",
+      "operationId": "getOwnCoupon",
+      "status": 200,
+      "schema": "CouponView",
+      "example": "coupon-view.json"
+    },
+    {
+      "name": "S-18 holdOwnCoupon",
+      "operationId": "holdOwnCoupon",
+      "status": 201,
+      "schema": "CouponHoldView",
+      "example": "coupon-hold.json",
+      "requestExample": "coupon-hold-input.json"
+    },
+    {
+      "name": "S-18 consumeOwnCoupon",
+      "operationId": "consumeOwnCoupon",
+      "status": 201,
+      "schema": "CouponRedemptionView",
+      "example": "coupon-redemption.json",
+      "requestExample": "coupon-action.json"
+    },
+    {
+      "name": "S-18 releaseOwnCouponHold",
+      "operationId": "releaseOwnCouponHold",
+      "status": 201,
+      "schema": "CouponView",
+      "example": "coupon-released.json",
+      "requestExample": "coupon-action.json"
+    },
+    {
+      "name": "S-18 cancelOwnCoupon",
+      "operationId": "cancelOwnCoupon",
+      "status": 201,
+      "schema": "CouponView",
+      "example": "coupon-cancelled.json",
+      "requestExample": "coupon-action.json"
+    },
+    {
+      "name": "S-18 listOwnRewardNotifications",
+      "operationId": "listOwnRewardNotifications",
+      "status": 200,
+      "schema": "RewardNotificationPage",
+      "example": "reward-notifications.json"
     }
   ],
   "negativeCases": [
@@ -1829,6 +1930,86 @@
         "rewardEligible": true
       },
       "reason": "S-17 no real reward"
+    },
+    {
+      "schema": "RewardPrepareInput",
+      "baseExample": "reward-prepare.json",
+      "set": {
+        "sourceMonth": "2026-13"
+      },
+      "reason": "S-18 valid KST month"
+    },
+    {
+      "schema": "RewardPrepareInput",
+      "baseExample": "reward-prepare.json",
+      "set": {
+        "policyVersion": "real"
+      },
+      "reason": "S-18 fixed test policy"
+    },
+    {
+      "schema": "RewardPrepareInput",
+      "baseExample": "reward-prepare.json",
+      "set": {
+        "userId": "00000000-0000-4000-8000-000000000001"
+      },
+      "reason": "S-18 no client candidates"
+    },
+    {
+      "schema": "RewardBatchInput",
+      "baseExample": "reward-batch.json",
+      "set": {
+        "limit": "20"
+      },
+      "reason": "S-18 strict integer"
+    },
+    {
+      "schema": "RewardBatchInput",
+      "baseExample": "reward-batch.json",
+      "set": {
+        "limit": 21
+      },
+      "reason": "S-18 bounded work"
+    },
+    {
+      "schema": "CouponHoldInput",
+      "baseExample": "coupon-hold-input.json",
+      "set": {
+        "amountKrw": 1
+      },
+      "reason": "S-18 server price"
+    },
+    {
+      "schema": "CouponActionInput",
+      "baseExample": "coupon-action.json",
+      "set": {
+        "reason": "CASH_REFUND"
+      },
+      "reason": "S-18 no cash value"
+    },
+    {
+      "schema": "CouponView",
+      "baseExample": "coupon-view.json",
+      "set": {
+        "rewardEligible": true
+      },
+      "reason": "S-18 no real eligibility"
+    },
+    {
+      "schema": "CouponRedemptionView",
+      "baseExample": "coupon-redemption.json",
+      "set": {
+        "cashAmountKrw": 1000
+      },
+      "reason": "S-18 no cash charge"
+    },
+    {
+      "schema": "RewardDispatchView",
+      "baseExample": "reward-dispatch.json",
+      "set": {
+        "realDelivered": true
+      },
+      "reason": "S-18 no Bluelink claim"
     }
   ]
 }

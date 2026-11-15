@@ -72,3 +72,13 @@ PENDING/REFUND_PENDING이면 본인 GET 확인 → 같은 명령 key/body 재전
 [subscriptions.md](subscriptions.md)의 비운영 opt-in과 migration20261115060000_subscriptions를 따른다. 구독/월별 cycle/불변 관측 이력/명령4테이블·PaymentOrder의 선택 cycle 참조/nullable lotId를 원자 추가한다. 일반/예약 주문의 필드와 금액/상태 제약은 보존하고 구독 주문에는 lotId=null·구독 pricing을 사용한다. 신규 앱/서버 계약 준비 후 명시적으로 기능을 켠다.
 
 상품/기간/영수증·관측 이력·S-16 결제/환불을 함께 백업하고 실패한 merchant 트랜잭션이 이미 실행한 제공자 승인을 삭제했다고 간주하지 않는다. S-16 동일 명령 또는 reconcile로 복구한다. 갱신/환불은 명시 합성 실행이며 실제 정기 청구/worker는 없다. 만료 권한은 매 요청 계산하므로 만료 worker 중단/재시작이 기간을 늘리지 않는다. 취소·기록 조회·동의 철회는 pass 만료로 막지 않는다.
+
+## S-18 정산·쿠폰·알림 복구
+
+[rewards.md](rewards.md)의 비운영 opt-in과 migration20261115070000_rewards를 따른다. 정산/불변 manifest·grant/쿠폰/claim/outbox/대체 제공자/명령7테이블 및 S-16 주문 상태 제약을 원자 추가한다. 기존 S-12~S-17 데이터·가격/영수증/기간은 초기화하지 않는다. 신규 앱이 COUPON_SETTLED/COUPON_VOIDED와 INTERNAL_COUPON_LEDGER·현금0 증빙을 처리한 뒤 기능을 켠다. DB 연결에 UTC를 명시하여 호스트 기본KST에서도 시각을 보존한다.
+
+월1일00:00KST prepare(이전 월) → WAITING_CUTOFF → 기존 랭킹72h 마감 후 새 key process(limit≤20) → COMPLETED까지 반복한다. 관리 실행은 ADMIN/WEB bearer를 요구하며 실제 운영 cron은 미활성이다. 중단 시 GET 요약/hash 확인 후 새 key의 process로 남은 PENDING만 처리한다. 같은 key는 원래 배치 응답 재생, 입력/hash 수동 수정·grant 삭제·임의 쿠폰 재발급은 하지 않는다. 발급/사용 취소가 원천 월2장 한도를 복원하지 않는다.
+
+별도 dispatch로 PENDING/만료 lease를 처리한다. SANDBOX_MAILBOX/realDelivered=false이며 총3시도·30초 lease·60/300초 지연 후 FAILED다. 제공자 성공/ack 전 중단은 동일 notificationId로 중복 제거한다. 알림 실패가 발급 실패/재지급으로 이어지지 않는다. 사용자 점유/만료는 다음 조회 시 정리하며 결제 오류는 자동 현금 청구하지 않는다. 사용 취소는 원장 VOIDED/예약 해제이고 현금 환불·쿠폰 복원은 없다. 과거 사용 영수증과 현재 주문 상태를 함께 확인한다.
+
+백업은 원천 ranking snapshot/mission·subscription 결제/기간·reward manifest/hash/grant/coupon/claim/notification/명령과 별도 합성 제공자 원장을 함께 보존한다. 복원 후 readiness200/인증/기존 데이터·작업 건수를 확인하고 동일 외부 알림 키로 복구한다. 실제 PG·블루링크·운영 일정/비용·D-02/D-04/D-05 및 배포/SDK/실차는 별도 승인/구현 항목이다.

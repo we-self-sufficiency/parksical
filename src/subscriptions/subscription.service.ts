@@ -88,6 +88,11 @@ export class SubscriptionService {
   }
   async entitlements(p:Principal){return this.locked(p,async tx=>this.eligibility(tx,p.userId,await this.clock.now(tx)));}
   // Internal S-18 port. Caller must select and version its actual settlement instant separately.
+  async historicalEligibilityInTransaction(tx:Tx,userId:string,at:Date,now:Date){
+    this.enabled();if(at>=now || !Number.isFinite(at.getTime()))throw new ApiError(422,'INVALID_SUBSCRIPTION_AS_OF');
+    // Observed paidAt/revokedAt never backdate. A fixed past cutoff is stable without taking a live payment lock.
+    return this.eligibility(tx,userId,at);
+  }
   async eligibilityAt(userId:string,at:Date){
     this.enabled();return this.database.client.$transaction(async tx=>{await paymentUserLock(tx,userId);const now=await this.clock.now(tx);if(!Number.isFinite(at.getTime()) || at>now || at<new Date('2000-01-01T00:00:00.000Z'))throw new ApiError(422,'INVALID_SUBSCRIPTION_AS_OF');return this.eligibility(tx,userId,at);});
   }

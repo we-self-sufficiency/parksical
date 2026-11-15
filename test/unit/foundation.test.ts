@@ -48,6 +48,11 @@ test('HTTP liveness/readiness, safe errors, request IDs, body limits and log all
     const missing = await fetch(base + '/p/' + secret + '?lat=private', { headers: { authorization: secret, 'X-Request-Id': '!invalid!' } });
     assert.equal(missing.status, 404);
     assert.match(missing.headers.get('X-Request-Id') ?? '', /^[a-f0-9-]{36}$/);
+    for(const path of ['/coupons/me','/reward-notifications/me','/admin/reward-settlements/00000000-0000-4000-8000-000000000001']){
+      const denied=await fetch(base+'/api/v1'+path,{headers:{'X-Request-Id':secret}});
+      assert.equal(denied.status,401);assert.equal(denied.headers.get('Cache-Control'),'no-store');
+      assert.match(denied.headers.get('X-Request-Id')??'',/^[a-f0-9-]{36}$/);
+    }
     const malformed = await fetch(base + '/missing', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"secret":' });
     assert.equal(malformed.status, 400);
     const large = await fetch(base + '/missing', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ payload: secret.repeat(4000) }) });

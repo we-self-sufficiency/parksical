@@ -154,6 +154,25 @@ export class RankingService {
     });
   }
   // Internal S-18 adapter only. No HTTP/admin route and no operational payout candidates.
+  async settlementInput(tx:Tx,month:string,now:Date){
+    this.enabled();const bounds=rankingMonth(month);if(now.getTime()<Date.parse(bounds.cutoffAt))throw new ApiError(409,'RANKING_CUTOFF_PENDING');await this.lock(tx);
+    const lots=new Set((await tx.missionRun.findMany({where:{mode:'CHALLENGE',startedAt:{gte:new Date(bounds.startsAt),lt:new Date(bounds.endsAt)}},distinct:['lotId'],select:{lotId:true}})).map(r=>r.lotId));
+    for(const row of await tx.rankingMonthSnapshot.findMany({where:{month},select:{lotId:true}}))lots.add(row.lotId);
+    if(lots.size>20)throw new ApiError(503,'SETTLEMENT_SOURCE_LIMIT');
+    const inputs=[];
+    for(const lotId of [...lots].sort()){
+      const {rows}=await this.source(tx,lotId,month),keys=new Set(rows.map(r=>rankingCohort(r).cohortKey));for(const row of await tx.rankingMonthSnapshot.findMany({where:{lotId,month},select:{cohortKey:true}}))keys.add(row.cohortKey);
+      if(keys.size>10)throw new ApiError(503,'SETTLEMENT_SOURCE_LIMIT');
+      for(const cohortKey of [...keys].sort()){
+        const view=await this.view(tx,lotId,{month,cohortKey});let snapshot=await tx.rankingMonthSnapshot.findUnique({where:{lotId_month_cohortKey:{lotId,month,cohortKey}}});
+        if(!snapshot){if(!view.context.cohort)continue;snapshot=await tx.rankingMonthSnapshot.create({data:{lotId,month,cohortKey,rankingVersion:RANKING_VERSION,cutoffAt:new Date(bounds.cutoffAt),createdAt:now,inputHash:fingerprint({candidates:view.candidates,cohort:view.context.cohort,bounds,version:RANKING_VERSION}),candidates:asJson(view.candidates),cohort:asJson(view.context.cohort)}});}
+        const valid=new Set(view.candidates.map(c=>c.runId));
+        // Preserve original frozen ranks: removing a winner never promotes a runner-up for payout.
+        inputs.push({snapshotId:snapshot.id,inputHash:snapshot.inputHash,lotId,cohortKey,syntheticCandidates:ranked(bestCandidates(snapshot.candidates as unknown as RankingCandidate[])).filter(c=>valid.has(c.runId)),operationalCandidates:[] as never[]});
+      }
+    }
+    return inputs;
+  }
   async finalizeSyntheticMonth(lotId: string, month: string, cohortKey: string) {
     this.enabled(); rankingMonth(month);
     if (!/^[a-f0-9]{64}$/.test(cohortKey)) throw new ApiError(400, 'INVALID_RANKING_COHORT');

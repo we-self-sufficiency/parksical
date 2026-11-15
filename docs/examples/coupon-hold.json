@@ -1,0 +1,17 @@
+{
+  "claimId": "00000000-0000-4000-8000-000000000006",
+  "couponId": "00000000-0000-4000-8000-000000000002",
+  "paymentOrderId": "00000000-0000-4000-8000-000000000007",
+  "state": "HELD",
+  "holdExpiresAt": "2026-11-15T11:11:02.076Z",
+  "coveredAmountKrw": 1000,
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "rewardEligible": false,
+  "redeemableInProduction": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ]
+}

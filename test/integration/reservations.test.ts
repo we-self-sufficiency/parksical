@@ -127,9 +127,12 @@ test('real PG reservations: last-slot races across pools, immutable quotes, safe
     const link = await json<{ installationId: string; deviceCode: string; userCode: string }>(await request('/auth/vehicle-links', undefined, 'POST', {}), 201); installs.push(link.installationId);
     await json(await request('/auth/vehicle-links/approve', alice.accessToken, 'POST', { userCode: link.userCode })); const vehicle = await json<Token>(await request('/auth/vehicle-links/exchange', undefined, 'POST', { deviceCode: link.deviceCode }));
     assert.equal((await request('/reservations/' + short.id, vehicle.accessToken)).status, 200); assert.equal((await request('/auth/vehicle-links/' + link.installationId, alice.accessToken, 'DELETE')).status, 204); await error(await request('/reservations/' + short.id, vehicle.accessToken), 401);
-    const child = spawn(process.execPath, ['dist/main.js'], { env: { ...env, PORT: '39074' }, stdio: ['ignore', 'ignore', 'ignore'] });
+    const child = spawn(process.execPath, ['dist/main.js'], { env: { ...env, PORT: '39074' }, stdio: ['ignore', 'ignore', 'pipe'] });
+    let startupError='';child.stderr?.on('data',(chunk:Buffer)=>{startupError=(startupError+chunk.toString()).slice(-4000);});
     try {
-      let ready = false; for (let i = 0; i < 50; i++) { try { ready = (await fetch('http://127.0.0.1:39074/api/v1/health/ready')).status === 200; if (ready) break; } catch { /* Starting. */ } await pause(100); } assert.equal(ready, true);
+      let ready = false;const deadline=Date.now()+15000;
+      while(Date.now()<deadline && child.exitCode===null){try{ready=(await fetch('http://127.0.0.1:39074/api/v1/health/ready',{signal:AbortSignal.timeout(1000)})).status===200;if(ready)break;}catch{/* Starting or temporarily unready. */}await pause(100);}
+      assert.equal(ready,true,'Reservation restart readiness: exit='+child.exitCode+' stderr='+startupError);
       const persisted = await json<Reservation>(await fetch('http://127.0.0.1:39074/api/v1/reservations/' + reserved.id, { headers: { Authorization: 'Bearer ' + winner.accessToken } })); assert.equal(persisted.state, 'REFUNDED');
       const replay = await fetch('http://127.0.0.1:39074/api/v1' + path, { method: 'POST', headers: { Authorization: 'Bearer ' + winner.accessToken, 'Content-Type': 'application/json', 'Idempotency-Key': 'cancel-paid' }, body: JSON.stringify(cancel) }); assert.equal(replay.headers.get('Idempotency-Replayed'), 'true'); assert.deepEqual(await json(replay, 201), cancelled);
     } finally { if (child.exitCode === null) { const done = new Promise(resolve => child.once('exit', resolve)); child.kill('SIGTERM'); await done; } }

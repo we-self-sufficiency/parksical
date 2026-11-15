@@ -9,7 +9,8 @@ export class DatabaseService implements OnModuleDestroy {
 
   constructor(@Inject(APP_CONFIG) config: AppConfig) {
     this.client = new PrismaClient({
-      adapter: new PrismaPg({ connectionString: config.databaseUrl, connectionTimeoutMillis: 1500, query_timeout: 1500, max: 5 }),
+      // Prisma's timestamp parameters must be interpreted in UTC even on a KST database host.
+      adapter: new PrismaPg({ connectionString: config.databaseUrl, options: '-c timezone=UTC', connectionTimeoutMillis: 1500, query_timeout: 1500, max: 5 }),
     });
   }
 

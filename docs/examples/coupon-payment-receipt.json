@@ -1,0 +1,53 @@
+{
+  "receipt": {
+    "id": "00000000-0000-4000-8000-000000000011",
+    "source": "SYNTHETIC",
+    "orderId": "00000000-0000-4000-8000-000000000007",
+    "pricing": {
+      "days": [
+        {
+          "date": "2026-11-16",
+          "minutes": 30,
+          "generalAmountKrw": 1000
+        }
+      ],
+      "fees": {
+        "currency": "KRW",
+        "baseAmount": 1000,
+        "baseMinutes": 30,
+        "dailyMaxAmount": 15000,
+        "additionalAmount": 500,
+        "additionalMinutes": 10
+      },
+      "currency": "KRW",
+      "amountKrw": 1000,
+      "priceVersion": "prepayment-v1",
+      "dailyCapScope": "GENERAL_FARE_PER_KST_DATE",
+      "capacityReserved": false,
+      "structureVersion": 1
+    },
+    "couponId": "00000000-0000-4000-8000-000000000002",
+    "currency": "KRW",
+    "provider": "INTERNAL_COUPON_LEDGER",
+    "amountKrw": 1000,
+    "recordedAt": "2026-11-15T11:06:02.076Z",
+    "cashAmountKrw": 0,
+    "transactionId": "00000000-0000-4000-8000-000000000006",
+    "settlementMethod": "SYNTHETIC_COUPON",
+    "operationalAllowed": false,
+    "operationalBlockers": [
+      "D-05"
+    ],
+    "realPaymentVerified": false
+  },
+  "refund": null,
+  "source": "SYNTHETIC",
+  "provider": "INTERNAL_COUPON_LEDGER",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "operationalBlockers": [
+    "D-05"
+  ],
+  "settlementMethod": "SYNTHETIC_COUPON",
+  "cashAmountKrw": 0
+}

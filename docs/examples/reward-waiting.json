@@ -1,0 +1,38 @@
+{
+  "id": "00000000-0000-4000-8000-000000000001",
+  "sourceMonth": "2026-10",
+  "state": "WAITING_CUTOFF",
+  "policyVersion": "rewards-sandbox-v1",
+  "cutoffAt": "2026-11-03T15:00:00.000Z",
+  "eligibilityAt": "2026-10-31T14:59:59.999Z",
+  "createdAt": "2026-10-31T15:00:00.000Z",
+  "completedAt": null,
+  "inputHash": null,
+  "counts": {
+    "selected": 0,
+    "pending": 0,
+    "issued": 0,
+    "skipped": 0
+  },
+  "policy": {
+    "version": "rewards-sandbox-v1",
+    "minimumStars": 3,
+    "maxCouponsPerSourceMonth": 2,
+    "validDays": 30,
+    "maxAmountKrw": 5000,
+    "maxDurationMinutes": 120,
+    "costBearer": "SYNTHETIC_NO_MONETARY_VALUE",
+    "tiePolicy": "ALL_COHORT_FIRSTS_TEST_ONLY",
+    "selectionOrder": "LOT_UUID_THEN_COHORT_ASC",
+    "passAt": "SOURCE_MONTH_END_MINUS_1MS"
+  },
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "rewardEligible": false,
+  "redeemableInProduction": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ]
+}

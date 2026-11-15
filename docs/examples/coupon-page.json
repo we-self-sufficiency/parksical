@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "lotId": "00000000-0000-4000-8000-000000000003",
+      "sourceMonth": "2026-10",
+      "issuedMonth": "2026-11",
+      "slot": 2,
+      "policyVersion": "rewards-sandbox-v1",
+      "state": "AVAILABLE",
+      "maxAmountKrw": 5000,
+      "maxDurationMinutes": 120,
+      "issuedAt": "2026-11-15T11:06:02.076Z",
+      "expiresAt": "2026-12-15T11:06:02.076Z",
+      "usable": true,
+      "source": "SYNTHETIC",
+      "operationalAllowed": false,
+      "rewardEligible": false,
+      "redeemableInProduction": false,
+      "operationalBlockers": [
+        "D-02",
+        "D-04",
+        "D-05"
+      ]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000004",
+      "lotId": "00000000-0000-4000-8000-000000000005",
+      "sourceMonth": "2026-10",
+      "issuedMonth": "2026-11",
+      "slot": 1,
+      "policyVersion": "rewards-sandbox-v1",
+      "state": "AVAILABLE",
+      "maxAmountKrw": 5000,
+      "maxDurationMinutes": 120,
+      "issuedAt": "2026-11-15T11:06:02.076Z",
+      "expiresAt": "2026-12-15T11:06:02.076Z",
+      "usable": true,
+      "source": "SYNTHETIC",
+      "operationalAllowed": false,
+      "rewardEligible": false,
+      "redeemableInProduction": false,
+      "operationalBlockers": [
+        "D-02",
+        "D-04",
+        "D-05"
+      ]
+    }
+  ],
+  "nextCursor": null,
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "rewardEligible": false,
+  "redeemableInProduction": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ]
+}

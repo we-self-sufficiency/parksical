@@ -1,0 +1,20 @@
+{
+  "claimId": "00000000-0000-4000-8000-000000000006",
+  "couponId": "00000000-0000-4000-8000-000000000002",
+  "paymentOrderId": "00000000-0000-4000-8000-000000000007",
+  "paymentState": "COUPON_SETTLED",
+  "settlementMethod": "SYNTHETIC_COUPON",
+  "coveredAmountKrw": 1000,
+  "cashAmountKrw": 0,
+  "currency": "KRW",
+  "recordedAt": "2026-11-15T11:06:02.076Z",
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "rewardEligible": false,
+  "redeemableInProduction": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ]
+}

@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.9
+# 서버·차량 앱 계약 v0.11
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03/S-04/S-05/S-06/S-07/S-08/S-09/S-10 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03~S-10 및 S-12/S-13 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md)·[미션](missions.md)·[연습 리포트](practice.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.10.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.11.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -15,7 +15,8 @@
 | 3 | S-05 #6, S-07 #7, S-06 #8, S-08 #9 | 주차장·난이도·검색·리뷰 |
 | 4 | S-09 #10, S-10 #11 | 위치 동기화·수정·QR 첫 연동 |
 | 병행 조사 | S-11 #12 | [MAX 정책·신호·구간 조사/후속 기준](max-feasibility.md), 실제 지원·운영 조건 미확인 |
-| 후속 | S-12~S-18 #13~#19 | 미션·연습·예약·랭킹·거래·보상 |
+| 개발 합성 구현 | S-12/S-13 #13/#14 | [미션·결과](missions.md)와 [연습 리포트·합성 자격](practice.md), 기본 OFF/실차 미검증 |
+| 후속 | S-14~S-18 #15~#19 | 예약·랭킹·거래·보상 |
 
 ## URL·버전·인증
 
@@ -56,7 +57,7 @@ Capability는 `SUPPORTED / UNSUPPORTED / PERMISSION_DENIED / ERROR / UNKNOWN`과
 | POST `/parked-locations` | 개인 위치 생성의 정본. 사용자+clientRecordId 유일성으로 로컬 기록 동기화 |
 | PATCH `/parked-locations/{locationId}` | expectedVersion 기반 사용자 수정. 추정 원본은 내부 이력에 유지 |
 | DELETE `/parked-locations/{locationId}` | 본인 위치/첨부 차단·내용 삭제·accessEpoch 증가. QR은 #11의 명시적 개발 opt-in, 보관/완전 삭제 기한 D-02 미정 |
-| POST `/runs` (후속) | 개인 미션 결과 저장의 정본. 이벤트 API에 같은 결과를 중복 제출하지 않음 |
+| POST `/runs/{runId}/result` | 개인 미션 결과 저장의 정본. 이벤트 API에 같은 결과를 중복 제출하지 않음 |
 
 공통 이벤트 API에 범용 payload map이나 원본 배열을 열지 않는다. 미션·주차 위치 DTO를 추가하려면 각각의 정본 자원 계약을 먼저 변경한다. 이벤트 영수증은 저장/적용 결과이며 차량의 안전·위치 정확성·물리적 정차 증명이 아니다.
 
@@ -115,7 +116,7 @@ S-10은 비운영 DEV_QR_ENABLED와 명시 QR_PUBLIC_ORIGIN의 합성 개발 범
 |---|---|---|
 | 인증 | `/auth/*`, `/me`, 차량 연결 승인/폐기: S-03 | 개발 구현은 제공됨. 운영 제공자·활성화 D-01은 미정 |
 | 구조·첨부·리뷰 | `/lots/{id}` 구조 확장, `/reviews`, 위치 첨부: S-05/08/09 | 구조·이용 권한 D-03, 파일 저장 D-06 |
-| 미션·기록 | [S-12 합성 미션/도전·최종 결과](missions.md) 구현, 본인 리포트 S-13 후속 | 구간·판정·신호 품질·수집 D-02/04 |
+| 미션·기록 | [S-12 합성 미션/도전·최종 결과](missions.md) 구현, [S-13 연습 리포트/합성 자격](practice.md) 구현 | 구간·판정·신호 품질·수집 D-02/04 |
 | 예약 | `/reservations`, 슬롯/취소: S-14 | 수용량·견적·동의·만료 D-04/05 |
 | 랭킹 | `/rankings/{lotId}?month=YYYY-MM`: S-15 | 인정 수준·동점·공개 철회 D-02/04/05 |
 | 거래 | `/payments`, `/subscriptions`, 제공자 webhook: S-16/17 | 실제 제공자·환불·자격 D-05 |
@@ -142,3 +143,8 @@ examples는 전부 합성 데이터다. 정상, steeringAngle 미지원, 순서 
 ## S-12 합성 미션·도전 기록
 
 OpenAPI0.10.0은 비운영 DEV_MISSIONS_ENABLED·개발 인증·SYNTHETIC 카탈로그/도전/조회/최종 결과5연산을 추가한다. VEHICLE 쓰기는 원래 AuthSession/설치/사용자에 고정하고 WEB은 본인 이력 조회만 한다. 룰·구조/스테이지/지원 snapshot과 단일 최종 결과/영수증은 불변이다. 별/기간/순서·신호 품질·중복/충돌을 검증하며 report/정합성 CHECKED/물리 UNVERIFIED·SYNTHETIC_NOT_ELIGIBLE를 분리한다. S-04 이벤트는 그대로이고 원본 시계열 업로드를 추가하지 않는다. 구체적 단위·룰/오류·재시도·호환성은 [missions.md](missions.md), 실제 운영 D-02/D-04와 앱 E1~E8 확인은 [DECISIONS.md](DECISIONS.md) 및 [vehicle-contract-notes.md](vehicle-contract-notes.md)를 따른다.
+
+
+## S-13 합성 연습 리포트·자격
+
+OpenAPI0.11.0은 `/practice/runs`·단건·progress·awards·invalidation의5연산과 선택적 `MissionStageMetrics.gearTransitionCount`를 추가한다. WEB 본인 전체/VEHICLE 본인 설치, PRACTICE만 제공한다. 전 단계3별 SUCCESS3연속·발생/동시 시각 순서·지연/무효 재계산과 단일 도장/칭호·합성 자격을 [practice.md](practice.md)에 명세했다. 결과 불변 계약과 기존54연산을 유지하며 원래 재전송 body는 바꾸지 않는다. 새 선택 필드는 S-13 서버 배포 후 보내고, 미지원/미관측은null이다. 비운영 개발 인증/DEV_MISSIONS_ENABLED 기본OFF이며 실차/운영 인정·랭킹·월간 쿠폰 자격은 false다. 배포/Base URL·SDK/실차·D-02/D-04는 미완료다.

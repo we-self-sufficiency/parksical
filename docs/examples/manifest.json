@@ -94,7 +94,14 @@
     "run-stationary-not-success-request.json": "RunResultSubmit",
     "run-stationary-not-success-receipt.json": "RunReceipt",
     "run-ramp-stopped-request.json": "RunResultSubmit",
-    "run-ramp-stopped-receipt.json": "RunReceipt"
+    "run-ramp-stopped-receipt.json": "RunReceipt",
+    "practice-report.json": "PracticeReport",
+    "practice-page.json": "PracticeReportPage",
+    "practice-progress.json": "PracticeProgress",
+    "practice-awards.json": "PracticeAwardPage",
+    "practice-invalidate.json": "PracticeInvalidate",
+    "practice-invalidated.json": "PracticeInvalidated",
+    "practice-result.json": "RunResultSubmit"
   },
   "cases": [
     {
@@ -555,6 +562,50 @@
       "schema": "RunReceipt",
       "example": "run-ramp-stopped-receipt.json",
       "requestExample": "run-ramp-stopped-request.json"
+    },
+    {
+      "name": "synthetic-getPracticeReport",
+      "operationId": "getPracticeReport",
+      "status": 200,
+      "schema": "PracticeReport",
+      "example": "practice-report.json"
+    },
+    {
+      "name": "synthetic-listPracticeReports",
+      "operationId": "listPracticeReports",
+      "status": 200,
+      "schema": "PracticeReportPage",
+      "example": "practice-page.json"
+    },
+    {
+      "name": "synthetic-getPracticeProgress",
+      "operationId": "getPracticeProgress",
+      "status": 200,
+      "schema": "PracticeProgress",
+      "example": "practice-progress.json"
+    },
+    {
+      "name": "synthetic-listPracticeAwards",
+      "operationId": "listPracticeAwards",
+      "status": 200,
+      "schema": "PracticeAwardPage",
+      "example": "practice-awards.json"
+    },
+    {
+      "name": "synthetic-invalidatePracticeRun",
+      "operationId": "invalidatePracticeRun",
+      "status": 201,
+      "schema": "PracticeInvalidated",
+      "example": "practice-invalidated.json",
+      "requestExample": "practice-invalidate.json"
+    },
+    {
+      "name": "synthetic-practice-optional-gear-count",
+      "operationId": "submitMissionRunResult",
+      "status": 201,
+      "schema": "RunReceipt",
+      "example": "run-receipt.json",
+      "requestExample": "practice-result.json"
     }
   ],
   "negativeCases": [
@@ -1044,6 +1095,62 @@
         "stages.0.metrics": null
       },
       "reason": "metrics required object"
+    },
+    {
+      "baseExample": "practice-invalidate.json",
+      "schema": "PracticeInvalidate",
+      "set": {
+        "expectedVersion": 2
+      },
+      "reason": "practice record version is1"
+    },
+    {
+      "baseExample": "practice-invalidate.json",
+      "schema": "PracticeInvalidate",
+      "set": {
+        "reason": "RESTORE"
+      },
+      "reason": "no silent restoration"
+    },
+    {
+      "baseExample": "practice-invalidate.json",
+      "schema": "PracticeInvalidate",
+      "set": {
+        "rawTrajectory": []
+      },
+      "reason": "no raw trajectory upload"
+    },
+    {
+      "baseExample": "practice-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.metrics.gearTransitionCount": -1
+      },
+      "reason": "bounded numeric gear count -1"
+    },
+    {
+      "baseExample": "practice-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.metrics.gearTransitionCount": 10001
+      },
+      "reason": "bounded numeric gear count 10001"
+    },
+    {
+      "baseExample": "practice-result.json",
+      "schema": "RunResultSubmit",
+      "setPaths": {
+        "stages.0.metrics.gearTransitionCount": "2"
+      },
+      "reason": "bounded numeric gear count 2"
+    },
+    {
+      "baseExample": "practice-report.json",
+      "schema": "PracticeReport",
+      "set": {
+        "rankingEligible": true
+      },
+      "reason": "practice never operational ranking eligible"
     }
   ]
 }

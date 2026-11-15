@@ -43,3 +43,8 @@ SQL
 - SIGTERM/SIGINT는 HTTP와 Prisma 연결을 정리한다. 10초 기한을 넘으면 실패 종료다. 배포 시스템은 더 긴 종료 유예를 둔다.
 - 정산·알림 작업은 아직 없다. 후속 구현은 영속 상태와 재시도/중복 부작용 방지를 추가해야 한다.
 - 운영 전 TLS/도메인, DB 권한, 비밀 주입, 로그 정책, 파일 저장, 외부 백업/복원 연습과 정책 활성화를 점검한다.
+
+
+## S-13 합성 연습 확장
+
+[practice.md](practice.md)의 실행/migration·호환성 절차를 따른다. 새 설정 없이 기존 DEV_AUTH_ENABLED/DEV_MISSIONS_ENABLED opt-in이며 기본 OFF다. `npm run migrate:deploy` 후 새 서버를 실행한다. 새 migration은 기존 PRACTICE에 불변 goalVersion membership만 backfill하며 미션 결과/영수증을 바꾸지 않는다. 새 선택 기어 횟수는 S-13 서버 배포 후 전송한다. PracticeRecognition은 재구성 가능한 파생 상태이며 진행도/도장 GET이 이전 서버의 지연 결과를 반영할 수 있다. 결과·무효/도장·영수증의 DB 원자성과 백업/복원 범위에 새3테이블이 포함된다. 이 구현이 배포/Base URL·실제 SDK/실차·D-02/D-04 또는 QR D-07 완료를 뜻하지 않는다.

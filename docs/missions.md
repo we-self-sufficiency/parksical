@@ -6,9 +6,9 @@
 
 비운영 `DEV_AUTH_ENABLED=true`와 `DEV_MISSIONS_ENABLED=true`를 명시하고 migration/build를 적용한다. 기본은 false다. production·개발 인증 없는 활성화·`REAL_MISSIONS_ENABLED=true`는 기동 시 거절한다. 서버가 차량 SDK를 호출하거나 앱의 로컬 제한/판정을 대신하지 않는다. 원본 차속/기어/조향 시계열은 받지 않는다.
 
-OpenAPI 문서 버전은 **0.10.0**, 차량 contractVersion은 기존 **1.0**이다. 기존 인증/이벤트/주차장/위치/QR의 입력은 유지한다. S-04의 이벤트 두 종류는 바꾸지 않고 미션 결과는 아래 개별 자원 API에만 저장한다. source는 SYNTHETIC만 허용한다. 실제 앱/실차 지원, 운영 게임 HUD/백그라운드·장소 허가·개인 운전 수집/보관·랭킹/금전 자격은 승인되지 않았다.
+OpenAPI 문서 버전은 **0.11.0**, 차량 contractVersion은 기존 **1.0**이다. 기존 인증/이벤트/주차장/위치/QR의 입력은 유지한다. S-04의 이벤트 두 종류는 바꾸지 않고 미션 결과는 아래 개별 자원 API에만 저장한다. source는 SYNTHETIC만 허용한다. 실제 앱/실차 지원, 운영 게임 HUD/백그라운드·장소 허가·개인 운전 수집/보관·랭킹/금전 자격은 승인되지 않았다.
 
-가상 한 곳·32면 시드를 준비한다([주차장 가이드](parking-lots.md)). `challengeAllowed=false`는 그대로이며 합성 도전 개발이 실제 장소 도전 허가로 표시되지 않는다. 별도 실제 방문·리뷰 방문·위치·도장·랭킹·쿠폰을 생성하지 않는다. 연습 리포트/도장은 #14, 예약은 #15, 랭킹은 #16이다.
+가상 한 곳·32면 시드를 준비한다([주차장 가이드](parking-lots.md)). `challengeAllowed=false`는 그대로이며 합성 도전 개발이 실제 장소 도전 허가로 표시되지 않는다. 별도 실제 방문·리뷰 방문·위치·운영 랭킹·쿠폰을 생성하지 않는다. PRACTICE는 [S-13/#14](practice.md)의 합성 도장/칭호 projection을 갱신하며 CHALLENGE와 분리한다. 예약은 #15, 랭킹은 #16 후속이다.
 
 ## API와 자격
 
@@ -78,7 +78,7 @@ metrics는 movingDurationMs·maxSpeedKph(음수 없는 **절대** 차속 최대�
 
 - RESTRICTED: ABORTED/UX_RESTRICTED, 절대 차속>10: ABORTED/SPEED_LIMIT, 위험>0: ABORTED/DANGER_EVENT. 1초/두 번째 경고를 기다리는 서버 제어는 없다.
 - UNKNOWN: UNVERIFIABLE/UX_UNKNOWN, 신호 부족/오래됨/측정 공백: UNVERIFIABLE/SIGNAL_QUALITY, 재시작: UNVERIFIABLE/APP_RESTARTED.
-- NO_STOP_RAMP에서 정지하면 ABORTED/STOPPED로 구분하며 FAILED/실패 횟수로 분류하지 않는다. 재촉/안전상 정지 회피를 유도하지 않고 연속성 세부 정책은 #14에서 중단과 실패를 분리한다.
+- NO_STOP_RAMP에서 정지하면 ABORTED/STOPPED로 구분하며 FAILED/실패 횟수로 분류하지 않는다. 재촉/안전상 정지 회피를 유도하지 않고 연속성은 [S-13](practice.md)에서 중단과 실패를 구분하고 모두 미달성 장벽으로 처리한다.
 - 유효 구간의 취소: ABORTED/USER_CANCELLED. 정상 완료는 FINISHED이며 미션별 점수를 비교한다.
 - 마지막 완료 구간 뒤 elapsedMs가2시간을 넘으면 ABORTED/TIME_LIMIT로 무보상 종료할 수 있다. 스테이지 없는 초기 취소/UX 제한/재시작/품질 미확인도 명시적 무보상 결과로 보관할 수 있다.
 
@@ -100,4 +100,9 @@ D-02 실제 수집·동의·보관/완전 삭제가 미정이므로 운영 삭�
 
 단위 검증은 shared fixture의 성공/실패/과속·위험·UX 중단/신호 품질/재시작과 별·시간·구간·순서 변조를 포함한다. 실제 PostgreSQL 통합은 HTTP 입력/소유권/기본 비활성·고유 제약/동시 최종 제출·영수증 강제 실패 rollback·불변 trigger·구조 변경·페이지 cursor·Nest 재생성/별도 compiled API 프로세스의 영속 조회와 응답 재생·연결 해제/로그 제외를 확인한다. 전체 `npm run verify`, DB 통합, 계약 checker와 PR CI가 완료됐는지는 PR의 실제 결과를 따른다. 합성 테스트를 실차 시험/앱 심사/배포 증거로 대체하지 않는다.
 
-#14는 이 결과를 원천으로 연습 순서/3연속·중단/무효 처리·도장/칭호를 구현한다. 같은 run/result를 중복 적립하지 않아야 하며 지금 도장/자격은 발급되지 않는다. develop 통합 직후 Wiki Home과 Missions 가이드를 갱신해 설정·인증·예제·오류/재시도·호환성·준비 범위/운영 미정 조건을 반영한다.
+[S-13/#14](practice.md)는 이 결과를 원천으로 연습 순서/3연속·중단/무효 처리·합성 도장/칭호를 구현한다. 같은 run/result를 중복 적립하지 않고 실제 운영 자격은 부여하지 않는다. develop 통합 직후 Wiki Home과 Missions 가이드를 갱신해 설정·인증·예제·오류/재시도·호환성·준비 범위/운영 미정 조건을 반영한다.
+
+
+## S-13 연습 확장 호환성
+
+[practice.md](practice.md)는 기존 mode=PRACTICE 기록만 사용해 리포트·3연속 목표·합성 도장/칭호를 제공한다. OpenAPI0.11.0의 StageMetrics 선택 필드 `gearTransitionCount`는 최초 관측을 제외한 유효 선택 기어 변화 횟수이며 미확인은null/누락이다. 기존 입력의 필수 필드·룰 판정·불변 영수증은 유지한다. 기존 재전송에는 선택 필드를 새로 추가하지 않고 원래 body를 보낸다. 원래 차량 AuthSession만 결과를 쓸 수 있으며 본인 연습 무효 처리는 별도 API다. 실제 운영 도전·랭킹·금전 보상은 활성화하지 않는다.

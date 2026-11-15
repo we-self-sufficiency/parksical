@@ -1,0 +1,89 @@
+{
+  "items": [
+    {
+      "runId": "a4072e48-818f-4645-b060-201583ae6f39",
+      "installationId": "ebe0c5af-4489-4a92-ae76-3da5c761382e",
+      "lotId": "ba12b57d-d383-46d3-9f2b-a4e2034d8912",
+      "structureVersion": 1,
+      "ruleVersion": "missions-v1",
+      "goalVersion": "practice-v1",
+      "startedAt": "2026-11-15T07:37:17.569Z",
+      "finishedAt": "2026-11-15T07:37:18.569Z",
+      "outcome": "COMPLETED",
+      "recordVersion": 1,
+      "validity": "VALID",
+      "invalidatedAt": null,
+      "invalidationReason": null,
+      "goalSucceeded": true,
+      "summary": {
+        "gearTransitionCount": 2,
+        "abruptSteeringCount": null,
+        "elapsedMs": 1000
+      },
+      "comparison": {
+        "previousRunId": "1bd31046-41fe-4c6b-9b6b-0d66b8393df3",
+        "delta": {
+          "gearTransitionCount": -2,
+          "abruptSteeringCount": null,
+          "elapsedMs": 0
+        },
+        "fasterTimeRewarded": false
+      },
+      "metricProvenance": "APP_REPORTED_SYNTHETIC",
+      "rawTrajectoryAvailable": false,
+      "mapReplayAvailable": false,
+      "source": "SYNTHETIC",
+      "physicalVerification": "UNVERIFIED",
+      "operationalBlockers": [
+        "D-02",
+        "D-04"
+      ],
+      "rankingEligible": false,
+      "rewardEligible": false,
+      "operationalChallengeAllowed": false
+    },
+    {
+      "runId": "1bd31046-41fe-4c6b-9b6b-0d66b8393df3",
+      "installationId": "ebe0c5af-4489-4a92-ae76-3da5c761382e",
+      "lotId": "ba12b57d-d383-46d3-9f2b-a4e2034d8912",
+      "structureVersion": 1,
+      "ruleVersion": "missions-v1",
+      "goalVersion": "practice-v1",
+      "startedAt": "2026-11-15T07:37:15.569Z",
+      "finishedAt": "2026-11-15T07:37:16.569Z",
+      "outcome": "COMPLETED",
+      "recordVersion": 1,
+      "validity": "VALID",
+      "invalidatedAt": null,
+      "invalidationReason": null,
+      "goalSucceeded": true,
+      "summary": {
+        "gearTransitionCount": 4,
+        "abruptSteeringCount": null,
+        "elapsedMs": 1000
+      },
+      "comparison": {
+        "previousRunId": "0beaba9f-dc44-4ce6-b6b0-eecedbdfd3e8",
+        "delta": {
+          "gearTransitionCount": null,
+          "abruptSteeringCount": null,
+          "elapsedMs": 0
+        },
+        "fasterTimeRewarded": false
+      },
+      "metricProvenance": "APP_REPORTED_SYNTHETIC",
+      "rawTrajectoryAvailable": false,
+      "mapReplayAvailable": false,
+      "source": "SYNTHETIC",
+      "physicalVerification": "UNVERIFIED",
+      "operationalBlockers": [
+        "D-02",
+        "D-04"
+      ],
+      "rankingEligible": false,
+      "rewardEligible": false,
+      "operationalChallengeAllowed": false
+    }
+  ],
+  "nextCursor": "eyJpZCI6IjFiZDMxMDQ2LTQxZmUtNGM2Yi05YjZiLTBkNjZiODM5M2RmMyIsInF1ZXJ5IjoiOWQxOTRkY2M5NjIyN2ZkMTc4Y2ZmNDM4NTNkZDBlYzY5MjkyZGZiYWU4YTIwNzI4MDkxMGY2ZDAxMjYzOGNjYyJ9"
+}

@@ -1,3 +1,4 @@
+import { PracticeService } from '../practice/practice.service.js';
 import { randomUUID } from 'node:crypto';
 import { Inject,Injectable } from '@nestjs/common';
 import { ApiError } from '../api-error.js';
@@ -15,7 +16,7 @@ import { missionCatalog,missionRules,validateRunResult,type MissionRules,type St
 type Tx=Prisma.TransactionClient;
 @Injectable()
 export class MissionService {
-  constructor(private readonly auth:AuthService,@Inject(APP_CONFIG)private readonly config:AppConfig){}
+  constructor(private readonly auth:AuthService,@Inject(APP_CONFIG)private readonly config:AppConfig,private readonly practice:PracticeService){}
   enabled(){if(!this.config.devMissionsEnabled || !this.config.devAuthEnabled || this.config.nodeEnv==='production')throw new ApiError(403,'MISSIONS_POLICY_DISABLED');}
   private async lock(tx:Tx,p:Principal){await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'mission-user:'+p.userId},0))`;}
   private async catalog(tx:Tx,q:MissionQuery){
@@ -67,6 +68,7 @@ export class MissionService {
       const id=randomUUID(),receivedAt=new Date();
       const body={runId:id,version:1,state:'ACTIVE',source:'SYNTHETIC',ruleVersion:dto.ruleVersion,structureVersion:dto.structureVersion,receivedAt:receivedAt.toISOString()};
       const row=await tx.missionRun.create({data:{id,userId:p.userId,installationId:p.installationId!,authSessionId:p.sessionId,vehicleSessionId:dto.vehicleSessionId,clientRunId:dto.clientRunId,creationHash,creationResponse:asJson(body),source:'SYNTHETIC',mode:dto.mode,lotId:dto.lotId,structureVersion:dto.structureVersion,ruleVersion:dto.ruleVersion,rules:asJson(catalog.rules),stages:asJson(plans),capabilities:session.capabilities as Prisma.InputJsonValue,startedAt:new Date(input.startedAt),receivedAt}});
+      await this.practice.reconcile(tx,row);
       return {row,body};
     });
   }
@@ -78,6 +80,7 @@ export class MissionService {
       const assessment=validateRunResult(row.stages as unknown as StagePlan[],row.rules as unknown as MissionRules,row.startedAt,dto);
       const receivedAt=new Date(),body={runId:id,version:2,state:dto.outcome,source:'SYNTHETIC',receivedAt:receivedAt.toISOString(),...assessment};
       await tx.missionRunResult.create({data:{runId:id,clientResultId:dto.clientResultId,requestHash,source:'SYNTHETIC',outcome:dto.outcome,stars:dto.stars,finishedAt:new Date(input.finishedAt),elapsedMs:dto.elapsedMs,report:asJson(input),assessment:asJson(assessment),receipt:asJson(body),receivedAt}});
+      await this.practice.reconcile(tx,row);
       return {row,body};
     });
   }

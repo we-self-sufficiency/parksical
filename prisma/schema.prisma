@@ -514,6 +514,9 @@ model MissionRun {
   capabilities Json @db.JsonB
   startedAt DateTime @db.Timestamptz(3)
   receivedAt DateTime @default(now()) @db.Timestamptz(3)
+  practiceRecord PracticeRecord?
+  practiceRecognitions PracticeRecognition[]
+  practiceMutations PracticeMutation[]
   result MissionRunResult?
   mutations MissionRunMutation[]
   @@unique([userId,installationId,clientRunId])
@@ -543,4 +546,38 @@ model MissionRunMutation {
   requestHash String @db.Char(64)
   response Json @db.JsonB
   @@id([userId,installationId,key])
+}
+
+// Versioned synthetic practice membership; result rows remain immutable.
+model PracticeRecord {
+  runId String @id @db.Uuid
+  run MissionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  goalVersion String @default("practice-v1") @db.VarChar(32)
+  invalidatedAt DateTime? @db.Timestamptz(3)
+  invalidationReason String? @db.VarChar(32)
+}
+
+// One stable award bundle per cohort and goal version, reactivated/revoked in place.
+model PracticeRecognition {
+  id String @id @default(uuid()) @db.Uuid
+  cohortKey String @unique @db.Char(64)
+  userId String @db.Uuid
+  installationId String @db.Uuid
+  referenceRunId String @db.Uuid
+  referenceRun MissionRun @relation(fields: [referenceRunId], references: [id], onDelete: Cascade)
+  goalVersion String @db.VarChar(32)
+  active Boolean
+  qualifyingRunId String? @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@index([userId, installationId, id])
+}
+
+model PracticeMutation {
+  userId String @db.Uuid
+  key String @db.VarChar(64)
+  runId String @db.Uuid
+  run MissionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  requestHash String @db.Char(64)
+  response Json @db.JsonB
+  @@id([userId, key])
 }

@@ -1,0 +1,12 @@
+{
+  "source": "SYNTHETIC",
+  "goalVersion": "practice-v1",
+  "scenarios": [
+    { "name": "success-success-failure-success-success-success", "outcomes": ["SUCCESS", "SUCCESS", "FAILED", "SUCCESS", "SUCCESS", "SUCCESS"], "qualifyingIndex": 5, "currentStreak": 3 },
+    { "name": "aborted-breaks-streak", "outcomes": ["SUCCESS", "SUCCESS", "ABORTED", "SUCCESS", "SUCCESS"], "qualifyingIndex": null, "currentStreak": 2 },
+    { "name": "unknown-breaks-streak", "outcomes": ["SUCCESS", "SUCCESS", "UNVERIFIABLE", "SUCCESS"], "qualifyingIndex": null, "currentStreak": 1 },
+    { "name": "pending-breaks-streak", "outcomes": ["SUCCESS", "SUCCESS", "ACTIVE", "SUCCESS"], "qualifyingIndex": null, "currentStreak": 1 },
+    { "name": "invalidation-breaks-streak", "outcomes": ["SUCCESS", "INVALIDATED", "SUCCESS"], "qualifyingIndex": null, "currentStreak": 1 },
+    { "name": "earned-qualification-survives-later-failure", "outcomes": ["SUCCESS", "SUCCESS", "SUCCESS", "FAILED"], "qualifyingIndex": 2, "currentStreak": 0 }
+  ]
+}

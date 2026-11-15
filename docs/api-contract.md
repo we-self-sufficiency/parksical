@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.12
+# 서버·차량 앱 계약 v0.13
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03~S-10 및 S-12/S-13/S-14 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md)·[미션](missions.md)·[연습 리포트](practice.md)·[예약](reservations.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03~S-10 및 S-12/S-13/S-14/S-15 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md)·[미션](missions.md)·[연습 리포트](practice.md)·[예약](reservations.md)·[랭킹](rankings.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.12.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.13.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -17,7 +17,8 @@
 | 병행 조사 | S-11 #12 | [MAX 정책·신호·구간 조사/후속 기준](max-feasibility.md), 실제 지원·운영 조건 미확인 |
 | 개발 합성 구현 | S-12/S-13 #13/#14 | [미션·결과](missions.md)와 [연습 리포트·합성 자격](practice.md), 기본 OFF/실차 미검증 |
 | 개발 합성 구현 | S-14 #15 | [예약 정책/슬롯·원화 견적·점유/만료·취소/샌드박스](reservations.md), 기본OFF/실결제 미구현 |
-| 후속 | S-15~S-18 #16~#19 | 랭킹·거래·보상 |
+| 개발 합성 구현 | S-15 #16 | [월간 랭킹·공개 동의/철회·기록 표식](rankings.md), 기본OFF/운영 보상 불가 |
+| 후속 | S-16~S-18 #17~#19 | 거래·보상 |
 
 ## URL·버전·인증
 
@@ -119,7 +120,7 @@ S-10은 비운영 DEV_QR_ENABLED와 명시 QR_PUBLIC_ORIGIN의 합성 개발 범
 | 구조·첨부·리뷰 | `/lots/{id}` 구조 확장, `/reviews`, 위치 첨부: S-05/08/09 | 구조·이용 권한 D-03, 파일 저장 D-06 |
 | 미션·기록 | [S-12 합성 미션/도전·최종 결과](missions.md) 구현, [S-13 연습 리포트/합성 자격](practice.md) 구현 | 구간·판정·신호 품질·수집 D-02/04 |
 | 예약 | [S-14 합성 예약9연산](reservations.md), 실제 결제/장소 미활성 | 수용량·견적·동의·만료 D-04/05 |
-| 랭킹 | `/rankings/{lotId}?month=YYYY-MM`: S-15 | 인정 수준·동점·공개 철회 D-02/04/05 |
+| 랭킹 | `/rankings/{lotId}?month=YYYY-MM&cohortKey=...`, 그룹·본인/동의·표식8연산: S-15 비운영 SYNTHETIC 구현 | [rankings.md](rankings.md), 기본OFF/실제 운영·보상 D-02/04/05 미정 |
 | 거래 | `/payments`, `/subscriptions`, 제공자 webhook: S-16/17 | 실제 제공자·환불·자격 D-05 |
 | 보상 | `/coupons/me`, 내부 월간 정산: S-18 | 금액/시간·지급 자격·비용 D-05 |
 
@@ -154,3 +155,8 @@ OpenAPI0.11.0은 `/practice/runs`·단건·progress·awards·invalidation의5연
 ## S-14 합성 예약
 
 OpenAPI0.12.0은 기존59연산/121스키마를 유지하고 정책/슬롯·서버 원화 정수 견적·만료 점유·본인 예약·취소·샌드박스 전이9연산/16스키마를 추가한다. DEV_RESERVATIONS_ENABLED는 기본OFF이며 비운영 개발 인증을 요구한다. 모든모드/정책 버전의 정원을 lot 단위 DB 잠금으로 공유하고 견적/가격·안전 동의를 고정한다. SANDBOX_CONFIRMED는 실제 결제/확정이 아니고 늦은 샌드박스 성공은 환불 대기·재점유 금지다. 계약/예제/상태·S-16 내부 검증 포트와 미구현 실제 제공자는 [reservations.md](reservations.md)에 정리했다. D-04/D-05 실제 장소·운영/요금·청구/환불과 배포·SDK/실차는 미완료다.
+
+
+## S-15 합성 랭킹 추가
+
+OpenAPI0.13.0/76연산/146스키마다. [rankings.md](rankings.md)의 DEV_RANKINGS_ENABLED(기본OFF)·버전 있는 명시적 공개 동의/철회·KST 월/72h 합성 마감·개인 최고/공동 dense rank·무효/참여 소프트 삭제를 제공한다. 별점 정합성은 실차 증명이 아니며 operationalCandidates는 내부 포트에서도 빈 배열이다. 기존68연산/137스키마·차량 contractVersion1.0은 유지하고 /me.rankingPublic의 같은 필드는 현재 버전 동의를 표시한다. 단순한 과거 boolean은 공개 동의로 승격하지 않는다. SDK 앱의 신호/원본 전송 변경은 없다. 실제 인정·차량 보정·보관/완전 삭제·보상 마감은 D-02/D-04/D-05 후속이다.

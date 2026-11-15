@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.12.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval. S-14 explicit non-production synthetic venue policy/slots, integer-KRW quotes, expiring capacity holds, own cancellation and sandbox-only settlement commands are implemented-development. Real provider/charges/operation remain unavailable; see reservations.md."
+    "version": "0.13.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval. S-14 explicit non-production synthetic venue policy/slots, integer-KRW quotes, expiring capacity holds, own cancellation and sandbox-only settlement commands are implemented-development. Real provider/charges/operation remain unavailable; see reservations.md. S-15 KST monthly synthetic development ranking/cohorts/own comparison, versioned public consent and privacy-safe invalidation/deletion are implemented-development; internal immutable finalization is not an HTTP payout endpoint. See rankings.md."
   },
   "servers": [
     {
@@ -6634,6 +6634,641 @@
           }
         }
       }
+    },
+    "/rankings/{lotId}": {
+      "get": {
+        "operationId": "listRankings",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Public-to-authenticated-users opted-in leaderboard only: opaque per-record entry ID, generated nickname, stars, shared dense rank. One personal best per account/cohort. Same lot+structure+frozen mission rules+ordered full stage plan+rankings-v1; no elapsed-time bonus, no invented car correction. Earlier start/UUID only display and equal-score personal-best tie breaking, not reward winner selection. Start in KST month; both run/result received strictly before next KST month start+72h. limit1..50/default20. Cursor binds caller/query/page size/view hash; privacy/score/status changes409 RANKING_VIEW_CHANGED, re-read first page. Hidden users leave no gaps/counts. Finalized raw inputs freeze, but current withdrawal/invalidation/deletion always hides entries and re-denses public ranks without replacement personal attempts. Unknown cohort returns an empty board; known private-only cohort does not become discoverable. Max10000 source challenges/lot/month; excess503, never truncate ranked population.",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+            }
+          },
+          {
+            "name": "cohortKey",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,1024}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingBoard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rankings/{lotId}/cohorts": {
+      "get": {
+        "operationId": "listRankingCohorts",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Discover only cohorts with currently public consenting recognized participants. No private user or private-only cohort count/existence is returned. Max100 cohorts/lot/month; excess503. A caller can learn its own cohort from getRankingRecord even without public opt-in.",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingCohorts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rankings/{lotId}/me": {
+      "get": {
+        "operationId": "getMyRanking",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Own account personal best, including records from own other installations, and rank against visible public peers plus caller. No hidden-peer ranking or count is exposed. Publicly-listed true only when current versioned consent permits own selected record. This private population may differ from the public board. After finalization, removed frozen best has no fallback; no operational candidates/coupons.",
+        "parameters": [
+          {
+            "name": "lotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+            }
+          },
+          {
+            "name": "cohortKey",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingMe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/ranking-consent": {
+      "get": {
+        "operationId": "getRankingConsent",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Current versioned consent, default version0/disabled. Legacy User.rankingPublic alone never grants public disclosure. Generated P-12hex alias is pseudonymous, not anonymous/unique identity. Disabled view returns nickname=null. Scope covers all past/future synthetic months, including finalized inputs.",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingConsentView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putRankingConsent",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Explicit opt-in or withdrawal with expectedVersion (initial0), policy rankings-public-v1, enabled boolean and agreedAt UTC within5min DB time for opt-in / null for withdrawal. Monotonic maximum1000 versions; immutable version/time history, no arbitrary name/email/phone input. Nickname server-generated and stable. Consent/history/legacy mirror/receipt atomic; no operational D-02 consent is implied. Replayed original key/body returns historical acknowledgement, never re-enables a withdrawn consent: GET current state. Old version409, time mismatch422; max4000 ranking mutations/account.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingConsentView"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RankingConsentInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ranking-records/{runId}": {
+      "get": {
+        "operationId": "getRankingRecord",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Own CHALLENGE ranking participation/recognition/cohort. Both WEB/VEHICLE own account; distinct from installation-scoped original /runs reads. PRACTICE or other account404. Revalidates full frozen rules/result/assessment; CHECKED summary alone never establishes physical proof. Original mission response/receipt remains unchanged; deleted ranking record is a minimal tombstone, not erased mission data.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingRecordView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ranking-records/{runId}/invalidation": {
+      "post": {
+        "operationId": "invalidateRankingRecord",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Own terminal CHALLENGE only, expected record version1; separate monotonic invalidation marker. Removes provisional/final public/internal synthetic participation. Provisional view can fall back to next personal best; finalized input does not replace removed best. Original mission/result remain immutable. Exact same action/body replays across keys; changed body/version conflict409. Incomplete422; no restore endpoint.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingRecordReceipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RankingRecordMutation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ranking-records/{runId}/deletion": {
+      "post": {
+        "operationId": "deleteRankingParticipation",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Own ranking participation soft deletion (including incomplete), expected record version1 or2 after invalidation. Tombstone affects public and internal synthetic candidates, including finalized views, with no restore. Not full mission/account erasure; D-02 retention/full deletion remains PENDING. Does not rewrite immutable mission/result/history. Exact body/key or same action/body new key replays historical receipt; changed request409. All changes and receipts roll back together.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic ranking response, never operational reward evidence",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingRecordReceipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RankingRecordMutation"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6657,6 +7292,887 @@
       }
     },
     "schemas": {
+      "RankingCohort": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cohortKey": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "stageIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z_]+:[A-Za-z0-9_-]{1,32}$"
+            }
+          },
+          "vehicleCorrection": {
+            "const": "UNAVAILABLE"
+          },
+          "comparability": {
+            "const": "SYNTHETIC_EQUAL_INPUTS_ONLY"
+          }
+        },
+        "required": [
+          "cohortKey",
+          "structureVersion",
+          "ruleVersion",
+          "stageIds",
+          "vehicleCorrection",
+          "comparability"
+        ]
+      },
+      "RankingRecordView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "rankingVersion": {
+            "const": "rankings-v1"
+          },
+          "recordVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "recognition": {
+            "type": "string",
+            "enum": [
+              "SYNTHETIC_CONSISTENT",
+              "UNSUPPORTED_RANKING_VERSION",
+              "DELETED",
+              "INVALIDATED",
+              "SOURCE_UNSUPPORTED",
+              "PRACTICE_EXCLUDED",
+              "OUTSIDE_MONTH",
+              "AFTER_CUTOFF",
+              "INCOMPLETE",
+              "RULES_UNSUPPORTED",
+              "UNRECOGNIZED"
+            ]
+          },
+          "invalidatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deletedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cohortKey": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "stageIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z_]+:[A-Za-z0-9_-]{1,32}$"
+            }
+          },
+          "vehicleCorrection": {
+            "const": "UNAVAILABLE"
+          },
+          "comparability": {
+            "const": "SYNTHETIC_EQUAL_INPUTS_ONLY"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "runId",
+          "lotId",
+          "month",
+          "rankingVersion",
+          "recordVersion",
+          "recognition",
+          "invalidatedAt",
+          "deletedAt",
+          "cohortKey",
+          "structureVersion",
+          "ruleVersion",
+          "stageIds",
+          "vehicleCorrection",
+          "comparability",
+          "source",
+          "physicalVerification",
+          "operationalAllowed",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalBlockers"
+        ]
+      },
+      "RankingConsentInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999
+          },
+          "policyVersion": {
+            "const": "rankings-public-v1"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "agreedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "policyVersion",
+          "enabled",
+          "agreedAt"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "agreedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "agreedAt": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RankingConsentView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "policyVersion": {
+            "const": "rankings-public-v1"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "nickname": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^P-[a-f0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "agreedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "changedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope": {
+            "const": "ALL_SYNTHETIC_MONTHS"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "version",
+          "policyVersion",
+          "enabled",
+          "nickname",
+          "agreedAt",
+          "changedAt",
+          "scope",
+          "source",
+          "physicalVerification",
+          "operationalAllowed",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalBlockers"
+        ]
+      },
+      "RankingBoard": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "timezone": {
+            "const": "Asia/Seoul"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "cutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "cohortKey": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "rankingVersion": {
+            "const": "rankings-v1"
+          },
+          "cohort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RankingCohort"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PROVISIONAL",
+              "READY_TO_FINALIZE",
+              "FINALIZED"
+            ]
+          },
+          "finalizedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snapshotId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tiePolicy": {
+            "const": "DENSE_SHARED_SCORE_EARLIEST_START_UUID_DISPLAY"
+          },
+          "scorePolicy": {
+            "const": "PERSONAL_BEST_STARS_NO_SPEED_BONUS"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "entryId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "rank": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000
+                },
+                "score": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9
+                },
+                "nickname": {
+                  "type": "string",
+                  "pattern": "^P-[a-f0-9]{12}$"
+                }
+              },
+              "required": [
+                "entryId",
+                "rank",
+                "score",
+                "nickname"
+              ]
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,1024}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "month",
+          "timezone",
+          "startsAt",
+          "endsAt",
+          "cutoffAt",
+          "cohortKey",
+          "rankingVersion",
+          "cohort",
+          "status",
+          "finalizedAt",
+          "snapshotId",
+          "tiePolicy",
+          "scorePolicy",
+          "source",
+          "physicalVerification",
+          "operationalAllowed",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalBlockers",
+          "items",
+          "nextCursor"
+        ]
+      },
+      "RankingCohorts": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "timezone": {
+            "const": "Asia/Seoul"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "cutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cohortKey": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "cohort": {
+                  "$ref": "#/components/schemas/RankingCohort"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "PROVISIONAL",
+                    "READY_TO_FINALIZE",
+                    "FINALIZED"
+                  ]
+                }
+              },
+              "required": [
+                "cohortKey",
+                "cohort",
+                "status"
+              ]
+            }
+          },
+          "rankingVersion": {
+            "const": "rankings-v1"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "month",
+          "timezone",
+          "startsAt",
+          "endsAt",
+          "cutoffAt",
+          "items",
+          "rankingVersion",
+          "source",
+          "physicalVerification",
+          "operationalAllowed",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalBlockers"
+        ]
+      },
+      "RankingMe": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "month": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "timezone": {
+            "const": "Asia/Seoul"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "cutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "cohortKey": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "rankingVersion": {
+            "const": "rankings-v1"
+          },
+          "cohort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RankingCohort"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PROVISIONAL",
+              "READY_TO_FINALIZE",
+              "FINALIZED"
+            ]
+          },
+          "finalizedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snapshotId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tiePolicy": {
+            "const": "DENSE_SHARED_SCORE_EARLIEST_START_UUID_DISPLAY"
+          },
+          "scorePolicy": {
+            "const": "PERSONAL_BEST_STARS_NO_SPEED_BONUS"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          },
+          "population": {
+            "const": "PUBLIC_PLUS_CALLER"
+          },
+          "publiclyListed": {
+            "type": "boolean"
+          },
+          "bestRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lotId",
+          "month",
+          "timezone",
+          "startsAt",
+          "endsAt",
+          "cutoffAt",
+          "cohortKey",
+          "rankingVersion",
+          "cohort",
+          "status",
+          "finalizedAt",
+          "snapshotId",
+          "tiePolicy",
+          "scorePolicy",
+          "source",
+          "physicalVerification",
+          "operationalAllowed",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalBlockers",
+          "population",
+          "publiclyListed",
+          "bestRunId",
+          "score",
+          "rank"
+        ]
+      },
+      "RankingRecordMutation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "USER_REQUEST",
+              "CORRECTION"
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "RankingRecordReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordVersion": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 3
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "INVALIDATE",
+              "DELETE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "USER_REQUEST",
+              "CORRECTION"
+            ]
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "runId",
+          "recordVersion",
+          "action",
+          "reason",
+          "changedAt",
+          "source",
+          "physicalVerification",
+          "operationalAllowed",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalBlockers"
+        ]
+      },
       "ReservationPolicyInput": {
         "type": "object",
         "additionalProperties": false,

@@ -13,7 +13,7 @@ export function requestContext(sink: LogSink) {
     const requestId = !qr && incoming && /^[A-Za-z0-9_.-]{1,64}$/.test(incoming) ? incoming : randomUUID();
     response.locals.requestId = requestId;
     response.setHeader('X-Request-Id', requestId);
-    if (request.path.startsWith('/api/v1/reservation') || request.path.startsWith('/api/v1/practice') || request.path.startsWith('/api/v1/missions') || request.path.startsWith('/api/v1/runs') || request.path.startsWith('/api/v1/auth/') || request.path.startsWith('/api/v1/vehicle-sessions') || request.path.startsWith('/api/v1/admin/') || (request.path === '/api/v1/lots' || request.path.startsWith('/api/v1/lots/')) || request.path.startsWith('/api/v1/parked-locations') || request.path.startsWith('/api/v1/reviews') || request.path === '/api/v1/me') response.setHeader('Cache-Control', 'no-store');
+    if (request.path.startsWith('/api/v1/ranking') || request.path.startsWith('/api/v1/me/') || request.path.startsWith('/api/v1/reservation') || request.path.startsWith('/api/v1/practice') || request.path.startsWith('/api/v1/missions') || request.path.startsWith('/api/v1/runs') || request.path.startsWith('/api/v1/auth/') || request.path.startsWith('/api/v1/vehicle-sessions') || request.path.startsWith('/api/v1/admin/') || (request.path === '/api/v1/lots' || request.path.startsWith('/api/v1/lots/')) || request.path.startsWith('/api/v1/parked-locations') || request.path.startsWith('/api/v1/reviews') || request.path === '/api/v1/me') response.setHeader('Cache-Control', 'no-store');
     if(qr){
       response.setHeader('Cache-Control','no-store');
       response.setHeader('Referrer-Policy','no-referrer');

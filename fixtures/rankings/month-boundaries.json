@@ -1,0 +1,12 @@
+{
+  "source": "SYNTHETIC",
+  "rankingVersion": "rankings-v1",
+  "cases": [
+    {"occurredAt":"2026-10-31T14:59:59.999Z","month":"2026-10"},
+    {"occurredAt":"2026-10-31T15:00:00.000Z","month":"2026-11"},
+    {"occurredAt":"2026-11-30T14:59:59.999Z","month":"2026-11"},
+    {"occurredAt":"2026-11-30T15:00:00.000Z","month":"2026-12"},
+    {"occurredAt":"2024-02-29T15:00:00.000Z","month":"2024-03"},
+    {"occurredAt":"2026-12-31T15:00:00.000Z","month":"2027-01"}
+  ]
+}

@@ -119,3 +119,6 @@ S-16의 **내부 포트 계약**은 providerEventId/providerOrderId·reservation
 `20261115030000_reservations`는6테이블과 고유/FK/금액·기간·상태 제약/불변 영수증·전이 guard를 추가한다. 자동 예약/정책/결제 시드는 없고 기존 미션/연습/위치/QR 데이터와 입력은 바꾸지 않는다. OpenAPI0.12.0은9연산/16스키마를 추가하며 기존59연산/121스키마 의미를 유지한다. 새 설정은 기본OFF다. DB migration 후 새 서버를 실행하고, 기존 앱은 새 기능을 호출하지 않아도 동작한다.
 
 검증은 npm run verify, 실제 PostgreSQL의 npm run test:integration, python scripts/check_contract.py다. 마지막 슬롯/모드 공유·서로 다른 서버 pool·다중 슬롯/취소/결제 원자성·receipt 실패 rollback·만료 재점유/늦은 결제 환불·불변 가격/동의·권한/연결 해제·정책/구조 비활성·재기동 영수증 재생을 포함한다. 테스트 결과/CI 링크는 PR/이슈에서 확인한다. develop 머지 직후 Wiki Home/Reservations 가이드와 MAX 후속 상태를 실제 게시하고 링크 확인 후 #15를 종료한다.
+
+
+S-15의 [합성 월간 랭킹·공개 동의](rankings.md)는 별도 DEV_RANKINGS_ENABLED 기본OFF 기능이다. PRACTICE/예약/합성 결제가 운영 랭킹·실제 보상 자격을 만들지 않는다. 기존 미션/연습/예약의 입력과 불변 영수증은 유지하며 랭킹 참여 표식은 원본 데이터 완전 삭제와 다르다. OpenAPI0.13.0에 새8연산이 추가되고 기존68연산의 의미는 유지된다. D-02/D-04/D-05·실제 SDK/실차는 계속 별도 미완료다.

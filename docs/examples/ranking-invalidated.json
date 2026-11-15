@@ -1,0 +1,17 @@
+{
+  "runId": "f62bc150-8ec6-4538-89a7-83a6108e2957",
+  "recordVersion": 2,
+  "action": "INVALIDATE",
+  "reason": "CORRECTION",
+  "changedAt": "2026-11-15T09:18:35.000Z",
+  "source": "SYNTHETIC",
+  "physicalVerification": "UNVERIFIED",
+  "operationalAllowed": false,
+  "rankingEligible": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ]
+}

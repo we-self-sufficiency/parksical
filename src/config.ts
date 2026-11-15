@@ -9,6 +9,7 @@ export interface AppConfig {
   devQrEnabled: boolean;
   devMissionsEnabled: boolean;
   devReservationsEnabled: boolean;
+  devRankingsEnabled: boolean;
   qrPublicOrigin?: string;
   devAuthSecret?: string;
 }
@@ -25,7 +26,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('Invalid DATABASE_URL');
   }
   // No feature needing a user policy is activated by this foundation.
-  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED', 'REAL_REVIEWS_ENABLED', 'REAL_LOCATIONS_ENABLED', 'REAL_QR_ENABLED', 'REAL_MISSIONS_ENABLED', 'REAL_RESERVATIONS_ENABLED']) {
+  for (const name of ['RAW_SIGNALS_ENABLED', 'DRIVING_SUMMARY_ENABLED', 'REAL_PAYMENTS_ENABLED', 'REAL_REVIEWS_ENABLED', 'REAL_LOCATIONS_ENABLED', 'REAL_QR_ENABLED', 'REAL_MISSIONS_ENABLED', 'REAL_RESERVATIONS_ENABLED', 'REAL_RANKINGS_ENABLED']) {
     if (env[name] !== undefined && env[name] !== 'false') throw new Error(`Unsupported ${name}`);
   }
   if (env.DEV_AUTH_ENABLED !== undefined && !['true', 'false'].includes(env.DEV_AUTH_ENABLED)) throw new Error('Invalid DEV_AUTH_ENABLED');
@@ -53,7 +54,10 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if(env.DEV_RESERVATIONS_ENABLED!==undefined && !['true','false'].includes(env.DEV_RESERVATIONS_ENABLED))throw new Error('Invalid DEV_RESERVATIONS_ENABLED');
   const devReservationsEnabled=env.DEV_RESERVATIONS_ENABLED==='true';
   if(devReservationsEnabled && (nodeEnv==='production' || !devAuthEnabled))throw new Error('Synthetic reservations require non-production development authentication');
-  return { devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
+  if(env.DEV_RANKINGS_ENABLED!==undefined && !['true','false'].includes(env.DEV_RANKINGS_ENABLED))throw new Error('Invalid DEV_RANKINGS_ENABLED');
+  const devRankingsEnabled=env.DEV_RANKINGS_ENABLED==='true';
+  if(devRankingsEnabled && (nodeEnv==='production' || !devAuthEnabled))throw new Error('Synthetic rankings require non-production development authentication');
+  return { devRankingsEnabled, devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');

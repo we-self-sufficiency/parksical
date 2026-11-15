@@ -53,3 +53,10 @@ SQL
 ## S-14 합성 예약
 
 [reservations.md](reservations.md)의 migration/비운영 opt-in을 따른다. DEV_RESERVATIONS_ENABLED는 기본OFF, REAL_RESERVATIONS_ENABLED/REAL_PAYMENTS_ENABLED는 활성화 불가다. 새6테이블·DB 상태 guard/고유 제약을 migrate deploy 후 실행한다. 정책은 ADMIN+WEB으로 가상 장소에 명시하고 자동 예약/결제 시드를 만들지 않는다. 만료 정원은 DB UTC epoch/deadline 조건으로 즉시 제외하고 조회/후속 변경에서 상태와 점유를 재정리하므로 상시 만료 worker가 없어도 이중/영구 점유를 만들지 않는다. 결제 제공자/실제 청구/환불은 미구현이다. 원본 동의/금액/개인 예약·키/토큰을 로그에 넣지 않으며 정책/견적/이력/영수증/점유를 함께 백업·복원한다. 실제 운영/배포·D-04/D-05 승인은 별도다.
+
+
+## S-15 합성 랭킹
+
+[rankings.md](rankings.md)의 migration/generate/build·비운영 opt-in을 따른다. DEV_RANKINGS_ENABLED 기본OFF, REAL_RANKINGS_ENABLED 활성화 불가, 기본 Compose production은 변경하지 않는다. 새5테이블/인덱스/guard·membership 및 개발 전역 잠금 trigger를 migrate deploy 후 실행한다. 기존68연산 입력과 불변 결과를 보존한다. 동의/철회·현재 가명·이력·참여 표식·영수증·내부 월 확정 원천을 함께 백업한다. 공개 철회는 현재 동의를 재검사하므로 확정 snapshot을 그대로 외부에 직렬화하지 않는다. 공개 동의/키/개인 원천·해시를 로그에 넣지 않는다.
+
+내부 finalizeSyntheticMonth는 cutoff 후 합성 S-18 계약 검증용이며 공개 HTTP/cron/실제 보상 실행이 없다. 후보 최대10000/주차장/월, 그룹100, 변경4000/계정과 전체 개발 잠금은 가역적인 개발 한도다. 한도503을 순위 부분 성공으로 변환하지 않는다. 실제 운영 규모/보관·완전 삭제·정산 자격은 D-02/04/05 확정 후 별도 구현한다.

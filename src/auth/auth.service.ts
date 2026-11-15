@@ -155,7 +155,7 @@ export class AuthService {
 
   async me(p: Principal) {
     const user = await this.database.client.user.findUniqueOrThrow({ where: { id: p.userId } });
-    return { id: user.id, role: user.role, rankingPublic: user.rankingPublic };
+    return { id: user.id, role: user.role, rankingPublic: (await this.database.client.rankingConsent.findUnique({ where: { userId: p.userId } }))?.enabled ?? false };
   }
 
   async sessions(p: Principal) {

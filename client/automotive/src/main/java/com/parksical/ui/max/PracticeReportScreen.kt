@@ -65,6 +65,8 @@ internal fun ReportContent(attempts: List<RunRecord>, onAgain: () -> Unit, onBoo
                 Ko("연습 리포트", 38)
                 Mono("PRACTICE", 14, PixelColors.Orange)
                 if (ready) Box(Modifier.background(PixelColors.Gold).padding(horizontal = 12.dp, vertical = 6.dp)) { Ko("도전 가능", 18, PixelColors.Bg) }
+                Box(Modifier.weight(1f))
+                PixelMockBadge()
             }
             if (attempts.isEmpty()) {
                 PixelPanel(Modifier.weight(1f).fillMaxWidth(), border = PixelColors.Paper, borderWidth = 4.dp) { Ko("아직 연습 기록이 없어요. 한 번 달려볼까요?", 24, PixelColors.Gold) }

@@ -40,5 +40,7 @@ class AppContainer(context: Context) {
     val judge: MissionJudge = DefaultMissionJudge()
     val spotEstimator: ParkingSpotEstimator = DefaultParkingSpotEstimator()
 
-    val drive = DriveCoordinator(appScope, vehicle, navi, parking, session, difficulty, judge, spotEstimator, parkedSync, ServerRunSync(api, auth))
+    val drive = DriveCoordinator(appScope, vehicle, navi, parking, session, difficulty, judge, spotEstimator, parkedSync, ServerRunSync(api, auth)) { active ->
+        runCatching { RunKeepAliveService.set(context.applicationContext, active) }
+    }
 }

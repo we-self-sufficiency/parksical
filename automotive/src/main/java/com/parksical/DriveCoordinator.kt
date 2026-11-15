@@ -37,6 +37,8 @@ class DriveCoordinator(
     private val spotEstimator: ParkingSpotEstimator,
     private val parkedSync: ParkedLocationSync,
     private val runSync: ServerRunSync,
+    /** True while a run is judged, false once it ends; keeps the process alive (see RunKeepAliveService). */
+    private val onRunActive: (Boolean) -> Unit = {},
 ) {
     sealed interface Event {
         data object Parked : Event
@@ -103,6 +105,7 @@ class DriveCoordinator(
                 if (runActive && (st is RunStatus.Finished || st is RunStatus.Aborted)) {
                     runActive = false
                     activeRun = null
+                    onRunActive(false)
                     val raw = if (st is RunStatus.Finished) st.record else (st as RunStatus.Aborted).partial
                     val record = raw.copy(clientRunId = clientRunId, startedAtEpochMs = startedAtEpochMs, submit = SubmitState.PENDING)
                     session.addRecord(record)
@@ -129,6 +132,7 @@ class DriveCoordinator(
         judge.start(dungeon, mode, vehicle.capabilities.value, nowMs)
         runActive = true
         activeRun = lotId to mode
+        onRunActive(true)
         clientRunId = "c" + UUID.randomUUID().toString().replace("-", "")
         startedAtEpochMs = System.currentTimeMillis()
         // Judging never waits for this; a failed create just leaves the run "서버 미제출".

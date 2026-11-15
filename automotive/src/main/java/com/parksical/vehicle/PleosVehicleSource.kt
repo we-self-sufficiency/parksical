@@ -98,13 +98,12 @@ class PleosVehicleSource(private val context: Context) : VehicleSource {
             }
         }
         // Events arrive only on change, but the server rejects mission stages with sample gaps > 1 s.
-        // Speed is re-read for real; gear/steering are on-change signals, so their last value is still current.
+        // Every input is a subscription, so no new event means the last value is still current: re-emit it.
+        // No blocking getProperty here; a slow car-service call stalled this loop ~2 s during a gear change.
         sc.launch {
             while (true) {
                 delay(POLL_MS)
-                val pm = propMgr
-                val ms = if (speedReal && pm != null) runCatching { pm.getProperty<Float>(VehiclePropertyIds.PERF_VEHICLE_SPEED, 0)?.value }.getOrNull() else null
-                update { s -> ms?.let { s.copy(speedKmh = it * 3.6f) } ?: s }
+                update { it }
             }
         }
         startPleos()

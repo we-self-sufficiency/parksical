@@ -70,3 +70,7 @@ DEV_SUBSCRIPTIONS_ENABLED=true일 때만 새 합성 pass 정책을 적용한다.
 이 문서가 실제 공유 서버 배포·PG 정기결제·SDK/실차·운영 자격/보상을 완료했다는 뜻은 아니다. develop 통합 후 Wiki Home/Subscriptions/Payments·MAX 관련 가이드·업데이트 기록을 게시하고 연결을 확인한 뒤 이슈의 Wiki 완료 기준을 체크한다.
 
 선결제한 미래 cycle만 남고 현재 cycle을 환불한 경우에는 SCHEDULED로 표시하며 startsAt까지 권한을 주지 않는다. 해지 상태/선결제 상태를 현재 이용 가능으로 해석하지 않는다.
+
+## S-18 합성 정산 소비자
+
+[rewards.md](rewards.md)는 원천 월 마지막1ms의 불변 paidAt/revokedAt 이력으로 합성 pass를 재현한다. 이 고정 과거 조회는 현재 권한을 연장하지 않으며 상용 정산 자격 시점은 계속 D-05 미확정이다. 쿠폰으로 구독료를 결제할 수 없다. DB 연결은 UTC로 고정해 KST 호스트에서도 원래 anchor 시각을 보존한다.

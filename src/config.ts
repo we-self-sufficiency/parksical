@@ -12,6 +12,7 @@ export interface AppConfig {
   devRankingsEnabled: boolean;
   devPaymentsEnabled: boolean;
   devSubscriptionsEnabled: boolean;
+  devRewardsEnabled: boolean;
   paymentWebhookSecret?: string;
   qrPublicOrigin?: string;
   devAuthSecret?: string;
@@ -68,7 +69,12 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if(env.REAL_SUBSCRIPTIONS_ENABLED!==undefined && env.REAL_SUBSCRIPTIONS_ENABLED!=='false')throw new Error('Unsupported REAL_SUBSCRIPTIONS_ENABLED');
   const devSubscriptionsEnabled=env.DEV_SUBSCRIPTIONS_ENABLED==='true';
   if(devSubscriptionsEnabled && (nodeEnv==='production' || !devPaymentsEnabled || !devAuthEnabled))throw new Error('Synthetic subscriptions require non-production authentication and sandbox payments');
-  return { devSubscriptionsEnabled, devPaymentsEnabled, paymentWebhookSecret:env.PAYMENT_WEBHOOK_SECRET, devRankingsEnabled, devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
+  if(env.DEV_REWARDS_ENABLED!==undefined && !['true','false'].includes(env.DEV_REWARDS_ENABLED))throw new Error('Invalid DEV_REWARDS_ENABLED');
+  for(const name of ['REAL_REWARDS_ENABLED','REAL_COUPONS_ENABLED','REAL_NOTIFICATIONS_ENABLED'])if(env[name]!==undefined && env[name]!=='false')throw new Error('Unsupported '+name);
+  const devRewardsEnabled=env.DEV_REWARDS_ENABLED==='true';
+  if(env.REWARD_NOTIFICATION_PROVIDER!==undefined && env.REWARD_NOTIFICATION_PROVIDER!=='SANDBOX')throw new Error('Unsupported REWARD_NOTIFICATION_PROVIDER');
+  if(devRewardsEnabled && (nodeEnv==='production' || !devAuthEnabled || !devPaymentsEnabled || !devSubscriptionsEnabled || !devRankingsEnabled || env.REWARD_NOTIFICATION_PROVIDER!=='SANDBOX'))throw new Error('Synthetic rewards require development auth, rankings/subscriptions/payments and sandbox notifications');
+  return { devRewardsEnabled, devSubscriptionsEnabled, devPaymentsEnabled, paymentWebhookSecret:env.PAYMENT_WEBHOOK_SECRET, devRankingsEnabled, devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');

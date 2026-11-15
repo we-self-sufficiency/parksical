@@ -16,9 +16,11 @@ import type { PaymentAttemptDto, PaymentQuoteDto, PaymentWebhookDto } from './dt
 import { PAYMENT_PROVIDER, type PaymentProvider, type ProviderPayment } from './provider.js';
 import { SubscriptionClock } from '../subscriptions/clock.js';
 import { projectSubscriptionPayment,subscriptionNeedsCompensation } from '../subscriptions/projection.js';
+import {requireValidRewardSource} from '../rewards/projection.js';
+import {rewardBoundary,couponLimits} from '../rewards/rules.js';
 
 type Tx=Prisma.TransactionClient;
-const include={attempt:true,refund:true,receipt:true} as const;
+const include={attempt:true,refund:true,receipt:true,couponClaim:true} as const;
 type FullOrder=Prisma.PaymentOrderGetPayload<{include:typeof include}>;
 export const paymentBoundary={source:'SYNTHETIC',provider:'SANDBOX',operationalAllowed:false,realPaymentVerified:false,operationalBlockers:['D-05']} as const;
 export function verifyPayment(order:Pick<PaymentOrder,'id'|'amountKrw'|'currency'>, result:ProviderPayment, transactionId?:string|null) {
@@ -37,7 +39,7 @@ export class PaymentService {
   private async now(tx:Tx){const rows=await tx.$queryRaw<{ms:bigint}[]>`SELECT floor(extract(epoch FROM clock_timestamp())*1000)::bigint AS ms`;return new Date(Number(rows[0]!.ms));}
   private async orderTime(tx:Tx,row:PaymentOrder){return row.subscriptionCycleId?this.subscriptionClock.now(tx):this.now(tx);}
   private async owned(tx:Tx,userId:string,id:string){const row=await tx.paymentOrder.findFirst({where:{id,userId},include});if(!row)throw new ApiError(404,'RESOURCE_NOT_FOUND');return row;}
-  private view(row:FullOrder){return {id:row.id,quoteId:row.quoteId,reservationId:row.reservationId,lotId:row.lotId,...(row.subscriptionCycleId?{subscriptionCycleId:row.subscriptionCycleId}:{}),amountKrw:row.amountKrw,currency:row.currency,pricing:row.pricing,state:row.state,attempt:row.attempt?{state:row.attempt.state,transactionId:row.attempt.transactionId}:null,refund:row.refund?{state:row.refund.state,amountKrw:row.refund.amountKrw}:null,receiptId:row.receipt?.id??null,createdAt:row.createdAt.toISOString(),expiresAt:row.expiresAt.toISOString(),...paymentBoundary};}
+  private view(row:FullOrder){const coupon=row.couponClaim && ['CONSUMED','VOIDED'].includes(row.couponClaim.state)?row.couponClaim:null;return {id:row.id,quoteId:row.quoteId,reservationId:row.reservationId,lotId:row.lotId,...(row.subscriptionCycleId?{subscriptionCycleId:row.subscriptionCycleId}:{}),amountKrw:row.amountKrw,currency:row.currency,pricing:row.pricing,state:row.state,attempt:row.attempt?{state:row.attempt.state,transactionId:row.attempt.transactionId}:null,refund:row.refund?{state:row.refund.state,amountKrw:row.refund.amountKrw}:null,receiptId:row.receipt?.id??null,createdAt:row.createdAt.toISOString(),expiresAt:row.expiresAt.toISOString(),...paymentBoundary,...(coupon?{provider:'INTERNAL_COUPON_LEDGER',settlementMethod:'SYNTHETIC_COUPON',couponId:coupon.couponId,cashAmountKrw:0}:{})};}
   private async command(tx:Tx,userId:string,key:string|undefined,route:string,dto:unknown){
     if(!key || !/^[A-Za-z0-9_.-]{1,64}$/.test(key))throw new ApiError(400,'INVALID_IDEMPOTENCY_KEY');
     const requestHash=fingerprint({route,dto}),where={userId_key:{userId,key}};
@@ -68,7 +70,7 @@ export class PaymentService {
   private async create(tx:Tx,data:Pick<PaymentOrder,'userId'|'quoteId'|'reservationId'|'lotId'|'amountKrw'|'pricing'|'expiresAt'> & {subscriptionCycleId?:string},at?:Date){
     if(data.amountKrw<1)throw new ApiError(422,'PAYMENT_ZERO_AMOUNT_UNSUPPORTED');
     if(await tx.paymentOrder.count({where:{userId:data.userId}})>=1000)throw new ApiError(409,'PAYMENT_ORDER_LIMIT');
-    const id=randomUUID(),createdAt=at??await this.now(tx),row={...data,subscriptionCycleId:data.subscriptionCycleId??null,id,currency:'KRW',state:'CREATED',createdAt,attempt:null,refund:null,receipt:null,creationReceipt:{}};
+    const id=randomUUID(),createdAt=at??await this.now(tx),row={...data,subscriptionCycleId:data.subscriptionCycleId??null,id,currency:'KRW',state:'CREATED',createdAt,attempt:null,refund:null,receipt:null,couponClaim:null,creationReceipt:{}};
     const body=this.view(row);await tx.paymentOrder.create({data:{...data,pricing:asJson(data.pricing),id,currency:'KRW',state:'CREATED',createdAt,creationReceipt:asJson(body)}});return body;
   }
   async createSubscriptionOrder(tx:Tx,userId:string,cycleId:string,now:Date){
@@ -79,6 +81,33 @@ export class PaymentService {
   async cancelPendingSubscriptionOrders(tx:Tx,subscriptionId:string,now:Date){
     const rows=await tx.paymentOrder.findMany({where:{subscriptionCycle:{subscriptionId},state:{in:['CREATED','PENDING']}}});
     for(const row of rows){await tx.paymentOrder.update({where:{id:row.id},data:{state:'CANCELLED'}});await projectSubscriptionPayment(tx,row.subscriptionCycleId!,row.id,'CANCELLED',now);}
+  }
+  async validateCouponOrder(tx:Tx,userId:string,id:string,now:Date){
+    this.enabled();if(!this.config.devRewardsEnabled)throw new ApiError(403,'REWARDS_POLICY_DISABLED');const row=await this.owned(tx,userId,id);
+    if(row.state!=='CREATED' || row.attempt || row.expiresAt<=now || row.subscriptionCycleId)throw new ApiError(409,'COUPON_ORDER_UNAVAILABLE');
+    const q=row.reservationId?(await this.reservations.bindPayment(tx,userId,row.reservationId)).quote:await tx.paymentQuote.findUniqueOrThrow({where:{id:row.quoteId!}});
+    const v=await this.venue(tx,row.lotId!,'structureVersion' in q?q.structureVersion:undefined);
+    if(!v.snapshot.partnered || q.startsAt<=now)throw new ApiError(422,'COUPON_VENUE_UNAVAILABLE');
+    return {row,durationMinutes:(q.endsAt.getTime()-q.startsAt.getTime())/60000};
+  }
+  async settleCoupon(tx:Tx,userId:string,claimId:string,now:Date){
+    const claim=await tx.couponClaim.findUniqueOrThrow({where:{id:claimId},include:{coupon:{include:{grant:true}}}}),{row,durationMinutes}=await this.validateCouponOrder(tx,userId,claim.orderId,now);
+    if(row.couponClaim?.id!==claimId || claim.state!=='HELD' || claim.coupon.state!=='HELD' || claim.holdExpiresAt<=now || claim.coupon.expiresAt<=now || claim.coupon.userId!==userId || claim.coupon.lotId!==row.lotId)throw new ApiError(409,'COUPON_CLAIM_UNAVAILABLE');
+    couponLimits(row.amountKrw,durationMinutes,claim.coupon.maxAmountKrw,claim.coupon.maxDurationMinutes);await requireValidRewardSource(tx,claim.coupon.grant.runId,true);
+    const receipt={claimId,couponId:claim.couponId,paymentOrderId:row.id,paymentState:'COUPON_SETTLED',settlementMethod:'SYNTHETIC_COUPON',coveredAmountKrw:row.amountKrw,cashAmountKrw:0,currency:'KRW',recordedAt:now.toISOString(),...rewardBoundary};
+    await tx.couponClaim.update({where:{id:claimId},data:{state:'CONSUMED',consumedAt:now,receipt:asJson(receipt)}});await tx.sandboxCoupon.update({where:{id:claim.couponId},data:{state:'USED'}});await tx.paymentOrder.update({where:{id:row.id},data:{state:'COUPON_SETTLED'}});
+    if(row.reservationId && await this.reservations.applyPayment(tx,row.reservationId,'SUCCEEDED'))throw new ApiError(409,'COUPON_RESERVATION_UNAVAILABLE');
+    const id=randomUUID();await tx.paymentReceipt.create({data:{id,orderId:row.id,body:asJson({id,orderId:row.id,transactionId:claimId,amountKrw:row.amountKrw,currency:'KRW',pricing:row.pricing,recordedAt:now.toISOString(),...paymentBoundary,provider:'INTERNAL_COUPON_LEDGER',settlementMethod:'SYNTHETIC_COUPON',couponId:claim.couponId,cashAmountKrw:0})}});return receipt;
+  }
+  private async voidCoupon(tx:Tx,row:FullOrder){
+    const claim=row.couponClaim;if(!claim || claim.state!=='CONSUMED')return;
+    await tx.couponClaim.update({where:{id:claim.id},data:{state:'VOIDED'}});await tx.sandboxCoupon.update({where:{id:claim.couponId},data:{state:'CANCELLED'}});await tx.paymentOrder.update({where:{id:row.id},data:{state:'COUPON_VOIDED'}});
+    if(row.reservationId)await this.reservations.applyPayment(tx,row.reservationId,'REFUNDED');
+  }
+  async cancelCouponSettlement(tx:Tx,userId:string,orderId:string,now:Date){
+    const row=await this.owned(tx,userId,orderId);if(row.state==='COUPON_VOIDED')return this.view(row);if(row.state!=='COUPON_SETTLED')throw new ApiError(409,'COUPON_PAYMENT_CONFLICT');
+    if(row.quoteId && (await tx.paymentQuote.findUniqueOrThrow({where:{id:row.quoteId}})).startsAt<=now)throw new ApiError(409,'PAYMENT_CANCELLATION_CLOSED');
+    if(row.reservationId)await this.reservations.cancelPayment(tx,userId,row.reservationId);await this.voidCoupon(tx,row);return this.view(await this.owned(tx,userId,orderId));
   }
   async order(p:Principal,key:string|undefined,quoteId:string){return this.mutate(p,key,'order',{quoteId},async tx=>{
     const q=await tx.paymentQuote.findFirst({where:{id:quoteId,userId:p.userId}});if(!q)throw new ApiError(404,'RESOURCE_NOT_FOUND');
@@ -98,11 +127,12 @@ export class PaymentService {
     if(cursor && index<0)throw new ApiError(400,'INVALID_PAYMENT_CURSOR');const rest=rows.slice(index+1);
     return {items:rest.slice(0,limit).map(r=>this.view(r)),nextCursor:rest.length>limit?locationCursor(binding,limit,rest[limit-1]!.id):null};
   });}
-  async receipt(p:Principal,id:string){return this.user(p,async tx=>{const row=await this.owned(tx,p.userId,id);if(!row.receipt)throw new ApiError(404,'PAYMENT_RECEIPT_NOT_FOUND');return {receipt:row.receipt.body,refund:row.refund?{state:row.refund.state,amountKrw:row.refund.amountKrw}:null,...paymentBoundary};});}
+  async receipt(p:Principal,id:string){return this.user(p,async tx=>{const row=await this.owned(tx,p.userId,id);if(!row.receipt)throw new ApiError(404,'PAYMENT_RECEIPT_NOT_FOUND');return {receipt:row.receipt.body,refund:row.refund?{state:row.refund.state,amountKrw:row.refund.amountKrw}:null,...paymentBoundary,...(row.couponClaim && ['CONSUMED','VOIDED'].includes(row.couponClaim.state)?{provider:'INTERNAL_COUPON_LEDGER',settlementMethod:'SYNTHETIC_COUPON',cashAmountKrw:0}:{})};});}
   async attempt(p:Principal,id:string,key:string|undefined,dto:PaymentAttemptDto){
     const stage=await this.user(p,async tx=>{
       const cmd=await this.command(tx,p.userId,key,'attempt:'+id,dto),row=await this.owned(tx,p.userId,id);
       if(cmd.response)return {response:cmd.response,row};
+      if(row.couponClaim?.state==='HELD')throw new ApiError(409,'COUPON_HOLD_ACTIVE');
       if(row.attempt){if(row.attempt.sandboxOutcome!==dto.sandboxOutcome)throw new ApiError(409,'PAYMENT_ATTEMPT_CONFLICT');}
       else {
         if(row.state!=='CREATED' || row.expiresAt<=await this.orderTime(tx,row))throw new ApiError(409,'PAYMENT_ATTEMPT_CLOSED');
@@ -142,11 +172,12 @@ export class PaymentService {
   }
   async cancel(p:Principal,id:string,key:string|undefined,reason:{reason:'USER_REQUEST'}){return this.mutate(p,key,'cancel:'+id,reason,async tx=>{
     const row=await this.owned(tx,p.userId,id);
-    if(row.quoteId && ['CREATED','PENDING','SUCCEEDED'].includes(row.state)){
+    if(row.quoteId && ['CREATED','PENDING','SUCCEEDED','COUPON_SETTLED'].includes(row.state)){
       const quote=await tx.paymentQuote.findUniqueOrThrow({where:{id:row.quoteId}});
       if(quote.startsAt<=await this.now(tx))throw new ApiError(409,'PAYMENT_CANCELLATION_CLOSED');
     }
     if(row.reservationId)await this.reservations.cancelPayment(tx,p.userId,row.reservationId);
+    if(row.state==='COUPON_SETTLED'){await this.voidCoupon(tx,row);return this.view(await this.owned(tx,p.userId,id));}
     if(['CREATED','PENDING','SUCCEEDED'].includes(row.state)){
       const paid=row.state==='SUCCEEDED';if(paid)await this.refundPending(tx,row);
       await tx.paymentOrder.update({where:{id},data:{state:paid?'REFUND_PENDING':'CANCELLED'}});
@@ -157,6 +188,7 @@ export class PaymentService {
   async recover(p:Principal,id:string,key:string|undefined){
     const stage=await this.user(p,async tx=>{const cmd=await this.command(tx,p.userId,key,'recover:'+id,{});return {response:cmd.response,row:await this.owned(tx,p.userId,id)};});
     if(stage.response)return {body:stage.response,replayed:true};
+    if(['COUPON_SETTLED','COUPON_VOIDED'].includes(stage.row.state))return this.user(p,async tx=>{const cmd=await this.command(tx,p.userId,key,'recover:'+id,{});if(cmd.response)return {body:cmd.response,replayed:true};const row=await this.owned(tx,p.userId,id);if(row.reservationId){const r=await tx.reservation.findUniqueOrThrow({where:{id:row.reservationId}});if(r.state==='REFUND_PENDING')await this.voidCoupon(tx,row);}return this.finish(tx,p.userId,key!,this.view(await this.owned(tx,p.userId,id)));});
     let result=await this.external(()=>this.provider.lookup(id));
     if(!result && stage.row.state==='PENDING' && stage.row.attempt)result=await this.external(()=>this.provider.capture(stage.row,stage.row.attempt!.sandboxOutcome as 'SUCCEEDED'|'FAILED'));
     if(result)await this.user(p,async tx=>this.apply(tx,await this.owned(tx,p.userId,id),result!));
@@ -172,6 +204,7 @@ export class PaymentService {
     this.enabled();this.provider.verifyWebhook(raw,timestamp,signature);
     // No user token is accepted as webhook authority. Signature and independent server lookup are mandatory.
     const found=await this.db.client.paymentOrder.findUnique({where:{id:dto.orderId}});if(!found)throw new ApiError(404,'RESOURCE_NOT_FOUND');
+    if(['COUPON_SETTLED','COUPON_VOIDED'].includes(found.state))throw new ApiError(409,'PAYMENT_METHOD_CONFLICT');
     const lookup=await this.external(()=>this.provider.lookup(found.id));if(!lookup)throw new ApiError(422,'PAYMENT_PROVIDER_NOT_FOUND');
     verifyPayment(found,lookup,dto.transactionId);verifyPayment(found,{...lookup,...dto},lookup.transactionId);
     return this.db.client.$transaction(async tx=>{

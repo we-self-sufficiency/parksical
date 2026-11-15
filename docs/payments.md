@@ -71,3 +71,7 @@ OpenAPI0.14.0은 이전76연산/146스키마·차량 contractVersion1.0을 유�
 ## S-17 구독 결제
 
 [subscriptions.md](subscriptions.md)의 월별 cycle도 같은 결제 API/제공자·서명/서버 조회·영수증/환불 복구를 사용한다. 해당 주문에는 subscriptionCycleId·lotId=null·4900KRW 버전 구독 pricing이 있으며 일반/예약의 가격을 구독으로 변환하지 않는다. 검증된 결제/환불 변경과 기간/불변 이력은 한 DB 트랜잭션이다. 구독 해지는 향후 갱신 중단이고, cycle 전액 환불은 payment cancel→reconcile이다. 실제 정기 청구·D-05 운영 정책은 미구현/미승인이다.
+
+## S-18 선택 쿠폰 결제
+
+[rewards.md](rewards.md)의 DEV_REWARDS_ENABLED를 명시 활성화한 경우에만 같은 장소·CREATED 일반/예약 주문에 제한 합성 쿠폰을 점유/사용할 수 있다. 점유 중 PG 시도409, 사용은 INTERNAL_COUPON_LEDGER/COUPON_SETTLED·현금0 증빙으로 PG 승인/청구를 만들지 않는다. transactionId는 내부 claim UUID다. 시작 전 취소/예약 취소 후 reconcile은 COUPON_VOIDED·예약 해제이며 현금 환불/쿠폰 복원은 없다. 기존 정상 PG 주문/구독료 결제 동작은 유지한다. 앱은 새 상태/선택 settlementMethod/couponId/cashAmountKrw를 처리한 후 선택 활성화한다.

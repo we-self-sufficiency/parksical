@@ -45,6 +45,13 @@ import { PAYMENT_PROVIDER,SandboxPaymentProvider } from './payments/provider.js'
 import {SubscriptionController} from './subscriptions/subscription.controller.js';
 import {SubscriptionService} from './subscriptions/subscription.service.js';
 import {SubscriptionClock} from './subscriptions/clock.js';
+import {RewardAdminController,CouponController} from './rewards/reward.controller.js';
+import {RewardAccess} from './rewards/access.js';
+import {RewardClock} from './rewards/clock.js';
+import {SettlementService} from './rewards/settlement.service.js';
+import {CouponService} from './rewards/coupon.service.js';
+import {RewardNotificationService} from './rewards/notification.service.js';
+import {REWARD_NOTIFICATIONS,SandboxRewardNotifications} from './rewards/notification-provider.js';
 
 @Module({})
 class AppModule {}
@@ -52,8 +59,8 @@ class AppModule {}
 export async function createApp(config: AppConfig, sink: LogSink = defaultLogSink) {
   const app = await NestFactory.create({
     module: AppModule,
-    controllers: [SubscriptionController,PaymentController,PaymentWebhookController,RankingController, ReservationController, PracticeController, MissionController, HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController, LocationController, QrOwnerController, QrPhoneController, QrPageController],
-    providers: [{ provide: APP_CONFIG, useValue: config }, SubscriptionService,SubscriptionClock,PaymentService,{provide:PAYMENT_PROVIDER,useClass:SandboxPaymentProvider},DatabaseService, AuthService, AuthGuard, RankingService, ReservationService, { provide: RESERVATION_PAYMENTS, useClass: SandboxReservationPayments }, PracticeService, MissionService, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, LocationService, QrService, { provide: PRIVATE_PHOTO_STORE, useClass: DatabasePhotoStore }, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
+    controllers: [RewardAdminController,CouponController,SubscriptionController,PaymentController,PaymentWebhookController,RankingController, ReservationController, PracticeController, MissionController, HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController, LocationController, QrOwnerController, QrPhoneController, QrPageController],
+    providers: [{ provide: APP_CONFIG, useValue: config }, RewardAccess,RewardClock,SettlementService,CouponService,RewardNotificationService,{provide:REWARD_NOTIFICATIONS,useClass:SandboxRewardNotifications},SubscriptionService,SubscriptionClock,PaymentService,{provide:PAYMENT_PROVIDER,useClass:SandboxPaymentProvider},DatabaseService, AuthService, AuthGuard, RankingService, ReservationService, { provide: RESERVATION_PAYMENTS, useClass: SandboxReservationPayments }, PracticeService, MissionService, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, LocationService, QrService, { provide: PRIVATE_PHOTO_STORE, useClass: DatabasePhotoStore }, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
   }, { logger: false, bodyParser: false, abortOnError: false });
   app.use(requestContext(sink));
   const ordinaryJson=json({limit:'64kb',verify:(req,_res,buf)=>{if((req as Request).path==='/api/v1/payments/webhooks/sandbox')(req as Request & {rawBody?:Buffer}).rawBody=Buffer.from(buf);}}),photoJson=json({limit:'3mb'});

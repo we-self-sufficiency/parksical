@@ -105,3 +105,7 @@ GET만으로 월을 확정하지 않는다. 무효/삭제 전 잠정 보드는 �
 migration 20261115040000_rankings는 한 DB 트랜잭션으로5테이블, 인덱스·버전/동의/불변·단조 표식 guard와 CHALLENGE membership trigger/backfill을 추가한다. 기존 미션/결과/영수증을 수정하지 않고 PRACTICE membership/예약 데이터도 유지한다. 기존 true 공개 boolean을 새 동의로 backfill하지 않는다. 이전 서버가 새 CHALLENGE를 만들면 DB trigger가 membership만 등록하며 실제 인정/동의/보상을 만들지 않는다. DB migration 후 새 서버, 이후 앱이 새 API를 선택적으로 호출한다.
 
 OpenAPI0.13.0은8연산/9스키마를 추가하고 기존68연산/137스키마와 차량 contractVersion1.0을 유지한다. 기존 앱에 새 필수 입력을 추가하지 않는다. [예제 manifest](examples/manifest.json)는 실제 합성 HTTP 결과를 포함한다. npm run verify, 실제 PostgreSQL npm run test:integration, python scripts/check_contract.py로 KST/안정적 동점·모집단 프라이버시/철회·늦은 입력·이전 데이터 보존·원자 실패/동시성·별도 API 프로세스/DB 재시작을 검증한다. SDK/실차/배포 검증과 구분한다. develop 머지 후 Wiki Home/Rankings와 Missions/Practice/MAX 연결을 실제 게시·확인한 뒤 #16 Wiki 체크를 마친다.
+
+## S-18 합성 정산 소비자
+
+[rewards.md](rewards.md)는 월1일00:00KST에 이전 월 정산을 준비하고 기존72h 마감 뒤 원천을 동결한다. 비공개 settlementInput은 원래 확정 순위를 유지한 뒤 현재 무효/삭제를 제외하므로 차순위 승격을 만들지 않는다. 테스트 공동1위·최소별3개/과거 pass/서로 다른 장소 최대2장이며 실제 후보[]/운영 보상false다. 실제 보관/인정/자격 시각/비용은 D-02/D-04/D-05 미정이다. S-15 자체에는 보상 실행 HTTP가 없고 S-18 관리 경로가 별도 권한을 검사한다.

@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.15.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval. S-14 explicit non-production synthetic venue policy/slots, integer-KRW quotes, expiring capacity holds, own cancellation and sandbox-only settlement commands are implemented-development. Real provider/charges/operation remain unavailable; see reservations.md. S-15 KST monthly synthetic development ranking/cohorts/own comparison, versioned public consent and privacy-safe invalidation/deletion are implemented-development; internal immutable finalization is not an HTTP payout endpoint. See rankings.md. S-16 general prepayments, independent durable sandbox provider, signed webhooks plus server lookup, immutable approval receipts, full-refund recovery and S-14 reservation compensation are implemented-development. Actual PG/charges are unimplemented and D-05 pending; see payments.md. S-17 sandbox calendar-month MAX subscriptions/renewal/cancellation, verified S-16 payment-linked periods, current and historical synthetic entitlement projection and optional MAX gates are implemented-development. Actual recurring billing/operational scope/settlement instant remain D-05 PENDING. See subscriptions.md."
+    "version": "0.16.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval. S-14 explicit non-production synthetic venue policy/slots, integer-KRW quotes, expiring capacity holds, own cancellation and sandbox-only settlement commands are implemented-development. Real provider/charges/operation remain unavailable; see reservations.md. S-15 KST monthly synthetic development ranking/cohorts/own comparison, versioned public consent and privacy-safe invalidation/deletion are implemented-development; internal immutable finalization is not an HTTP payout endpoint. See rankings.md. S-16 general prepayments, independent durable sandbox provider, signed webhooks plus server lookup, immutable approval receipts, full-refund recovery and S-14 reservation compensation are implemented-development. Actual PG/charges are unimplemented and D-05 pending; see payments.md. S-17 sandbox calendar-month MAX subscriptions/renewal/cancellation, verified S-16 payment-linked periods, current and historical synthetic entitlement projection and optional MAX gates are implemented-development. Actual recurring billing/operational scope/settlement instant remain D-05 PENDING. See subscriptions.md. S-18 synthetic KST month settlement/private frozen inputs/max2 source-month coupons, bounded coupon-only zero-cash settlement and durable sandbox notification outbox are implemented-development. Operational reward policies D-02/D-04/D-05 and actual Bluelink remain pending. See rewards.md."
   },
   "servers": [
     {
@@ -8642,6 +8642,909 @@
           }
         }
       }
+    },
+    "/admin/reward-settlements": {
+      "post": {
+        "operationId": "prepareRewardSettlement",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB_SYNTHETIC_REWARDS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Current ADMIN role and WEB bearer required, vehicle session forbidden. At KST month start prepare prior month WAITING_CUTOFF. S-15 cutoff is next KST month start+72h, not month boundary. After cutoff freeze original ranks/private input/hash and pass at source-month-end minus1ms. Test policy minimum3stars/all cohort first ties/stable distinct lot UUID order/max2 source-month user slots. Operational candidates always empty. Limits20lots/10cohorts per lot/2000candidates; whole-transaction503 on overflow. No actual cron activation.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardSettlementView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewardPrepareInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/reward-settlements/{settlementId}": {
+      "get": {
+        "operationId": "getRewardSettlement",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB_SYNTHETIC_REWARDS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Current ADMIN role and WEB bearer required, vehicle session forbidden. Summary only; no private user candidate manifest. Input hash/counts persist across restarts.",
+        "parameters": [
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardSettlementView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/admin/reward-settlements/{settlementId}/process": {
+      "post": {
+        "operationId": "processRewardSettlement",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB_SYNTHETIC_REWARDS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Current ADMIN role and WEB bearer required, vehicle session forbidden. Bounded atomic batch of coupon/outbox/grant. Source/venue invalid before issue => SKIPPED, no promotion/third-lot replacement. Unique source-month/user/slot and source-month/user/lot. Used/cancelled/expired never restore monthly quota. New key for subsequent batch; same key immutable receipt. COMPLETED rerun never reissues.",
+        "parameters": [
+          {
+            "name": "settlementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardSettlementView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewardBatchInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/reward-notifications/dispatch": {
+      "post": {
+        "operationId": "dispatchRewardNotifications",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "ADMIN_WEB_SYNTHETIC_REWARDS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Current ADMIN role and WEB bearer required, vehicle session forbidden. Persistent sandbox mailbox only, realDelivered=false. Stable notificationId provider dedup key, leased30s/CAS ack, max3attempts, retry60s then300s. Expired third lease FAILED. New key for next batch/retry. Failure never reissues coupon. Provider external call outside DB transaction.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardDispatchView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewardBatchInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons/me": {
+      "get": {
+        "operationId": "listOwnCoupons",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWNER_SYNTHETIC_COUPONS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Own WEB/VEHICLE bearer and current session/link; no ADMIN owner bypass, other/missing resource404. Own coupons, issuedAt/id descending. limit1..50/default20/cursor bound to account/page size. Lazy hold/expiry cleanup.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/coupons/{couponId}": {
+      "get": {
+        "operationId": "getOwnCoupon",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWNER_SYNTHETIC_COUPONS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Own WEB/VEHICLE bearer and current session/link; no ADMIN owner bypass, other/missing resource404. Own current state/caps/expiry/source and issued month. Invalidated/deleted source makes usable=false; used coupon keeps historical evidence.",
+        "parameters": [
+          {
+            "name": "couponId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/coupons/{couponId}/holds": {
+      "post": {
+        "operationId": "holdOwnCoupon",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWNER_SYNTHETIC_COUPONS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Own WEB/VEHICLE bearer and current session/link; no ADMIN owner bypass, other/missing resource404. Same partnered synthetic lot, CREATED S-16 general/reservation order, full price<=5000KRW/full duration<=120min, future start. No subscription/partial/cash value. Hold expiry min(now+5min,order expiry,coupon expiry). Unique active claim, shared payment-account lock across instances. Held coupon blocks PG attempts. One claim per order; after release use new order for rehold.",
+        "parameters": [
+          {
+            "name": "couponId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponHoldView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponHoldInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons/{couponId}/claims/{claimId}/consume": {
+      "post": {
+        "operationId": "consumeOwnCoupon",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWNER_SYNTHETIC_COUPONS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Own WEB/VEHICLE bearer and current session/link; no ADMIN owner bypass, other/missing resource404. Atomically USED/CONSUMED/COUPON_SETTLED plus zero-cash immutable ledger receipt and sandbox reservation confirmation. No PG attempt/approval/charge; no auto cash fallback. Exact redemption evidence replay remains historical after cancellation. GET payment current state separately.",
+        "parameters": [
+          {
+            "name": "couponId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponRedemptionView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons/{couponId}/claims/{claimId}/release": {
+      "post": {
+        "operationId": "releaseOwnCouponHold",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWNER_SYNTHETIC_COUPONS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Own WEB/VEHICLE bearer and current session/link; no ADMIN owner bypass, other/missing resource404. Unconsumed hold only. AVAILABLE or EXPIRED; consume/release serialized. User may explicitly pay original order through PG after release; no automatic charge.",
+        "parameters": [
+          {
+            "name": "couponId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons/{couponId}/cancel": {
+      "post": {
+        "operationId": "cancelOwnCoupon",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWNER_SYNTHETIC_COUPONS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Own WEB/VEHICLE bearer and current session/link; no ADMIN owner bypass, other/missing resource404. Unused cancel terminal. Used cancel only before service start => claimVOIDED/orderCOUPON_VOIDED/couponCANCELLED/reservation release; no cash refund, restoration or monthly quota reuse.",
+        "parameters": [
+          {
+            "name": "couponId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reward-notifications/me": {
+      "get": {
+        "operationId": "listOwnRewardNotifications",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "OWNER_SYNTHETIC_COUPONS",
+        "description": "S-18/F-14 non-production SYNTHETIC development only. DEV_REWARDS_ENABLED default OFF, requires development auth/rankings/subscriptions/sandbox payments and explicit SANDBOX notification provider. Real rewards/Bluelink/production redemption forbidden; D-02/D-04/D-05 pending. no-store, JSON64KiB; admin100, own write100/read300 requests per account/5min. Own WEB/VEHICLE bearer and current session/link; no ADMIN owner bypass, other/missing resource404. Own delivery state/attempt count, sandbox mailbox realDelivered=false. No lease/provider raw payload. limit1..50/default20/cursor bound to owner/page size.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic reward result",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardNotificationPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8677,6 +9580,708 @@
       }
     },
     "schemas": {
+      "RewardPrepareInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sourceMonth": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "policyVersion": {
+            "const": "rewards-sandbox-v1"
+          }
+        },
+        "required": [
+          "sourceMonth",
+          "policyVersion"
+        ]
+      },
+      "RewardBatchInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "limit"
+        ]
+      },
+      "CouponHoldInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "paymentOrderId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "paymentOrderId"
+        ]
+      },
+      "CouponActionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "const": "USER_REQUEST"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "RewardPolicy": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "rewards-sandbox-v1"
+          },
+          "minimumStars": {
+            "const": 3
+          },
+          "maxCouponsPerSourceMonth": {
+            "const": 2
+          },
+          "validDays": {
+            "const": 30
+          },
+          "maxAmountKrw": {
+            "const": 5000
+          },
+          "maxDurationMinutes": {
+            "const": 120
+          },
+          "costBearer": {
+            "const": "SYNTHETIC_NO_MONETARY_VALUE"
+          },
+          "tiePolicy": {
+            "const": "ALL_COHORT_FIRSTS_TEST_ONLY"
+          },
+          "selectionOrder": {
+            "const": "LOT_UUID_THEN_COHORT_ASC"
+          },
+          "passAt": {
+            "const": "SOURCE_MONTH_END_MINUS_1MS"
+          }
+        },
+        "required": [
+          "version",
+          "minimumStars",
+          "maxCouponsPerSourceMonth",
+          "validDays",
+          "maxAmountKrw",
+          "maxDurationMinutes",
+          "costBearer",
+          "tiePolicy",
+          "selectionOrder",
+          "passAt"
+        ]
+      },
+      "RewardSettlementView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceMonth": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "state": {
+            "enum": [
+              "WAITING_CUTOFF",
+              "READY",
+              "COMPLETED"
+            ]
+          },
+          "policyVersion": {
+            "const": "rewards-sandbox-v1"
+          },
+          "cutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "eligibilityAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "completedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "inputHash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "selected": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "pending": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "issued": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "skipped": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "selected",
+              "pending",
+              "issued",
+              "skipped"
+            ]
+          },
+          "policy": {
+            "$ref": "#/components/schemas/RewardPolicy"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "redeemableInProduction": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "sourceMonth",
+          "state",
+          "policyVersion",
+          "cutoffAt",
+          "eligibilityAt",
+          "createdAt",
+          "completedAt",
+          "inputHash",
+          "counts",
+          "policy",
+          "source",
+          "operationalAllowed",
+          "rewardEligible",
+          "redeemableInProduction",
+          "operationalBlockers"
+        ]
+      },
+      "CouponView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceMonth": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "issuedMonth": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+          },
+          "slot": {
+            "enum": [
+              1,
+              2
+            ]
+          },
+          "policyVersion": {
+            "const": "rewards-sandbox-v1"
+          },
+          "state": {
+            "enum": [
+              "AVAILABLE",
+              "HELD",
+              "USED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "maxAmountKrw": {
+            "const": 5000
+          },
+          "maxDurationMinutes": {
+            "const": 120
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "usable": {
+            "type": "boolean"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "redeemableInProduction": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "lotId",
+          "sourceMonth",
+          "issuedMonth",
+          "slot",
+          "policyVersion",
+          "state",
+          "maxAmountKrw",
+          "maxDurationMinutes",
+          "issuedAt",
+          "expiresAt",
+          "usable",
+          "source",
+          "operationalAllowed",
+          "rewardEligible",
+          "redeemableInProduction",
+          "operationalBlockers"
+        ]
+      },
+      "CouponPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/CouponView"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "redeemableInProduction": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "source",
+          "operationalAllowed",
+          "rewardEligible",
+          "redeemableInProduction",
+          "operationalBlockers"
+        ]
+      },
+      "CouponHoldView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "couponId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "paymentOrderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "const": "HELD"
+          },
+          "holdExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "coveredAmountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "redeemableInProduction": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "claimId",
+          "couponId",
+          "paymentOrderId",
+          "state",
+          "holdExpiresAt",
+          "coveredAmountKrw",
+          "source",
+          "operationalAllowed",
+          "rewardEligible",
+          "redeemableInProduction",
+          "operationalBlockers"
+        ]
+      },
+      "CouponRedemptionView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "couponId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "paymentOrderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "paymentState": {
+            "const": "COUPON_SETTLED"
+          },
+          "settlementMethod": {
+            "const": "SYNTHETIC_COUPON"
+          },
+          "coveredAmountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000
+          },
+          "cashAmountKrw": {
+            "const": 0
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "redeemableInProduction": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "claimId",
+          "couponId",
+          "paymentOrderId",
+          "paymentState",
+          "settlementMethod",
+          "coveredAmountKrw",
+          "cashAmountKrw",
+          "currency",
+          "recordedAt",
+          "source",
+          "operationalAllowed",
+          "rewardEligible",
+          "redeemableInProduction",
+          "operationalBlockers"
+        ]
+      },
+      "RewardNotificationView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "couponId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "DELIVERED",
+              "FAILED"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "nextAttemptAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "deliveredAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider": {
+            "const": "SANDBOX_MAILBOX"
+          },
+          "realDelivered": {
+            "const": false
+          }
+        },
+        "required": [
+          "id",
+          "couponId",
+          "state",
+          "attempts",
+          "nextAttemptAt",
+          "deliveredAt",
+          "provider",
+          "realDelivered"
+        ]
+      },
+      "RewardNotificationPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/RewardNotificationView"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "redeemableInProduction": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "source",
+          "operationalAllowed",
+          "rewardEligible",
+          "redeemableInProduction",
+          "operationalBlockers"
+        ]
+      },
+      "RewardDispatchView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "selected": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "delivered": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "pending": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "failed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "selected",
+              "delivered",
+              "pending",
+              "failed"
+            ]
+          },
+          "provider": {
+            "const": "SANDBOX_MAILBOX"
+          },
+          "realDelivered": {
+            "const": false
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "redeemableInProduction": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04",
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "counts",
+          "provider",
+          "realDelivered",
+          "source",
+          "operationalAllowed",
+          "rewardEligible",
+          "redeemableInProduction",
+          "operationalBlockers"
+        ]
+      },
       "SubscriptionProduct": {
         "type": "object",
         "additionalProperties": false,
@@ -9631,7 +11236,9 @@
               "FAILED",
               "CANCELLED",
               "REFUND_PENDING",
-              "REFUNDED"
+              "REFUNDED",
+              "COUPON_SETTLED",
+              "COUPON_VOIDED"
             ]
           },
           "attempt": {
@@ -9679,7 +11286,10 @@
             "const": "SYNTHETIC"
           },
           "provider": {
-            "const": "SANDBOX"
+            "enum": [
+              "SANDBOX",
+              "INTERNAL_COUPON_LEDGER"
+            ]
           },
           "operationalAllowed": {
             "const": false
@@ -9693,6 +11303,16 @@
             ]
           },
           "subscriptionCycleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "settlementMethod": {
+            "const": "SYNTHETIC_COUPON"
+          },
+          "cashAmountKrw": {
+            "const": 0
+          },
+          "couponId": {
             "type": "string",
             "format": "uuid"
           }
@@ -9716,7 +11336,8 @@
           "operationalAllowed",
           "realPaymentVerified",
           "operationalBlockers"
-        ]
+        ],
+        "description": " S-18 optional SYNTHETIC_COUPON fields identify a zero-cash internal coupon ledger settlement. No PG approval/charge. transactionId in coupon receipt is internal claim UUID. COUPON_VOIDED retains immutable usage evidence; no cash refund/coupon restoration."
       },
       "PaymentPage": {
         "type": "object",
@@ -9792,7 +11413,10 @@
             "const": "SYNTHETIC"
           },
           "provider": {
-            "const": "SANDBOX"
+            "enum": [
+              "SANDBOX",
+              "INTERNAL_COUPON_LEDGER"
+            ]
           },
           "operationalAllowed": {
             "const": false
@@ -9804,6 +11428,16 @@
             "const": [
               "D-05"
             ]
+          },
+          "settlementMethod": {
+            "const": "SYNTHETIC_COUPON"
+          },
+          "cashAmountKrw": {
+            "const": 0
+          },
+          "couponId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -9819,7 +11453,8 @@
           "operationalAllowed",
           "realPaymentVerified",
           "operationalBlockers"
-        ]
+        ],
+        "description": " S-18 optional SYNTHETIC_COUPON fields identify a zero-cash internal coupon ledger settlement. No PG approval/charge. transactionId in coupon receipt is internal claim UUID. COUPON_VOIDED retains immutable usage evidence; no cash refund/coupon restoration."
       },
       "PaymentReceiptView": {
         "type": "object",
@@ -9842,7 +11477,10 @@
             "const": "SYNTHETIC"
           },
           "provider": {
-            "const": "SANDBOX"
+            "enum": [
+              "SANDBOX",
+              "INTERNAL_COUPON_LEDGER"
+            ]
           },
           "operationalAllowed": {
             "const": false
@@ -9854,6 +11492,12 @@
             "const": [
               "D-05"
             ]
+          },
+          "settlementMethod": {
+            "const": "SYNTHETIC_COUPON"
+          },
+          "cashAmountKrw": {
+            "const": 0
           }
         },
         "required": [
@@ -9864,7 +11508,8 @@
           "operationalAllowed",
           "realPaymentVerified",
           "operationalBlockers"
-        ]
+        ],
+        "description": " S-18 optional SYNTHETIC_COUPON fields identify a zero-cash internal coupon ledger settlement. No PG approval/charge. transactionId in coupon receipt is internal claim UUID. COUPON_VOIDED retains immutable usage evidence; no cash refund/coupon restoration."
       },
       "PaymentProviderWebhook": {
         "type": "object",

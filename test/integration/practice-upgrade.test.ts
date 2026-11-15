@@ -53,6 +53,11 @@ test('real PG S-12/S-13 upgrade preserves immutable data through practice, reser
     assert.equal(await db.subscription.count(),0);assert.equal(await db.subscriptionCycle.count(),0);assert.equal(await db.paymentOrder.count(),1);
     assert.deepEqual((await sql.query('SELECT to_jsonb(o)-\'subscriptionCycleId\' AS row FROM "PaymentOrder" o WHERE id=$1',[legacyOrder])).rows[0],legacyBefore);
     assert.equal((await db.paymentOrder.findUniqueOrThrow({where:{id:legacyOrder}})).subscriptionCycleId,null);
+    const beforeRewards=(await sql.query('SELECT to_jsonb(o) AS row FROM "PaymentOrder" o WHERE id=$1',[legacyOrder])).rows[0];
+    await sql.query(await readFile('prisma/migrations/20261115070000_rewards/migration.sql','utf8'));
+    assert.deepEqual((await sql.query('SELECT to_jsonb(o) AS row FROM "PaymentOrder" o WHERE id=$1',[legacyOrder])).rows[0],beforeRewards);
+    assert.deepEqual(await db.missionRun.findMany({include:{result:true},orderBy:{id:'asc'}}),before);
+    assert.equal(await db.rewardSettlement.count(),0);assert.equal(await db.rewardGrant.count(),0);assert.equal(await db.sandboxCoupon.count(),0);assert.equal(await db.couponClaim.count(),0);assert.equal(await db.rewardNotification.count(),0);
     await assert.rejects(db.rankingRecord.update({ where: { runId: rankingRecords[0]!.runId }, data: { rankingVersion: 'rankings-v2' } }));
     await assert.rejects(db.practiceRecord.update({ where: { runId: enrolled[0]!.runId }, data: { goalVersion: 'practice-v2' } }));
     await assert.rejects(db.missionRunResult.update({ where: { runId: enrolled[0]!.runId }, data: { stars: 1 } }));

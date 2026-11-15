@@ -169,3 +169,13 @@ A-20 **가역적인 비운영 SYNTHETIC 개발 기본값**: [subscriptions.md](s
 DEV_SUBSCRIPTIONS_ENABLED 기본OFF이며 비운영 개발 인증/명시 샌드박스 결제를 요구한다. ON에서만 새 미션 시작/예약 견적·점유/랭킹 비교를 합성 pass로 검사하고, 기존 결과 제출·개인 이력·동의 철회/참여 삭제·취소/복구는 계속 허용한다. 미래 기간 선결제는 시작 경계 전 권한을 주지 않는다. 관측 이력/기간·권한 계산은 매 요청 DB 시각과 공통 잠금으로 검사하며 임의 클라이언트 상태/시간/금액을 받지 않는다.
 
 D-05 실제 상품/자동 청구·유료 MAX/연습/랭킹 범위·해지/환불 약정/유예 및 S-18 자격 판정 시점은 **미확정**이다. 위 가역 테스트 정책을 운영 승인으로 바꾸지 않는다. 내부 eligibilityAt(userId,at)은 과거 합성 자격만 재현하며 settlementTimePolicy=UNDECIDED와 rewardEligible/operationalAllowed=false를 강제한다. D-02/04·E1~E8·QR D-07·배포/실제 PG·SDK/실차 조건도 별도 미완료다.
+
+## S-18 월간 정산·쿠폰·알림 — 2026-11-15(KST)
+
+A-21 **가역적인 비운영 SYNTHETIC 개발 기본값**: [rewards.md](rewards.md)의 rewards-sandbox-v1을 따른다. 매월1일00:00KST에 이전 월 WAITING_CUTOFF를 준비하며 기존 S-15의 월끝+72h 지연 cutoff 후 원천 snapshot/hash/선택 이유를 동결한다. 테스트 자격 시각은 원천 월 마지막1ms, cohort별 공동1위·별3개·과거 검증 합성 pass·인정 도전이다. 서로 다른 lot UUID/cohort/run 순으로 원천 월/사용자 slot1..2만 선택하며 무효/취소/만료는 다음 장소 승격/한도 복원을 만들지 않는다. 이 시각/선택을 상용 승인으로 간주하지 않는다.
+
+쿠폰은 발급30일·동일 제휴 SYNTHETIC lot·전체금액5000KRW/120분 이내 테스트1회이고 비용 부담자는 SYNTHETIC_NO_MONETARY_VALUE다. 점유5분 이내/주문 만료 이내, AVAILABLE/HELD/USED/CANCELLED/EXPIRED와 고유 claim·계정/월 잠금·원자 발급/증빙으로 경합을 막는다. 사용은 현금0 INTERNAL_COUPON_LEDGER/COUPON_SETTLED, 취소는 COUPON_VOIDED이며 실제 PG 승인/현금 환불/쿠폰 복원은 없다. 기존 S-16 가격/예약 검증을 재사용하고 실패 시 현금으로 자동 전환하지 않는다.
+
+권한 있는 ADMIN+WEB 관리 경로에서 월간 배치/복구를 명시 실행한다. 알림은 영속 SANDBOX_MAILBOX 대체 제공자·outbox/30초 lease/최대3시도·60/300초 지연/notificationId 중복 제거를 사용하며 실패는 재지급하지 않는다. 실제 cron/운영 발급/블루링크 기능·권한은 활성화하지 않는다. 기본OFF/production·REAL 보상·쿠폰·알림 차단, 실제 후보[]/rewardEligible=false다.
+
+D-02/D-04/D-05의 실제 기록 인정/장소·동점/3곳 이상 선택/지연 cutoff·기준점수·패스 자격 시각·유효기간/금액/시간/제휴/비용 및 외부 제공자는 **미확정**이다. S-17/D-05 미완료를 이 개발 기본값으로 닫지 않는다. 실제 SDK/실차·E1~E8·QR D-07·배포는 별도 미완료다.

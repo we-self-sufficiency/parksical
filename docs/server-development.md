@@ -76,3 +76,5 @@ S-15 #16은 [합성 월간 랭킹](rankings.md)8연산·버전 있는 공개 동
 S-16 #17은 [사전결제](payments.md)10연산을 추가한다. DEV_PAYMENTS_ENABLED 기본OFF·명시 SANDBOX/별도 webhook secret/개발 인증 필수, production과 실제 청구는 차단한다. 일반 흐름은 MAX 독립, 예약 최초 연결/시도만 S-14 opt-in을 요구한다. migrate deploy→generate/build 후 선택적으로 호출한다. 로컬 S-16 검증은 native PostgreSQL18.1이고 Docker/Compose·백업 복원은 최종 head CI로 구분한다. D-05와 실제 PG·SDK/실차/배포는 미검증이다.
 
 S-17 #18은 [구독·기간 권한](subscriptions.md)8연산과 기존 MAX 시작/예약 생성/랭킹 비교의 선택 합성 pass 검사를 추가한다. DEV_SUBSCRIPTIONS_ENABLED 기본OFF이며 개발 인증/명시 샌드박스 결제를 요구한다. 실제 정기 청구·운영 구독/쿠폰은 비활성이다. migration→generate/build 후 신규 앱에서 선택 활성화한다. 구독 PaymentOrder는 nullable lotId/선택 subscriptionCycleId를 처리해야 한다.
+
+S-18 #19는 [합성 정산·쿠폰·알림](rewards.md)11연산과 S-16의 현금0 쿠폰 원장 결제/취소를 추가한다. DEV_REWARDS_ENABLED 기본OFF, 기존 합성 인증/랭킹/구독/결제 및 명시 SANDBOX mailbox가 필요하다. migration20261115070000_rewards→generate/build 후 사용한다. 월 경계와 랭킹72h 마감·원천 월 최대2장·복구 배치·동시 사용/해제·알림3시도를 검증한다. OpenAPI0.16.0은105연산/188스키마다. DB 연결 UTC로 KST 호스트의 월 경계 시각을 보존한다. 실제 보상·운영 cron·블루링크·D-02/D-04/D-05는 미완료다.

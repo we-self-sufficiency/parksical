@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000008",
+      "couponId": "00000000-0000-4000-8000-000000000004",
+      "state": "FAILED",
+      "attempts": 3,
+      "nextAttemptAt": "2026-11-15T11:22:03.078Z",
+      "deliveredAt": null,
+      "provider": "SANDBOX_MAILBOX",
+      "realDelivered": false
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000009",
+      "couponId": "00000000-0000-4000-8000-000000000002",
+      "state": "DELIVERED",
+      "attempts": 1,
+      "nextAttemptAt": "2026-11-15T11:06:02.076Z",
+      "deliveredAt": "2026-11-15T11:11:03.076Z",
+      "provider": "SANDBOX_MAILBOX",
+      "realDelivered": false
+    }
+  ],
+  "nextCursor": null,
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "rewardEligible": false,
+  "redeemableInProduction": false,
+  "operationalBlockers": [
+    "D-02",
+    "D-04",
+    "D-05"
+  ]
+}

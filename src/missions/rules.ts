@@ -44,6 +44,10 @@ export function validateStage(plan:StagePlan,stage:StageResultDto,rules:MissionR
   if(stage.quality.some(q=>q.coveredMs>duration || (q.status!=='AVAILABLE' && (q.validSampleCount!==0 || q.coveredMs!==0 || q.maxGapMs!==null))))reject('INVALID_SIGNAL_QUALITY');
   const usable=(signal:QualitySignal)=>{const q=stage.quality.find(q=>q.signal===signal)!;return q.status==='AVAILABLE' && q.coveredMs===duration && q.validSampleCount>=(['speed','steeringAngle'].includes(signal)?rules.minContinuousSamples:1) && q.maxGapMs!==null && q.maxGapMs<=rules.maxGapMs && (!['speed','steeringAngle'].includes(signal) || (q.maxGapMs>0 && q.validSampleCount>=Math.ceil(duration/q.maxGapMs)+1));};
   const m=stage.metrics;
+  if(m.gearTransitionCount!==undefined && m.gearTransitionCount!==null){
+    const gear=stage.quality.find(q=>q.signal==='gear');
+    if(!gear || gear.status!=='AVAILABLE' || m.gearTransitionCount>Math.max(0,gear.validSampleCount-1))reject('INVALID_GEAR_TRANSITION_COUNT');
+  }
   const metric=plan.missionCode==='NO_STOP_RAMP'?'stopCount':plan.missionCode==='ONE_SHOT_REVERSE'?'reverseSegmentCount':'abruptSteeringCount';
   if(['stopCount','reverseSegmentCount','abruptSteeringCount'].some(k=>k!==metric && m[k as keyof typeof m]!==null))reject('UNEXPECTED_MISSION_METRIC');
   // Summary-level precedence is deterministic; it does not claim the chronology of physical events.

@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.10.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false."
+    "version": "0.11.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval."
   },
   "servers": [
     {
@@ -5121,6 +5121,375 @@
             "url": "https://api.example.invalid"
           }
         ]
+      }
+    },
+    "/practice/runs": {
+      "get": {
+        "operationId": "listPracticeReports",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PRACTICE",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED, defaults OFF. SYNTHETIC only. WEB own account, VEHICLE own installation; ADMIN does not bypass ownership. All responses no-store; JSON64KiB, read300/write100 per5min. D-02/D-04 remain pending. PRACTICE only, includes ACTIVE barriers. Order startedAt DESC then UUID DESC. Limit1..50(default20), cursor binds owner/kind/installation/limit. Live comparison uses immediately preceding non-invalidated COMPLETED attempt in same cohort; missing counts remain null. No raw trajectory/map replay.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic practice projection/receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeReportPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/practice/runs/{runId}": {
+      "get": {
+        "operationId": "getPracticeReport",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PRACTICE",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED, defaults OFF. SYNTHETIC only. WEB own account, VEHICLE own installation; ADMIN does not bypass ownership. All responses no-store; JSON64KiB, read300/write100 per5min. D-02/D-04 remain pending. Own PRACTICE attempt only; CHALLENGE/other owner/installation404. Metrics never infer gear transitions from reverse segments. Optional counts are synthetic claims, not SDK/physical proof.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic practice projection/receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/practice/progress": {
+      "get": {
+        "operationId": "getPracticeProgress",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PRACTICE",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED, defaults OFF. SYNTHETIC only. WEB own account, VEHICLE own installation; ADMIN does not bypass ownership. All responses no-store; JSON64KiB, read300/write100 per5min. D-02/D-04 remain pending. Live progress for the anchor run cohort: owner+installation+lot+structureVersion+missionRule+ordered stage snapshot+goalVersion. Three consecutive complete all-3-star stages qualify. Occurrence startedAt ASC/UUID ASC, not receipt time. ACTIVE, invalidated, failed, abort and unverifiable break streak. Later failures do not erase a valid earlier triple; late records/invalidation can revoke that triple. Refreshes legacy persisted projection under same user transaction lock. Recommendation is a stage-count test policy, not certified physical difficulty or operational permission.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic practice projection/receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeProgress"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/practice/awards": {
+      "get": {
+        "operationId": "listPracticeAwards",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PRACTICE",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED, defaults OFF. SYNTHETIC only. WEB own account, VEHICLE own installation; ADMIN does not bypass ownership. All responses no-store; JSON64KiB, read300/write100 per5min. D-02/D-04 remain pending. One stable stamp/title/qualification bundle per cohort/goal, ACTIVE or REVOKED. No duplicate grants on replay, late uploads or reactivation. Lazily rebuilds legacy projections, paginates by recognition UUID DESC. Does not feed challenge ranking/monthly coupons.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Synthetic practice projection/receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeAwardPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/practice/runs/{runId}/invalidation": {
+      "post": {
+        "operationId": "invalidatePracticeRun",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PRACTICE",
+        "description": "Non-production DEV_AUTH_ENABLED + DEV_MISSIONS_ENABLED, defaults OFF. SYNTHETIC only. WEB own account, VEHICLE own installation; ADMIN does not bypass ownership. All responses no-store; JSON64KiB, read300/write100 per5min. D-02/D-04 remain pending. Owner WEB or same-installation VEHICLE; terminal PRACTICE only(active422). expectedVersion1 is practice record version, distinct from MissionRun version2. Append invalidation marker; immutable original result retained. No restore/edit: correction creates a new run. Same reason replays original acknowledgement, different reason409; same key/different payload409. Invalidation, qualification recomputation and receipt commit/rollback atomically. Replay response is historical acknowledgement, use progress/awards for current eligibility.",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Synthetic practice projection/receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeInvalidated"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PracticeInvalidate"
+              }
+            }
+          }
+        }
       }
     },
     "/missions": {
@@ -11243,6 +11612,627 @@
           "coveredMs"
         ]
       },
+      "PracticeSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "gearTransitionCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "abruptSteeringCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "elapsedMs": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 86400000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "gearTransitionCount",
+          "abruptSteeringCount",
+          "elapsedMs"
+        ]
+      },
+      "PracticeComparison": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "previousRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delta": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "gearTransitionCount": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -30000,
+                    "maximum": 30000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "abruptSteeringCount": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -30000,
+                    "maximum": 30000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "elapsedMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -86400000,
+                    "maximum": 86400000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "gearTransitionCount",
+              "abruptSteeringCount",
+              "elapsedMs"
+            ]
+          },
+          "fasterTimeRewarded": {
+            "const": false
+          }
+        },
+        "required": [
+          "previousRunId",
+          "delta",
+          "fasterTimeRewarded"
+        ]
+      },
+      "PracticeGoal": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "practice-v1"
+          },
+          "consecutiveSuccesses": {
+            "const": 3
+          },
+          "starsPerStage": {
+            "const": 3
+          },
+          "stampCode": {
+            "const": "THREE_PERFECT_PRACTICES"
+          },
+          "titleCode": {
+            "const": "PRACTICE_READY"
+          }
+        },
+        "required": [
+          "version",
+          "consecutiveSuccesses",
+          "starsPerStage",
+          "stampCode",
+          "titleCode"
+        ]
+      },
+      "PracticeRecommendation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "const": "STAGE_COUNT_TEST_POLICY"
+          },
+          "currentStageCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "suggestedStageCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "REPEAT_CURRENT_GOAL",
+              "REVIEW_ADDITIONAL_STAGE",
+              "MAINTAIN_CURRENT_GOAL"
+            ]
+          },
+          "requiresCatalogAndCapabilityReview": {
+            "const": true
+          },
+          "operationalAllowed": {
+            "const": false
+          }
+        },
+        "required": [
+          "basis",
+          "currentStageCount",
+          "suggestedStageCount",
+          "code",
+          "requiresCatalogAndCapabilityReview",
+          "operationalAllowed"
+        ]
+      },
+      "PracticeRecognition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REVOKED"
+            ]
+          },
+          "stampCode": {
+            "const": "THREE_PERFECT_PRACTICES"
+          },
+          "titleCode": {
+            "const": "PRACTICE_READY"
+          },
+          "qualifyingRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "stampCode",
+          "titleCode",
+          "qualifyingRunId"
+        ]
+      },
+      "PracticeProgress": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cohortKey": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "installationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "stageIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z_]+:[A-Za-z0-9_-]{1,32}$"
+            }
+          },
+          "goalVersion": {
+            "type": "string",
+            "const": "practice-v1"
+          },
+          "currentStreak": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "requiredStreak": {
+            "const": 3
+          },
+          "qualified": {
+            "type": "boolean"
+          },
+          "qualifyingRunId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "goal": {
+            "$ref": "#/components/schemas/PracticeGoal"
+          },
+          "recommendation": {
+            "$ref": "#/components/schemas/PracticeRecommendation"
+          },
+          "recognition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PracticeRecognition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04"
+            ]
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalChallengeAllowed": {
+            "const": false
+          }
+        },
+        "required": [
+          "cohortKey",
+          "installationId",
+          "lotId",
+          "structureVersion",
+          "ruleVersion",
+          "stageIds",
+          "goalVersion",
+          "currentStreak",
+          "requiredStreak",
+          "qualified",
+          "qualifyingRunId",
+          "goal",
+          "recommendation",
+          "recognition",
+          "source",
+          "physicalVerification",
+          "operationalBlockers",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalChallengeAllowed"
+        ]
+      },
+      "PracticeReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "installationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "ruleVersion": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,32}$"
+          },
+          "goalVersion": {
+            "type": "string",
+            "const": "practice-v1"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED",
+              "ABORTED",
+              "UNVERIFIABLE"
+            ]
+          },
+          "recordVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "validity": {
+            "type": "string",
+            "enum": [
+              "VALID",
+              "INVALIDATED"
+            ]
+          },
+          "invalidatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "invalidationReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "USER_REQUEST",
+                  "CORRECTION"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "goalSucceeded": {
+            "type": "boolean"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/PracticeSummary"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/PracticeComparison"
+          },
+          "metricProvenance": {
+            "const": "APP_REPORTED_SYNTHETIC"
+          },
+          "rawTrajectoryAvailable": {
+            "const": false
+          },
+          "mapReplayAvailable": {
+            "const": false
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "physicalVerification": {
+            "const": "UNVERIFIED"
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-02",
+              "D-04"
+            ]
+          },
+          "rankingEligible": {
+            "const": false
+          },
+          "rewardEligible": {
+            "const": false
+          },
+          "operationalChallengeAllowed": {
+            "const": false
+          }
+        },
+        "required": [
+          "runId",
+          "installationId",
+          "lotId",
+          "structureVersion",
+          "ruleVersion",
+          "goalVersion",
+          "startedAt",
+          "finishedAt",
+          "outcome",
+          "recordVersion",
+          "validity",
+          "invalidatedAt",
+          "invalidationReason",
+          "goalSucceeded",
+          "summary",
+          "comparison",
+          "metricProvenance",
+          "rawTrajectoryAvailable",
+          "mapReplayAvailable",
+          "source",
+          "physicalVerification",
+          "operationalBlockers",
+          "rankingEligible",
+          "rewardEligible",
+          "operationalChallengeAllowed"
+        ]
+      },
+      "PracticeReportPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PracticeReport"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,256}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "PracticeAwardPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PracticeProgress"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,256}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "PracticeInvalidate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "USER_REQUEST",
+              "CORRECTION"
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "PracticeInvalidated": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordVersion": {
+            "const": 2
+          },
+          "validity": {
+            "const": "INVALIDATED"
+          },
+          "invalidatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "USER_REQUEST",
+              "CORRECTION"
+            ]
+          }
+        },
+        "required": [
+          "runId",
+          "recordVersion",
+          "validity",
+          "invalidatedAt",
+          "reason"
+        ]
+      },
       "MissionStageMetrics": {
         "type": "object",
         "additionalProperties": false,
@@ -11319,6 +12309,18 @@
                 "type": "null"
               }
             ]
+          },
+          "gearTransitionCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -11328,7 +12330,8 @@
           "reverseSegmentCount",
           "stopCount",
           "abruptSteeringCount"
-        ]
+        ],
+        "description": "Optional gearTransitionCount is an app-local synthetic count of changes between valid selected-gear samples, excluding the initial observation; unknown or unsupported is null/omitted. Never inferred from reverseSegmentCount. If present/non-null, gear quality must be AVAILABLE and count cannot exceed validSampleCount minus one (422 INVALID_GEAR_TRANSITION_COUNT). Added in 0.11.0; unchanged required fields allow older clients."
       },
       "MissionStageResult": {
         "type": "object",

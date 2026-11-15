@@ -13,6 +13,7 @@ P지컬 차량 앱과 통신하는 서비스 백엔드입니다.
 - 개인 주차 위치: [오프라인 동기화·수정 이력·비공개 사진/메모](docs/parked-locations.md)
 - QR·휴대폰 조회: [1회 교환·재조회·만료/폐기·최소 평면도](docs/location-qr.md)
 - MAX 선행 조사: [정책·신호·미션별 가능 범위와 후속 구현](docs/max-feasibility.md)
+- 합성 연습 리포트·3회 연속 목표·도장/칭호: [비교·순서·지연·무효·합성 자격](docs/practice.md)
 - 합성 미션·도전 기록: [룰/구조 고정·품질/중단·불변 결과·재전송](docs/missions.md)
 - 개발 통합 브랜치: `develop`
 - 서버 작업지시서: [develop의 Agent.md](https://github.com/we-self-sufficiency/parksical-server/blob/develop/Agent.md)

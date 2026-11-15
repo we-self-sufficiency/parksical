@@ -70,3 +70,13 @@ test('pre-stage cancellation/restart and timeout are explicit zero-reward termin
   r.reason='APP_RESTARTED';r.outcome='UNVERIFIABLE';assert.equal(check(r,plans).stars,0);
   r.reason='TIME_LIMIT';r.outcome='ABORTED';r.elapsedMs=7200001;r.finishedAt=new Date(start.getTime()+r.elapsedMs).toISOString();assert.equal(validateRunResult(plans,missionRules(),start,r,new Date(start.getTime()+r.elapsedMs)).stars,0);
 });
+
+test('optional gear transitions cannot exceed observed samples or fabricate unavailable observations',()=>{
+  const r=scenario('reverse-success');r.stages[0]!.metrics.gearTransitionCount=2;
+  assert.throws(()=>check(r));
+  const gear=r.stages[0]!.quality.find(q=>q.signal==='gear')!;gear.validSampleCount=3;
+  assert.equal(check(r).outcome,'COMPLETED');
+  r.stages[0]!.metrics.gearTransitionCount=3;assert.throws(()=>check(r));
+  gear.status='MISSING';gear.validSampleCount=0;gear.coveredMs=0;gear.maxGapMs=null;
+  r.stages[0]!.metrics.gearTransitionCount=0;assert.throws(()=>check(r));
+});

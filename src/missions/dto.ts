@@ -32,6 +32,7 @@ export class SignalQualityDto {
   @IsInt() @Min(0) @Max(86400000) coveredMs!:number;
 }
 export class StageMetricsDto {
+  @ValidateIf(o=>o.gearTransitionCount!==undefined && o.gearTransitionCount!==null) @IsInt() @Min(0) @Max(10000) gearTransitionCount?:number|null;
   @ValidateIf(o=>o.movingDurationMs!==null) @IsInt() @Min(0) @Max(86400000) movingDurationMs!:number|null;
   @ValidateIf(o=>o.maxSpeedKph!==null) @IsNumber({maxDecimalPlaces:3}) @Min(0) @Max(500) maxSpeedKph!:number|null;
   @ValidateIf(o=>o.dangerEventCount!==null) @IsInt() @Min(0) @Max(10000) dangerEventCount!:number|null;

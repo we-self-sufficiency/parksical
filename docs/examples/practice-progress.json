@@ -1,0 +1,46 @@
+{
+  "cohortKey": "0119889319b4b7bb253db44d88003934ca54eb0f32491e86eed814049588a16a",
+  "installationId": "ebe0c5af-4489-4a92-ae76-3da5c761382e",
+  "lotId": "ba12b57d-d383-46d3-9f2b-a4e2034d8912",
+  "structureVersion": 1,
+  "ruleVersion": "missions-v1",
+  "stageIds": [
+    "ONE_SHOT_REVERSE:basement1-s03"
+  ],
+  "goalVersion": "practice-v1",
+  "currentStreak": 3,
+  "requiredStreak": 3,
+  "qualified": true,
+  "qualifyingRunId": "a4072e48-818f-4645-b060-201583ae6f39",
+  "goal": {
+    "version": "practice-v1",
+    "consecutiveSuccesses": 3,
+    "starsPerStage": 3,
+    "stampCode": "THREE_PERFECT_PRACTICES",
+    "titleCode": "PRACTICE_READY"
+  },
+  "recommendation": {
+    "basis": "STAGE_COUNT_TEST_POLICY",
+    "currentStageCount": 1,
+    "suggestedStageCount": 2,
+    "code": "REVIEW_ADDITIONAL_STAGE",
+    "requiresCatalogAndCapabilityReview": true,
+    "operationalAllowed": false
+  },
+  "recognition": {
+    "id": "5df2cc05-2ba1-447e-b936-0d450c2fae0b",
+    "status": "ACTIVE",
+    "stampCode": "THREE_PERFECT_PRACTICES",
+    "titleCode": "PRACTICE_READY",
+    "qualifyingRunId": "a4072e48-818f-4645-b060-201583ae6f39"
+  },
+  "source": "SYNTHETIC",
+  "physicalVerification": "UNVERIFIED",
+  "operationalBlockers": [
+    "D-02",
+    "D-04"
+  ],
+  "rankingEligible": false,
+  "rewardEligible": false,
+  "operationalChallengeAllowed": false
+}

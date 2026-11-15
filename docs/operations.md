@@ -60,3 +60,9 @@ SQL
 [rankings.md](rankings.md)의 migration/generate/build·비운영 opt-in을 따른다. DEV_RANKINGS_ENABLED 기본OFF, REAL_RANKINGS_ENABLED 활성화 불가, 기본 Compose production은 변경하지 않는다. 새5테이블/인덱스/guard·membership 및 개발 전역 잠금 trigger를 migrate deploy 후 실행한다. 기존68연산 입력과 불변 결과를 보존한다. 동의/철회·현재 가명·이력·참여 표식·영수증·내부 월 확정 원천을 함께 백업한다. 공개 철회는 현재 동의를 재검사하므로 확정 snapshot을 그대로 외부에 직렬화하지 않는다. 공개 동의/키/개인 원천·해시를 로그에 넣지 않는다.
 
 내부 finalizeSyntheticMonth는 cutoff 후 합성 S-18 계약 검증용이며 공개 HTTP/cron/실제 보상 실행이 없다. 후보 최대10000/주차장/월, 그룹100과 전체 개발 잠금은 가역적인 개발 한도다. 한도503을 순위 부분 성공으로 변환하지 않는다. 영수증 누적으로 공개 철회/참여 삭제를 차단하지 않고 동의 버전에는 최종 철회 여유를 남긴다. 실제 운영 규모/보관·완전 삭제·정산 자격은 D-02/04/05 확정 후 별도 구현한다.
+
+## S-16 사전결제 복구
+
+[payments.md](payments.md)의 비운영 opt-in과 migration20261115050000_payments를 따른다. 일반 사전결제는 MAX 없이 가능하며 실청구는 차단한다. 견적/주문/시도/환불/불변 승인 영수증/명령/알림·독립 합성 제공자8테이블을 함께 백업·복원한다. 별도 제공자 테이블은 테스트 gateway이므로 실제 PG로 오인하지 않는다. 비밀은 환경에서 주입하고 DB/로그/예제에 저장하지 않는다.
+
+PENDING/REFUND_PENDING이면 본인 GET 확인 → 같은 명령 key/body 재전송 또는 새 key로 reconcile → 상태/영수증 재확인한다. 자동 청구/환불 worker는 없다. 실운영 서비스 활성화는 D-05와 실제 제공자 어댑터/장애/웹훅/배포 승인 후 별도 작업이다. merchant DB 롤백으로 이미 승인된 제공자 거래를 없었던 일로 취급하지 않는다.

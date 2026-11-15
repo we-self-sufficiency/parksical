@@ -1,0 +1,48 @@
+{
+  "receipt": {
+    "id": "77777777-7777-4777-8777-777777777777",
+    "orderId": "11111111-1111-4111-8111-111111111111",
+    "transactionId": "55555555-5555-4555-8555-555555555555",
+    "amountKrw": 1000,
+    "currency": "KRW",
+    "pricing": {
+      "currency": "KRW",
+      "priceVersion": "prepayment-v1",
+      "amountKrw": 1000,
+      "days": [
+        {
+          "date": "2026-11-16",
+          "minutes": 30,
+          "generalAmountKrw": 1000
+        }
+      ],
+      "fees": {
+        "currency": "KRW",
+        "baseMinutes": 30,
+        "baseAmount": 1000,
+        "additionalMinutes": 10,
+        "additionalAmount": 500,
+        "dailyMaxAmount": 15000
+      },
+      "structureVersion": 1,
+      "dailyCapScope": "GENERAL_FARE_PER_KST_DATE",
+      "capacityReserved": false
+    },
+    "recordedAt": "2026-11-15T09:00:00.000Z",
+    "source": "SYNTHETIC",
+    "provider": "SANDBOX",
+    "operationalAllowed": false,
+    "realPaymentVerified": false,
+    "operationalBlockers": [
+      "D-05"
+    ]
+  },
+  "refund": null,
+  "source": "SYNTHETIC",
+  "provider": "SANDBOX",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

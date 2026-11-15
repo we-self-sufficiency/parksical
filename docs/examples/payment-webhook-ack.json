@@ -1,0 +1,11 @@
+{
+  "accepted": true,
+  "eventId": "66666666-6666-4666-8666-666666666666",
+  "source": "SYNTHETIC",
+  "provider": "SANDBOX",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

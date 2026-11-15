@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Parksical API contract",
-    "version": "0.13.0",
-    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval. S-14 explicit non-production synthetic venue policy/slots, integer-KRW quotes, expiring capacity holds, own cancellation and sandbox-only settlement commands are implemented-development. Real provider/charges/operation remain unavailable; see reservations.md. S-15 KST monthly synthetic development ranking/cohorts/own comparison, versioned public consent and privacy-safe invalidation/deletion are implemented-development; internal immutable finalization is not an HTTP payout endpoint. See rankings.md."
+    "version": "0.14.0",
+    "description": "Mixed implemented/design contract. Development auth, vehicle metadata, synthetic lot management, authenticated catalog search/detail and versioned difficulty are implemented. Reviews/aggregates are disabled by default and require explicit non-production synthetic development opt-in. No production deployment, real collection/anonymization approval, actual SDK validation or physical parkability assessment is claimed. S-09 private positions/history and transactional normalized photos require explicit non-production synthetic opt-in; D-02/D-06 operation policies remain pending. S-10 QR/phone flow is explicit non-production opt-in, provisional D-07; /p#token avoids token-bearing server paths, one-time explicit exchange and issuer-bound phone session expire at original 24h deadline. S-12 mission catalog/runs/results are explicit non-production SYNTHETIC development opt-in. Frozen rule/structure/stage versions and immutable terminal results; consistency is not physical verification. D-02/D-04 pending; operationalAllowed/rankingEligible/rewardEligible remain false. S-13 synthetic PRACTICE reports/comparison, versioned three-perfect-run qualification and stable/revocable stamp/title projection are implemented-development. Optional gearTransitionCount preserves older result payloads. See practice.md; no raw trajectory/real collection/operational challenge/ranking/reward approval. S-14 explicit non-production synthetic venue policy/slots, integer-KRW quotes, expiring capacity holds, own cancellation and sandbox-only settlement commands are implemented-development. Real provider/charges/operation remain unavailable; see reservations.md. S-15 KST monthly synthetic development ranking/cohorts/own comparison, versioned public consent and privacy-safe invalidation/deletion are implemented-development; internal immutable finalization is not an HTTP payout endpoint. See rankings.md. S-16 general prepayments, independent durable sandbox provider, signed webhooks plus server lookup, immutable approval receipts, full-refund recovery and S-14 reservation compensation are implemented-development. Actual PG/charges are unimplemented and D-05 pending; see payments.md."
   },
   "servers": [
     {
@@ -6551,7 +6551,7 @@
         "operationId": "applySandboxReservationEvent",
         "x-implementation-status": "implemented-development",
         "x-access-scope": "SYNTHETIC_DEVELOPMENT_RESERVATIONS",
-        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Explicit synthetic test adapter command, NOT a real provider webhook/charge/verification. Server derives reservation/order/money/currency and generates providerEventId; body cannot inject amount/provider ID. HELD+success->SANDBOX_CONFIRMED; failure->PAYMENT_FAILED. Late success after expiry/cancel/failure or policy/venue change->REFUND_PENDING without reacquiring claims; refund success only REFUND_PENDING->REFUNDED. Duplicate kind replays original immutable evidence/acknowledgement; current state must be re-read. Incompatible events409. Real provider is unavailable until S-16 verification and D-04/D-05 approvals.",
+        "description": "Explicit non-production DEV_AUTH_ENABLED + DEV_RESERVATIONS_ENABLED, default OFF. SYNTHETIC only, no operational venue permission/real payment verification. WEB/VEHICLE own account (not installation scoped); current vehicle credential must remain linked. ADMIN cannot bypass ownership. All responses no-store, JSON64KiB, read300/write100 per5min. D-04/D-05 PENDING. Explicit synthetic test adapter command, NOT a real provider webhook/charge/verification. Server derives reservation/order/money/currency and generates providerEventId; body cannot inject amount/provider ID. HELD+success->SANDBOX_CONFIRMED; failure->PAYMENT_FAILED. Late success after expiry/cancel/failure or policy/venue change->REFUND_PENDING without reacquiring claims; refund success only REFUND_PENDING->REFUNDED. Duplicate kind replays original immutable evidence/acknowledgement; current state must be re-read. Incompatible events409. Real provider is unavailable until S-16 verification and D-04/D-05 approvals. S-16 bound payment orders reject this legacy command with409 RESERVATION_PAYMENT_ORDER_BOUND; use the payment API and verified sandbox provider instead. Actual real provider remains unimplemented.",
         "parameters": [
           {
             "name": "reservationId",
@@ -7269,6 +7269,807 @@
           }
         }
       }
+    },
+    "/payment-quotes": {
+      "post": {
+        "operationId": "createPaymentQuote",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. General prepayment is independent of MAX flags/policy. Current active synthetic SELF_PARK known fees/hours, start on30m grid, duration30..240/multiple30, within seven KST dates. prepayment-v1 ordinary per-date base/additional ceil/daily cap, BigInt KRW1..100M, zero unsupported. TTL300s bounded by start, exclusive expiry; no capacity/arrival/parking proof. Immutable quote/fees/version.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentQuoteView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentQuoteInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments": {
+      "post": {
+        "operationId": "createPaymentOrder",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. One order per owned quote, existing quote order returns original creation snapshot. No client amount/currency/provider authorization accepted. Recheck deadline/current venue and structure.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentOrderInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listOwnPayments",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. Own orders sorted createdAt/id descending. limit1..50/default20, cursor binds owner/page size, max1000 orders/account. GET does not call provider; recover explicit pending state.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/payments/reservations": {
+      "post": {
+        "operationId": "createReservationPaymentOrder",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. Additional DEV_RESERVATIONS_ENABLED required for first bind/attempt. Own current HELD unpaid reservation/policy/safety/venue, amount from immutable S-14 quote, one order per reservation. Bound reservations reject legacy sandbox-events409.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationPaymentOrderInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{orderId}": {
+      "get": {
+        "operationId": "getOwnPayment",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. Own stored current state. Receipt snapshots/replayed command responses are historical; read this resource for current state. Pending state requires reconcile/provider event.",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/payments/{orderId}/receipt": {
+      "get": {
+        "operationId": "getOwnPaymentReceipt",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. One immutable approval evidence receipt per order, only after verified SUCCEEDED/REFUNDED. Separate current full refund state. No legal/tax receipt or real charge assertion; missing receipt404.",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentReceiptView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/payments/{orderId}/attempts": {
+      "post": {
+        "operationId": "attemptSandboxPayment",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. Explicit synthetic outcome fixture, not a real approval declaration. One durable attempt and frozen outcome/orderId before external call. CREATED->PENDING; verified provider result ->SUCCEEDED/FAILED. One stable provider transaction. Failed attempt terminal/new quote needed. Lost responses/local receipt failure leave PENDING recoverable. Late success after cancellation/expiry or lost reservation ->REFUND_PENDING, never reacquire capacity. Same key/body replays exact committed snapshot; different outcome409.",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentAttemptInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{orderId}/cancel": {
+      "post": {
+        "operationId": "cancelOwnPayment",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. Before quoted/reservation start only. CREATED/PENDING->CANCELLED, SUCCEEDED->REFUND_PENDING and release reservation. Full refund remains pending until reconcile verifies provider. Partial refund/no-show/start-after cancellation unsupported.",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCancelInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{orderId}/reconcile": {
+      "post": {
+        "operationId": "reconcileOwnPayment",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. Independent provider lookup, retry durable unfinished capture if still PENDING, then perform pending whole refund using stable orderId. Verify order/currency/amount/transaction each time. Response loss/rollback restart safe, one receipt/full refund. Reservation direct cancel detected by lookup. No automatic worker; explicit recovery required. Same key replays historical result, use new key for new lookup.",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentOrderView"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRecoverInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/webhooks/sandbox": {
+      "post": {
+        "operationId": "receiveSandboxPaymentWebhook",
+        "x-implementation-status": "implemented-development",
+        "x-access-scope": "SYNTHETIC_DEVELOPMENT_PAYMENTS",
+        "description": "S-16/F-04/F-09 synthetic development only. Non-production DEV_AUTH_ENABLED+DEV_PAYMENTS_ENABLED, explicit SANDBOX provider and separate webhook secret; default OFF, production and REAL_PAYMENTS_ENABLED blocked. D-05 pending; operationalAllowed/realPaymentVerified false. WEB/VEHICLE own-account bearer, current session/link revalidated, no ADMIN override. JSON64KiB, no-store, read300/write100 per account/5min. No card data or provider secrets in storage/logs. Provider authenticated HMAC over exact raw JSON bytes, timestamp +/-300s. No user bearer authority. Then mandatory independent provider lookup: match order, amount,currency,transaction ID to server; current lookup state wins over stale/out-of-order body status. Global eventId+canonical body dedup; conflicting reuse409, duplicate ack replay. Event/order/receipt/reservation update atomic; late paid claims never reacquired.",
+        "parameters": [
+          {
+            "name": "X-Payment-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{10}$"
+            }
+          },
+          {
+            "name": "X-Payment-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Synthetic payment response",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentWebhookAck"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentProviderWebhook"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "paymentSignature": [],
+            "paymentTimestamp": []
+          }
+        ],
+        "x-idempotency-policy": "provider-event"
+      }
     }
   },
   "components": {
@@ -7289,6 +8090,18 @@
         "in": "cookie",
         "name": "__Host-parksical-qr",
         "description": "QR-only HttpOnly/Secure/SameSite=Strict host cookie; loopback HTTP development uses parksical-qr instead. Never accepted as account bearer."
+      },
+      "paymentSignature": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Payment-Signature",
+        "description": "Hex HMAC-SHA256(secret, timestamp + dot + exact raw JSON bytes). Mandatory independent server lookup; sandbox only."
+      },
+      "paymentTimestamp": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Payment-Timestamp",
+        "description": "Unix seconds, ten digits, exclusive beyond 300 seconds absolute clock skew."
       }
     },
     "schemas": {
@@ -16136,6 +16949,655 @@
         "required": [
           "items",
           "nextCursor"
+        ]
+      },
+      "PaymentQuoteInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 240,
+            "multipleOf": 30
+          }
+        },
+        "required": [
+          "lotId",
+          "startsAt",
+          "durationMinutes"
+        ]
+      },
+      "PaymentOrderInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "quoteId"
+        ]
+      },
+      "ReservationPaymentOrderInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "reservationId"
+        ]
+      },
+      "PaymentAttemptInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sandboxOutcome": {
+            "enum": [
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          }
+        },
+        "required": [
+          "sandboxOutcome"
+        ]
+      },
+      "PaymentCancelInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "const": "USER_REQUEST"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "PaymentRecoverInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "const": "RECOVER"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "PaymentPricing": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "const": "KRW"
+          },
+          "priceVersion": {
+            "const": "prepayment-v1"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          },
+          "days": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": 30,
+                  "maximum": 240,
+                  "multipleOf": 30
+                },
+                "generalAmountKrw": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000000
+                }
+              },
+              "required": [
+                "date",
+                "minutes",
+                "generalAmountKrw"
+              ]
+            }
+          },
+          "fees": {
+            "$ref": "#/components/schemas/LotFees"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "dailyCapScope": {
+            "const": "GENERAL_FARE_PER_KST_DATE"
+          },
+          "capacityReserved": {
+            "const": false
+          }
+        },
+        "required": [
+          "currency",
+          "priceVersion",
+          "amountKrw",
+          "days",
+          "fees",
+          "structureVersion",
+          "dailyCapScope",
+          "capacityReserved"
+        ]
+      },
+      "PaymentQuoteView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "details": {
+            "$ref": "#/components/schemas/PaymentPricing"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "quoteId",
+          "lotId",
+          "startsAt",
+          "endsAt",
+          "createdAt",
+          "expiresAt",
+          "details",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentAttemptView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          },
+          "transactionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "transactionId"
+        ]
+      },
+      "PaymentRefundView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "PENDING",
+              "SUCCEEDED"
+            ]
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          }
+        },
+        "required": [
+          "state",
+          "amountKrw"
+        ]
+      },
+      "PaymentOrderView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quoteId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reservationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "pricing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentPricing"
+              },
+              {
+                "$ref": "#/components/schemas/ReservationPricing"
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "CREATED",
+              "PENDING",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED",
+              "REFUND_PENDING",
+              "REFUNDED"
+            ]
+          },
+          "attempt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentAttemptView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "refund": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentRefundView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receiptId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "quoteId",
+          "reservationId",
+          "lotId",
+          "amountKrw",
+          "currency",
+          "pricing",
+          "state",
+          "attempt",
+          "refund",
+          "receiptId",
+          "createdAt",
+          "expiresAt",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PaymentOrderView"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "PaymentApprovalReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "pricing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentPricing"
+              },
+              {
+                "$ref": "#/components/schemas/ReservationPricing"
+              }
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "transactionId",
+          "amountKrw",
+          "currency",
+          "pricing",
+          "recordedAt",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentReceiptView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "receipt": {
+            "$ref": "#/components/schemas/PaymentApprovalReceipt"
+          },
+          "refund": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentRefundView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "receipt",
+          "refund",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentProviderWebhook": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "enum": [
+              "SUCCEEDED",
+              "FAILED",
+              "REFUNDED"
+            ]
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          }
+        },
+        "required": [
+          "eventId",
+          "orderId",
+          "transactionId",
+          "status",
+          "currency",
+          "amountKrw"
+        ]
+      },
+      "PaymentWebhookAck": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "accepted": {
+            "const": true
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "accepted",
+          "eventId",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
         ]
       }
     },

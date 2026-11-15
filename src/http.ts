@@ -10,7 +10,9 @@ export function requestContext(sink: LogSink) {
   return (request: Request, response: Response, next: NextFunction) => {
     const incoming = request.get('X-Request-Id');
     const qr=request.path==='/p' || request.path.startsWith('/p/') || request.path.startsWith('/api/v1/qr') || request.path.includes('/qr-tokens');
-    const requestId = !qr && incoming && /^[A-Za-z0-9_.-]{1,64}$/.test(incoming) ? incoming : randomUUID();
+    const payment=request.path.startsWith('/api/v1/payment');
+    const requestId = !qr && !payment && incoming && /^[A-Za-z0-9_.-]{1,64}$/.test(incoming) ? incoming : randomUUID();
+    if(payment)response.setHeader('Cache-Control','no-store');
     response.locals.requestId = requestId;
     response.setHeader('X-Request-Id', requestId);
     if (request.path.startsWith('/api/v1/ranking') || request.path.startsWith('/api/v1/me/') || request.path.startsWith('/api/v1/reservation') || request.path.startsWith('/api/v1/practice') || request.path.startsWith('/api/v1/missions') || request.path.startsWith('/api/v1/runs') || request.path.startsWith('/api/v1/auth/') || request.path.startsWith('/api/v1/vehicle-sessions') || request.path.startsWith('/api/v1/admin/') || (request.path === '/api/v1/lots' || request.path.startsWith('/api/v1/lots/')) || request.path.startsWith('/api/v1/parked-locations') || request.path.startsWith('/api/v1/reviews') || request.path === '/api/v1/me') response.setHeader('Cache-Control', 'no-store');

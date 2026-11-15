@@ -129,7 +129,21 @@
     "ranking-invalidate.json": "RankingRecordMutation",
     "ranking-invalidated.json": "RankingRecordReceipt",
     "ranking-delete.json": "RankingRecordMutation",
-    "ranking-deleted.json": "RankingRecordReceipt"
+    "ranking-deleted.json": "RankingRecordReceipt",
+    "payment-quote-request.json": "PaymentQuoteInput",
+    "payment-quote.json": "PaymentQuoteView",
+    "payment-order-request.json": "PaymentOrderInput",
+    "payment-reservation-request.json": "ReservationPaymentOrderInput",
+    "payment-created.json": "PaymentOrderView",
+    "payment-attempt.json": "PaymentAttemptInput",
+    "payment-paid.json": "PaymentOrderView",
+    "payment-refunded.json": "PaymentOrderView",
+    "payment-cancel.json": "PaymentCancelInput",
+    "payment-recover.json": "PaymentRecoverInput",
+    "payment-receipt.json": "PaymentReceiptView",
+    "payment-page.json": "PaymentPage",
+    "payment-webhook.json": "PaymentProviderWebhook",
+    "payment-webhook-ack.json": "PaymentWebhookAck"
   },
   "cases": [
     {
@@ -768,6 +782,83 @@
       "schema": "RankingRecordReceipt",
       "example": "ranking-deleted.json",
       "requestExample": "ranking-delete.json"
+    },
+    {
+      "name": "S-16 createPaymentQuote",
+      "operationId": "createPaymentQuote",
+      "status": 201,
+      "schema": "PaymentQuoteView",
+      "example": "payment-quote.json",
+      "requestExample": "payment-quote-request.json"
+    },
+    {
+      "name": "S-16 createPaymentOrder",
+      "operationId": "createPaymentOrder",
+      "status": 201,
+      "schema": "PaymentOrderView",
+      "example": "payment-created.json",
+      "requestExample": "payment-order-request.json"
+    },
+    {
+      "name": "S-16 createReservationPaymentOrder",
+      "operationId": "createReservationPaymentOrder",
+      "status": 201,
+      "schema": "PaymentOrderView",
+      "example": "payment-created.json",
+      "requestExample": "payment-reservation-request.json"
+    },
+    {
+      "name": "S-16 listOwnPayments",
+      "operationId": "listOwnPayments",
+      "status": 200,
+      "schema": "PaymentPage",
+      "example": "payment-page.json"
+    },
+    {
+      "name": "S-16 getOwnPayment",
+      "operationId": "getOwnPayment",
+      "status": 200,
+      "schema": "PaymentOrderView",
+      "example": "payment-paid.json"
+    },
+    {
+      "name": "S-16 getOwnPaymentReceipt",
+      "operationId": "getOwnPaymentReceipt",
+      "status": 200,
+      "schema": "PaymentReceiptView",
+      "example": "payment-receipt.json"
+    },
+    {
+      "name": "S-16 attemptSandboxPayment",
+      "operationId": "attemptSandboxPayment",
+      "status": 201,
+      "schema": "PaymentOrderView",
+      "example": "payment-paid.json",
+      "requestExample": "payment-attempt.json"
+    },
+    {
+      "name": "S-16 cancelOwnPayment",
+      "operationId": "cancelOwnPayment",
+      "status": 201,
+      "schema": "PaymentOrderView",
+      "example": "payment-refunded.json",
+      "requestExample": "payment-cancel.json"
+    },
+    {
+      "name": "S-16 reconcileOwnPayment",
+      "operationId": "reconcileOwnPayment",
+      "status": 201,
+      "schema": "PaymentOrderView",
+      "example": "payment-refunded.json",
+      "requestExample": "payment-recover.json"
+    },
+    {
+      "name": "S-16 receiveSandboxPaymentWebhook",
+      "operationId": "receiveSandboxPaymentWebhook",
+      "status": 201,
+      "schema": "PaymentWebhookAck",
+      "example": "payment-webhook-ack.json",
+      "requestExample": "payment-webhook.json"
     }
   ],
   "negativeCases": [
@@ -1516,6 +1607,86 @@
         "rankingEligible": true
       },
       "reason": "S-15 Client cannot assert operational eligibility"
+    },
+    {
+      "schema": "PaymentQuoteInput",
+      "baseExample": "payment-quote-request.json",
+      "set": {
+        "amountKrw": 1
+      },
+      "reason": "S-16 server price only"
+    },
+    {
+      "schema": "PaymentOrderInput",
+      "baseExample": "payment-order-request.json",
+      "set": {
+        "userId": "33333333-3333-4333-8333-333333333333"
+      },
+      "reason": "S-16 owner from bearer"
+    },
+    {
+      "schema": "PaymentAttemptInput",
+      "baseExample": "payment-attempt.json",
+      "set": {
+        "sandboxOutcome": "REAL"
+      },
+      "reason": "S-16 synthetic outcome only"
+    },
+    {
+      "schema": "PaymentAttemptInput",
+      "baseExample": "payment-attempt.json",
+      "set": {
+        "currency": "USD"
+      },
+      "reason": "S-16 server currency only"
+    },
+    {
+      "schema": "PaymentCancelInput",
+      "baseExample": "payment-cancel.json",
+      "set": {
+        "amountKrw": 500
+      },
+      "reason": "S-16 partial refund unsupported"
+    },
+    {
+      "schema": "PaymentRecoverInput",
+      "baseExample": "payment-recover.json",
+      "set": {
+        "action": "APPROVE"
+      },
+      "reason": "S-16 lookup only"
+    },
+    {
+      "schema": "PaymentProviderWebhook",
+      "baseExample": "payment-webhook.json",
+      "set": {
+        "currency": "USD"
+      },
+      "reason": "S-16 currency mismatch"
+    },
+    {
+      "schema": "PaymentProviderWebhook",
+      "baseExample": "payment-webhook.json",
+      "set": {
+        "amountKrw": "1000"
+      },
+      "reason": "S-16 strict integer"
+    },
+    {
+      "schema": "PaymentProviderWebhook",
+      "baseExample": "payment-webhook.json",
+      "set": {
+        "transactionId": "other"
+      },
+      "reason": "S-16 transaction UUID"
+    },
+    {
+      "schema": "PaymentQuoteInput",
+      "baseExample": "payment-quote-request.json",
+      "set": {
+        "durationMinutes": 45
+      },
+      "reason": "S-16 30m grid"
     }
   ]
 }

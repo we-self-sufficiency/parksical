@@ -122,3 +122,7 @@ S-16의 **내부 포트 계약**은 providerEventId/providerOrderId·reservation
 
 
 S-15의 [합성 월간 랭킹·공개 동의](rankings.md)는 별도 DEV_RANKINGS_ENABLED 기본OFF 기능이다. PRACTICE/예약/합성 결제가 운영 랭킹·실제 보상 자격을 만들지 않는다. 기존 미션/연습/예약의 입력과 불변 영수증은 유지하며 랭킹 참여 표식은 원본 데이터 완전 삭제와 다르다. OpenAPI0.13.0에 새8연산이 추가되고 기존68연산의 의미는 유지된다. D-02/D-04/D-05·실제 SDK/실차는 계속 별도 미완료다.
+
+## S-16 연결 이후
+
+[payments.md](payments.md)의 /payments/reservations로 본인 HELD의 불변 가격/기한에 주문을 연결할 수 있다. 연결 후 기존 sandbox-events는409 RESERVATION_PAYMENT_ORDER_BOUND이며 제공자 서명+서버 조회 검증/시도·영수증·전액 환불은 S-16 API를 이용한다. SYNTHETIC/SANDBOX_CONFIRMED와 실제 결제·운영false 경계는 유지한다. 예약 직접 취소 이후 결제 환불은 webhook 또는 명시 reconcile로 동기화한다. 늦은 승인·만료/취소 경합은 재점유 없이 REFUND_PENDING이고 제공자 환불 확인 후 REFUNDED다. 실제 PG/실제 장소 운영과 D-04/D-05는 계속 미완료다.

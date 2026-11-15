@@ -1,0 +1,38 @@
+{
+  "quoteId": "22222222-2222-4222-8222-222222222222",
+  "lotId": "33333333-3333-4333-8333-333333333333",
+  "startsAt": "2026-11-16T01:00:00.000Z",
+  "endsAt": "2026-11-16T01:30:00.000Z",
+  "createdAt": "2026-11-15T09:00:00.000Z",
+  "expiresAt": "2026-11-15T09:05:00.000Z",
+  "details": {
+    "currency": "KRW",
+    "priceVersion": "prepayment-v1",
+    "amountKrw": 1000,
+    "days": [
+      {
+        "date": "2026-11-16",
+        "minutes": 30,
+        "generalAmountKrw": 1000
+      }
+    ],
+    "fees": {
+      "currency": "KRW",
+      "baseMinutes": 30,
+      "baseAmount": 1000,
+      "additionalMinutes": 10,
+      "additionalAmount": 500,
+      "dailyMaxAmount": 15000
+    },
+    "structureVersion": 1,
+    "dailyCapScope": "GENERAL_FARE_PER_KST_DATE",
+    "capacityReserved": false
+  },
+  "source": "SYNTHETIC",
+  "provider": "SANDBOX",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

@@ -43,6 +43,13 @@ export function validatePeriod(policy: ReservationPolicySnapshot, start: Date, m
 }
 export function quoteFare(policy: ReservationPolicySnapshot, mode: ReservationMode, start: Date, end: Date) {
   const fees = policy.fees; if (!fees) reject('RESERVATION_FEES_UNAVAILABLE');
+  const {days,generalAmountKrw}=quoteGeneralFare(fees,start,end);
+  const general=BigInt(generalAmountKrw),multiplierBps = mode === 'CHALLENGE' ? policy.challengeMultiplierBps : policy.practiceMultiplierBps;
+  const amount = (general * BigInt(multiplierBps) + 5000n) / 10000n;
+  if (amount > 100000000n) reject('RESERVATION_AMOUNT_LIMIT');
+  return { currency: 'KRW', priceVersion: RESERVATION_PRICE_VERSION, generalAmountKrw, multiplierBps, amountKrw: Number(amount), rounding: 'HALF_UP_WON', dailyCapScope: 'GENERAL_FARE_PER_KST_DATE', days } as const;
+}
+export function quoteGeneralFare(fees: FeesDto, start: Date, end: Date) {
   const minutesByDay = new Map<string, number>();
   for (const slot of slotsBetween(start, end)) { const day = localDay(slot).date; minutesByDay.set(day, (minutesByDay.get(day) ?? 0) + 30); }
   const days = [...minutesByDay].map(([date, minutes]) => {
@@ -52,8 +59,7 @@ export function quoteFare(policy: ReservationPolicySnapshot, mode: ReservationMo
     if (amount > 100000000n) reject('RESERVATION_AMOUNT_LIMIT');
     return { date, minutes, generalAmountKrw: Number(amount) };
   });
-  const general = days.reduce((n, d) => n + BigInt(d.generalAmountKrw), 0n), multiplierBps = mode === 'CHALLENGE' ? policy.challengeMultiplierBps : policy.practiceMultiplierBps;
-  const amount = (general * BigInt(multiplierBps) + 5000n) / 10000n;
-  if (general > 100000000n || amount > 100000000n) reject('RESERVATION_AMOUNT_LIMIT');
-  return { currency: 'KRW', priceVersion: RESERVATION_PRICE_VERSION, generalAmountKrw: Number(general), multiplierBps, amountKrw: Number(amount), rounding: 'HALF_UP_WON', dailyCapScope: 'GENERAL_FARE_PER_KST_DATE', days } as const;
+  const general = days.reduce((n, d) => n + BigInt(d.generalAmountKrw), 0n);
+  if (general > 100000000n) reject('RESERVATION_AMOUNT_LIMIT');
+  return {days,generalAmountKrw:Number(general)};
 }

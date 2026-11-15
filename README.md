@@ -18,6 +18,7 @@ P지컬 차량 앱과 통신하는 서비스 백엔드입니다.
 - 합성 연습 리포트·3회 연속 목표·도장/칭호: [비교·순서·지연·무효·합성 자격](docs/practice.md)
 - 합성 미션·도전 기록: [룰/구조 고정·품질/중단·불변 결과·재전송](docs/missions.md)
 - 개발 통합 브랜치: `develop`
+- 합성 사전결제·제공자 검증·영수증·전액 환불: [상태/재시도·예약 연동·실청구 차단](docs/payments.md)
 - 서버 작업지시서: [develop의 Agent.md](https://github.com/we-self-sufficiency/parksical-server/blob/develop/Agent.md)
 
 차량 SDK 연동과 주행 중 화면 제어는 차량 앱이 담당하며, 이 저장소는 API와 서비스 데이터를 관리합니다.

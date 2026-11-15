@@ -10,6 +10,8 @@ export interface AppConfig {
   devMissionsEnabled: boolean;
   devReservationsEnabled: boolean;
   devRankingsEnabled: boolean;
+  devPaymentsEnabled: boolean;
+  paymentWebhookSecret?: string;
   qrPublicOrigin?: string;
   devAuthSecret?: string;
 }
@@ -57,7 +59,11 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if(env.DEV_RANKINGS_ENABLED!==undefined && !['true','false'].includes(env.DEV_RANKINGS_ENABLED))throw new Error('Invalid DEV_RANKINGS_ENABLED');
   const devRankingsEnabled=env.DEV_RANKINGS_ENABLED==='true';
   if(devRankingsEnabled && (nodeEnv==='production' || !devAuthEnabled))throw new Error('Synthetic rankings require non-production development authentication');
-  return { devRankingsEnabled, devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
+  if(env.DEV_PAYMENTS_ENABLED!==undefined && !['true','false'].includes(env.DEV_PAYMENTS_ENABLED))throw new Error('Invalid DEV_PAYMENTS_ENABLED');
+  const devPaymentsEnabled=env.DEV_PAYMENTS_ENABLED==='true';
+  if(env.PAYMENT_PROVIDER!==undefined && env.PAYMENT_PROVIDER!=='SANDBOX')throw new Error('Unsupported PAYMENT_PROVIDER');
+  if(devPaymentsEnabled && (nodeEnv==='production' || !devAuthEnabled || env.PAYMENT_PROVIDER!=='SANDBOX' || (env.PAYMENT_WEBHOOK_SECRET?.length ?? 0)<32))throw new Error('Synthetic payments require non-production authentication, sandbox provider and webhook secret');
+  return { devPaymentsEnabled, paymentWebhookSecret:env.PAYMENT_WEBHOOK_SECRET, devRankingsEnabled, devReservationsEnabled, devMissionsEnabled, devQrEnabled, qrPublicOrigin, devLocationsEnabled, devReviewsEnabled, nodeEnv: nodeEnv as AppConfig['nodeEnv'], port, databaseUrl: env.DATABASE_URL, shutdownTimeoutMs: 10000, devAuthEnabled, devAuthSecret: env.DEV_AUTH_SECRET };
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');

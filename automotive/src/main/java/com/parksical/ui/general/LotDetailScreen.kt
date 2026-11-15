@@ -182,7 +182,8 @@ private fun ChallengeCard(lot: ParkingLot, parked: Boolean, onGo: () -> Unit) {
         Box(Modifier.size(56.dp).background(Color(0xFFF2E3C6)), Alignment.BottomEnd) { Box(Modifier.size(20.dp).background(Color(0xFFD9412B))) }
         Column(Modifier.weight(1f)) {
             Text("도전장이 도착했습니다", color = GeneralColors.AccentSoft, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-            Text("P지컬 MAX 개방 · ${lot.challengeHours.orEmpty()} · 미션 3개", color = GeneralColors.Muted, fontSize = 16.sp, modifier = Modifier.padding(top = 4.dp))
+            val missions = LocalAppContainer.current.parking.dungeon(lot.id)?.stages?.size
+            Text(listOfNotNull("P지컬 MAX 개방", lot.challengeHours?.takeIf { it.isNotBlank() }, missions?.let { "미션 ${it}개" }).joinToString(" · "), color = GeneralColors.Muted, fontSize = 16.sp, modifier = Modifier.padding(top = 4.dp))
         }
         Text("GO ▶", color = GeneralColors.Bg, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.background(GeneralColors.Accent).padding(16.dp, 14.dp))
     }

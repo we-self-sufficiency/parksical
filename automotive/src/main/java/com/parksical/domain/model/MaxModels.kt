@@ -168,4 +168,5 @@ data class Reservation(
     val slot: String,
     val minutes: Int,
     val paidWon: Int,
+    val reservationId: String? = null,
 )

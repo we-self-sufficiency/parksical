@@ -110,5 +110,5 @@ VehicleState Flow (gear, speedKmh, steeringDeg, brakePressed, uxRestricted)
 - 런: 시작 시 합성 vehicle-session + `POST /runs`(비동기, 판정은 네트워크를 기다리지 않음) → 종료 시 `POST /runs/{id}/result`(스테이지별 metrics·신호 품질 포함). 판정 규칙은 서버 missions-v1과 동일: 10km/h 초과 즉시 중단, 경사로 정지(P 포함) 중단, 급조향 1회당 -1별, 후진 진입 정확히 1회만 3별.
 - uxState는 항상 ALLOWED로 보고(shortcut): AAOS는 주행 중 항상 DO 필요=true라 그대로 보내면 모든 런이 중단됨. 서버 D-04 결정 후 재검토.
 - 차속은 0.25초마다 다시 읽음(서버가 표본 간격 1초 초과 스테이지를 판정 불가로 처리).
-- 주차 위치 업로드는 S-09 계약(`POST/PATCH /parked-locations`, Idempotency-Key, 최소 영수증)으로 연동. 예약 슬롯 API(S-14)는 없어 "예약 기능 준비 중 · 바로 시작"으로 표시.
+- 주차 위치 업로드는 S-09 계약(`POST/PATCH /parked-locations`, Idempotency-Key, 최소 영수증)으로 연동. 예약은 S-14 합성 예약 API로 연동: 정책(안전 수칙·배수) → 오늘 슬롯(시안처럼 7개) → 서버 견적 → 점유(HELD) → 샌드박스 결제(SANDBOX_CONFIRMED). 실패 시 사유 + 다시 시도, 가짜 슬롯 없음. 화면 구성은 시안 04 기준(주차장 선택 줄 없음).
 - 난이도 점수가 null(INSUFFICIENT_DATA)이면 "정보 부족"으로 표시하고 쉬운 순 정렬에서 맨 뒤로 보낸다. 합성 좌표(navigation.usable=false)는 길안내 버튼을 비활성화.

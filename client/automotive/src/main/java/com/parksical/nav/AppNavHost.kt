@@ -92,6 +92,8 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
             onDismiss = { maxEntry = Closed },
             onConfirmed = { r ->
                 container.session.reservation.value = r
+                // A new booking starts clean; otherwise the stage screen shows the previous run's abort and "다시 시작".
+                container.judge.reset()
                 maxEntry = Closed
                 nav.navigate(Routes.maxStage(r.lotId, r.mode)) { popUpTo(Routes.HOME) }
             },

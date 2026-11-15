@@ -97,6 +97,7 @@ internal fun StageContent(
             Box(Modifier.background(Color.Transparent).padding(2.dp)) { Mono("LV.${Title.of(stamps).ordinal + 1} ${Title.of(stamps).label}", 14, PixelColors.Lavender) }
             Mono("STAMP ×$stamps", 14, PixelColors.Lavender)
             Box(Modifier.weight(1f))
+            PixelMockBadge()
             PixelButton("일반 모드로", exit, height = 52.dp, textSize = 20)
         }
         Box(Modifier.fillMaxWidth().height(4.dp).background(PixelColors.Paper))

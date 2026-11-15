@@ -112,3 +112,10 @@ VehicleState Flow (gear, speedKmh, steeringDeg, brakePressed, uxRestricted)
 - 차속은 0.25초마다 다시 읽음(서버가 표본 간격 1초 초과 스테이지를 판정 불가로 처리).
 - 주차 위치 업로드는 S-09 계약(`POST/PATCH /parked-locations`, Idempotency-Key, 최소 영수증)으로 연동. 예약은 S-14 합성 예약 API로 연동: 정책(안전 수칙·배수) → 오늘 슬롯(시안처럼 7개) → 서버 견적 → 점유(HELD) → S-16 결제(`POST /payments/reservations` → `POST /payments/{id}/attempts` 샌드박스 승인, 서버가 제공자 검증 후 SANDBOX_CONFIRMED). 결제 기능이 꺼진 서버(403 PAYMENTS_POLICY_DISABLED)에서는 S-14 sandbox-events로 대체. 실패 시 사유 + 다시 시도, 가짜 슬롯 없음. 화면 구성은 시안 04 기준(주차장 선택 줄 없음).
 - 난이도 점수가 null(INSUFFICIENT_DATA)이면 "정보 부족"으로 표시하고 쉬운 순 정렬에서 맨 뒤로 보낸다. 합성 좌표(navigation.usable=false)는 길안내 버튼을 비활성화.
+
+## 자동 목업 모드 (서버 없이 사용)
+- `FallbackParkingRepository`가 앱 시작·목록 새로고침·"서버 다시 연결"마다 서버를 먼저 시도. 서버 연결 불가("서버 연결 안 됨") 또는 로그인 불가("서버 인증 안 됨")일 때만 `DataMode.Mock`으로 전환하고, 이후 새로고침이 성공하면 자동으로 서버 모드 복귀. 성공 응답의 0개 목록·그 외 서버 오류는 전환하지 않음(기존 안내 유지). 서버/목업 목록은 절대 섞지 않음.
+- MAX 런이 진행 중이면 새로고침 자체를 건너뜀(모드 고정). shortcut: 대기열 없이 건너뜀, 런 종료 후 사용자가 다시 연결.
+- 목업 데이터 = `MockParkingRepository`(4곳, 다온빌딩 던전). 도전장은 던전이 있는 다온빌딩만. 예약은 `MockReservationRepository`(안전 수칙 3개, 도전·연습, 지금부터 30분 슬롯 7개, 금액 = 30분 요금 × 배수 × 슬롯 수, 즉시 확정 `mock-<uuid>`, 네트워크 없음). 길안내는 목업 주차장도 가능.
+- 목업 런: 판정·차량 신호·안전 중단은 동일, 서버 런 생성/결과 제출 없음, 결과 화면에 "목업 · 서버 제출 안 함". 주차 위치는 로컬 저장(LOCAL_ONLY), 업로드 없음.
+- 표시: "목업 데이터 · <사유>" 배지 + "서버 다시 연결" 버튼을 홈 목록 헤더, MAX 스테이지 헤더, MAX 결과, 예약(CONFIRM 2/2)에 노출.

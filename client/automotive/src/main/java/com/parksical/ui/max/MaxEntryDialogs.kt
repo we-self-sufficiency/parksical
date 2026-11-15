@@ -44,7 +44,9 @@ import com.parksical.domain.model.Dungeon
 import com.parksical.domain.model.ParkingLot
 import com.parksical.domain.model.Reservation
 import com.parksical.domain.model.RunMode
+import com.parksical.ui.common.LocalMockInfo
 import com.parksical.ui.common.LocalVehicleState
+import com.parksical.vehicle.VehicleDimensions
 import com.parksical.ui.common.parkedOnly
 import com.parksical.ui.theme.GeneralColors
 import com.parksical.ui.theme.PixelColors
@@ -193,6 +195,7 @@ private fun ReservationPanel(
     val (lot, dungeon) = pair
     val c = LocalAppContainer.current
     val repo = c.reservations
+    val mockInfo = LocalMockInfo.current
     val dims by c.session.vehicleDimensions.collectAsState()
     val scope = rememberCoroutineScope()
     var mode by remember { mutableStateOf(RunMode.CHALLENGE) }
@@ -209,7 +212,7 @@ private fun ReservationPanel(
 
     LaunchedEffect(lot.id, mode, reload, dims) {
         load = Load.Loading
-        val d = dims
+        val d = dims ?: if (mockInfo != null) VehicleDimensions(0, 0) else null // mock needs no car size
         load = if (d == null) Load.Failed("차량 크기를 알 수 없어 예약할 수 없어요") else try {
             val policy = repo.policy(lot.id)
             when {
@@ -222,7 +225,7 @@ private fun ReservationPanel(
     // Debounced server quote; the charged amount is never computed here.
     LaunchedEffect(lot.id, mode, sel, load) {
         quote = null; quoteErr = null
-        val r = load as? Load.Ready; val d = dims
+        val r = load as? Load.Ready; val d = dims ?: if (mockInfo != null) VehicleDimensions(0, 0) else null
         if (r == null || d == null || sel.isEmpty()) return@LaunchedEffect
         delay(300)
         try {
@@ -248,6 +251,7 @@ private fun ReservationPanel(
                     repeat(2) { Box(Modifier.size(32.dp, 8.dp).background(PixelColors.Gold)) }
                 }
             }
+            PixelMockBadge()
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Ko("${dungeon.name} · 도전 예약", 34)
                 Ko("일반 이용객이 없는 개방 시간에만 예약할 수 있어요. 최소 30분 단위입니다.", 17, PixelColors.Lavender, false)

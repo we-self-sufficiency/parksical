@@ -6,6 +6,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.widthIn
+import com.parksical.ui.common.LocalMockInfo
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -194,5 +198,15 @@ internal fun NeedParkPanel() {
             Ko("정차하면 결과를 보여드려요", 34, PixelColors.Gold, align = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             Ko("주행 중에는 결과·도장·리포트가 표시되지 않아요", 18, PixelColors.Lavender, false, Modifier.padding(top = 12.dp))
         }
+    }
+}
+
+/** "목업 데이터 · 사유" + retry in pixel style; nothing when the data comes from the server. */
+@Composable
+internal fun PixelMockBadge(modifier: Modifier = Modifier) {
+    val m = LocalMockInfo.current ?: return
+    Row(modifier.border(3.dp, PixelColors.Orange).padding(start = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Ko("목업 데이터 · ${m.reason}", 16, PixelColors.Orange)
+        PixelButton("서버 다시 연결", m.retry, Modifier.widthIn(min = 160.dp), height = 48.dp, textSize = 16)
     }
 }

@@ -154,6 +154,7 @@ fun HomeScreen(onOpenLot: (lotId: String) -> Unit, onOpenMaxEntry: (lotId: Strin
                     }
                     Text(if (picked) "내 차(${size.label}) 기준" else "차급 선택 필요", color = if (picked) GeneralColors.TextSub else GeneralColors.Accent, fontSize = 16.sp)
                 }
+                MockBadge()
                 if (!picked) SizePicker()
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Pill("쉬운 순", sort == Sort.EASY, { sort = Sort.EASY })

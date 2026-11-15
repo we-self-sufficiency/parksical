@@ -1,0 +1,83 @@
+{
+  "lotId": "2f765ba2-d37e-488d-9301-ed4e5183ecad",
+  "version": 1,
+  "snapshot": {
+    "fees": {
+      "currency": "KRW",
+      "baseAmount": 1000,
+      "baseMinutes": 30,
+      "dailyMaxAmount": 15000,
+      "additionalAmount": 500,
+      "additionalMinutes": 10
+    },
+    "hours": [
+      {
+        "day": 1,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 2,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 3,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 4,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 5,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 6,
+        "openMinute": 0,
+        "closeMinute": 1440
+      },
+      {
+        "day": 7,
+        "openMinute": 0,
+        "closeMinute": 1440
+      }
+    ],
+    "active": true,
+    "source": "SYNTHETIC",
+    "capacity": 1,
+    "timezone": "Asia/Seoul",
+    "maxWidthMm": 2000,
+    "holdSeconds": 300,
+    "maxLengthMm": 5000,
+    "safetyRules": [
+      "합성 테스트 전용이며 실제 장소/주행 허가가 아닙니다.",
+      "앱의 로컬 주행 제한과 중단 판단을 우선하며 서버 응답을 기다리지 않습니다.",
+      "안전상 정지/중단을 피하도록 운전하지 않으며 실제 차량/장소의 허가와 정책은 별도로 확인합니다."
+    ],
+    "allowedModes": [
+      "CHALLENGE",
+      "PRACTICE"
+    ],
+    "quoteSeconds": 300,
+    "structureVersion": 1,
+    "safetyRulesVersion": "synthetic-safety-v1",
+    "practiceMultiplierBps": 12500,
+    "challengeMultiplierBps": 17500
+  },
+  "currentlyAvailable": true,
+  "stepMinutes": 30,
+  "maxDurationMinutes": 240,
+  "horizonDays": 7,
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "operationalBlockers": [
+    "D-04",
+    "D-05"
+  ]
+}

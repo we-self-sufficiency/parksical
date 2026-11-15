@@ -66,6 +66,8 @@ data class ParkingLot(
     val layout: LotLayout? = null,
     /** "도전장": partner lot with MAX challenge hours open. */
     val challengeOpen: Boolean = false,
+    /** Server structure version (list item `version`); the mission catalog is keyed by it. */
+    val structureVersion: Int? = null,
     val challengeHours: String? = null,
     // ---- server contract fields ----
     val source: LotSource = LotSource.MOCK,

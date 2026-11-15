@@ -7,6 +7,8 @@ import com.parksical.data.remote.ApiClient
 import com.parksical.data.remote.AuthRepository
 import com.parksical.data.remote.ServerParkedLocationSync
 import com.parksical.data.remote.ServerParkingRepository
+import com.parksical.data.remote.ServerReservationRepository
+import com.parksical.data.remote.ServerRunSync
 import com.parksical.data.SessionStore
 import com.parksical.domain.engine.DefaultDifficultyCalculator
 import com.parksical.domain.engine.DefaultMissionJudge
@@ -31,11 +33,14 @@ class AppContainer(context: Context) {
     val api = ApiClient(BuildConfig.PARKSICAL_API_BASE_URL)
     val auth = AuthRepository(context, api)
     val parking: ParkingRepository = ServerParkingRepository(api, auth)
+    val reservations = ServerReservationRepository(api, auth)
     val parkedSync: ParkedLocationSync = ServerParkedLocationSync(api, auth)
     val session = SessionStore()
     val difficulty: DifficultyCalculator = DefaultDifficultyCalculator()
     val judge: MissionJudge = DefaultMissionJudge()
     val spotEstimator: ParkingSpotEstimator = DefaultParkingSpotEstimator()
 
-    val drive = DriveCoordinator(appScope, vehicle, navi, parking, session, difficulty, judge, spotEstimator, parkedSync)
+    val drive = DriveCoordinator(appScope, vehicle, navi, parking, session, difficulty, judge, spotEstimator, parkedSync, ServerRunSync(api, auth)) { active ->
+        runCatching { RunKeepAliveService.set(context.applicationContext, active) }
+    }
 }

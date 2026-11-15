@@ -16,10 +16,14 @@ fun confidenceOf(c: Float): String = when {
     else -> "UNKNOWN"
 }
 
+/** UTC "Z" with at most 3 fractional digits (ms precision). */
 fun rfc3339Utc(epochMs: Long): String = Instant.ofEpochMilli(epochMs).toString()
 
 /** floorId/zoneId/structureVersion for a spot; zone is dropped when the floor is unknown. */
-data class LocationIds(val floorId: String?, val zoneId: String?, val structureVersion: String?)
+data class LocationIds(val floorId: String?, val zoneId: String?, val structureVersion: String?) {
+    /** Server wants an int; null when non-numeric (then the whole chain is null). */
+    val version: Int? get() = structureVersion?.toIntOrNull()
+}
 
 fun locationIds(spot: ParkingSpotEstimate, structure: ServerStructure?): LocationIds {
     val level = levelOf(spot.floor)
@@ -35,55 +39,93 @@ fun levelOf(floor: String): Int? {
     return Regex("^(\\d+)F$").find(floor)?.let { it.groupValues[1].toInt() - 1 }
 }
 
+// Plain maps (null = JSON null) so the null-chain/field rules are unit-testable without org.json.
+private fun idFields(ids: LocationIds): Map<String, Any?> {
+    // null-chain: no int version => nothing below it may be sent
+    val v = ids.version
+    return mapOf(
+        "structureVersion" to v,
+        "floorId" to if (v != null) ids.floorId else null,
+        "zoneId" to if (v != null && ids.floorId != null) ids.zoneId else null,
+        "parkingSpaceId" to null, // estimator has no space id
+    )
+}
+
+private fun noteField(spot: ParkingSpotEstimate): Map<String, Any?> =
+    spot.memo?.takeIf { it.isNotBlank() }?.let { mapOf("note" to it.take(1000)) } ?: emptyMap()
+
+/** Exactly the S-09 LocationCreate fields. */
+fun createFields(spot: ParkingSpotEstimate, ids: LocationIds): Map<String, Any?> =
+    mapOf("clientRecordId" to spot.clientRecordId, "lotId" to spot.lotId) + idFields(ids) + mapOf(
+        "confidence" to confidenceOf(spot.confidence),
+        "distanceM" to null,
+        "occurredAt" to rfc3339Utc(spot.occurredAtEpochMs),
+        "source" to "SYNTHETIC",
+    ) + noteField(spot)
+
+/** LocationPatch: expectedVersion + selection (+ note when set). */
+fun patchFields(spot: ParkingSpotEstimate, ids: LocationIds, expectedVersion: Int): Map<String, Any?> =
+    mapOf("expectedVersion" to expectedVersion) + idFields(ids) + noteField(spot)
+
+private fun Map<String, Any?>.toJson() = JSONObject().also { j -> forEach { (k, v) -> j.put(k, v ?: JSONObject.NULL) } }
+
 class ServerParkedLocationSync(private val api: ApiClient, private val auth: AuthRepository) : ParkedLocationSync {
 
-    override suspend fun upload(spot: ParkingSpotEstimate, lot: ParkingLot?): ParkingSpotEstimate {
-        val token = auth.accessToken() ?: return spot.copy(sync = SyncState.LOCAL_ONLY)
-        val ids = locationIds(spot, lot?.serverStructure)
-        val body = JSONObject()
-            .put("clientRecordId", spot.clientRecordId)
-            .put("lotId", spot.lotId)
-            .put("floorId", ids.floorId ?: JSONObject.NULL)
-            .put("zoneId", ids.zoneId ?: JSONObject.NULL)
-            .put("confidence", confidenceOf(spot.confidence))
-            .put("distanceM", JSONObject.NULL)
-            .put("occurredAt", rfc3339Utc(spot.occurredAtEpochMs))
-            .put("structureVersion", ids.structureVersion ?: JSONObject.NULL)
+    /** Bearer call; one retry with a fresh token after a 401. Null token => null (caller keeps spot local). */
+    private suspend fun authed(call: suspend (String) -> ApiResponse): ApiResponse? {
+        val token = auth.accessToken() ?: return null
         return try {
-            val r = api.request("POST", "/parked-locations", body = body, bearer = token, idempotencyKey = spot.clientRecordId)
+            call(token)
+        } catch (e: ApiException) {
+            if (e.status != 401) throw e
+            auth.invalidate()
+            call(auth.accessToken() ?: return null)
+        }
+    }
+
+    private fun failed(spot: ParkingSpotEstimate, e: Exception): ParkingSpotEstimate =
+        // policy off / unknown lot / bad structure ref will not fix itself by retrying
+        if (e is ApiException && (e.status == 403 || e.status == 404 || e.status == 422)) spot.copy(sync = SyncState.LOCAL_ONLY)
+        else spot.copy(sync = SyncState.FAILED)
+
+    override suspend fun upload(spot: ParkingSpotEstimate, lot: ParkingLot?): ParkingSpotEstimate {
+        val body = createFields(spot, locationIds(spot, lot?.serverStructure)).toJson()
+        return try {
+            val r = authed { api.request("POST", "/parked-locations", body = body, bearer = it, idempotencyKey = spot.clientRecordId) }
+                ?: return spot.copy(sync = SyncState.LOCAL_ONLY)
             applyLocation(spot, r.body)
         } catch (e: Exception) {
-            spot.copy(sync = SyncState.FAILED)
+            failed(spot, e)
         }
     }
 
     override suspend fun correct(spot: ParkingSpotEstimate, lot: ParkingLot?): ParkingSpotEstimate {
         val id = spot.serverId ?: return upload(spot, lot)
-        val token = auth.accessToken() ?: return spot.copy(sync = SyncState.LOCAL_ONLY)
         val ids = locationIds(spot, lot?.serverStructure)
-        var version = spot.serverVersion ?: return spot.copy(sync = SyncState.FAILED)
-        suspend fun patch(v: Int) = api.request(
-            "PATCH", "/parked-locations/$id",
-            body = JSONObject().put("expectedVersion", v)
-                .put("floorId", ids.floorId ?: JSONObject.NULL)
-                .put("zoneId", ids.zoneId ?: JSONObject.NULL),
-            bearer = token, idempotencyKey = spot.clientRecordId + "-v" + v,
-        )
+        val version = spot.serverVersion ?: return spot.copy(sync = SyncState.FAILED)
+        // key is bound to the body hash server-side, so include it: same edit replays, a different edit gets a new key
+        suspend fun patch(v: Int): ApiResponse? {
+            val b = patchFields(spot, ids, v).toJson()
+            val key = "p-" + b.toString().hashCode().toUInt().toString(16) + "-" + spot.clientRecordId.take(40) + "-v" + v
+            return authed { api.request("PATCH", "/parked-locations/$id", body = b, bearer = it, idempotencyKey = key.take(64)) }
+        }
         return try {
             val r = try {
                 patch(version)
             } catch (e: ApiException) {
                 if (e.code != "VERSION_CONFLICT") throw e
-                version = api.request("GET", "/parked-locations/$id", bearer = token).body!!.getInt("version")
-                patch(version)
-            }
+                val fresh = authed { api.request("GET", "/parked-locations/$id", bearer = it) }?.body?.getInt("version")
+                    ?: return spot.copy(sync = SyncState.FAILED)
+                patch(fresh)
+            } ?: return spot.copy(sync = SyncState.LOCAL_ONLY)
             applyLocation(spot, r.body)
         } catch (e: Exception) {
-            spot.copy(sync = SyncState.FAILED)
+            failed(spot, e)
         }
     }
 
+    /** Receipt: {locationId, version, deleted, accessEpoch}. */
     private fun applyLocation(spot: ParkingSpotEstimate, body: JSONObject?): ParkingSpotEstimate =
-        if (body == null) spot.copy(sync = SyncState.FAILED)
-        else spot.copy(serverId = body.getString("id"), serverVersion = body.getInt("version"), sync = SyncState.SYNCED)
+        if (body == null || body.optBoolean("deleted")) spot.copy(sync = SyncState.FAILED)
+        else spot.copy(serverId = body.getString("locationId"), serverVersion = body.getInt("version"), sync = SyncState.SYNCED)
 }

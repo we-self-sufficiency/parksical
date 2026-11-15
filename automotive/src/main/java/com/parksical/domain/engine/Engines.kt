@@ -31,10 +31,13 @@ interface DifficultyCalculator {
 interface MissionJudge {
     val status: StateFlow<RunStatus>
 
-    /** Missions whose inputs are not in [capabilities] are skipped (not failed). */
+    /** A stage whose required signal is missing from [capabilities] ends the run UNVERIFIABLE (SIGNAL_QUALITY). */
     fun start(dungeon: Dungeon, mode: RunMode, capabilities: VehicleCapabilities, nowMs: Long)
 
     fun onSample(state: VehicleState)
+
+    /** User gave up (only offered while parked): ends the run as ABORTED / USER_CANCELLED. No-op when not running. */
+    fun cancel()
 
     fun reset()
 }

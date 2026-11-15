@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.update
 /**
  * Lots near the destination. Real implementation: `ServerParkingRepository` (parksical-server `GET /lots`,
  * `GET /lots/{id}`). No mock fallback at runtime: on failure the list is empty and [LotsStatus.Error] says why.
- * Dungeons have no server contract yet, so `dungeon()` returns null and MAX shows an unavailable state.
+ * `dungeon()` is a sync read of the mission catalog loaded by `refresh`; null = no MAX for that lot.
  */
 interface ParkingRepository {
     val destinationName: String
@@ -73,4 +73,8 @@ class SessionStore {
     val baseStamps = 0
 
     fun addRecord(record: RunRecord) = _records.update { it + record }
+
+    /** Server sync results arrive after the record was stored. */
+    fun updateRecord(clientRunId: String, change: (RunRecord) -> RunRecord) =
+        _records.update { list -> list.map { if (it.clientRunId == clientRunId) change(it) else it } }
 }

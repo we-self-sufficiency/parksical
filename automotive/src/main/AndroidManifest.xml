@@ -7,6 +7,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <!-- AAOS properties: GEAR_SELECTION, PERF_VEHICLE_SPEED, INFO_EXTERIOR_DIMENSIONS -->
     <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
@@ -44,6 +46,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".RunKeepAliveService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Judges an active parking mission from vehicle signals while the rear camera covers the app" />
+        </service>
     </application>
 
 </manifest>

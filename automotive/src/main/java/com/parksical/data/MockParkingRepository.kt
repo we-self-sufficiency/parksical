@@ -72,9 +72,9 @@ class MockParkingRepository : ParkingRepository {
         "daon" to Dungeon(
             lotId = "daon", name = "다온빌딩 던전", stars = 4, timeLimitSec = 60 * 60,
             stages = listOf(
-                Stage(1, "STAGE 1", "B1→B2", MissionType.SPIRAL_NO_STOP, lengthM = 60f),
-                Stage(2, "STAGE 2", "B2", MissionType.PILLAR_SMOOTH, lengthM = 50f),
-                Stage(3, "STAGE 3", "B3", MissionType.REVERSE_PARK_ONE_SHOT, lengthM = 0f),
+                Stage(1, "STAGE 1", "B1→B2", MissionType.NO_STOP_RAMP, lengthM = 60f, stageId = "NO_STOP_RAMP:ramp-b1"),
+                Stage(2, "STAGE 2", "B2", MissionType.SMOOTH_STEERING, lengthM = 50f, stageId = "SMOOTH_STEERING:basement-a"),
+                Stage(3, "STAGE 3", "B3", MissionType.ONE_SHOT_REVERSE, lengthM = 0f, stageId = "ONE_SHOT_REVERSE:basement1-s03"),
             ),
             challengeMultiplier = 2.0f, practiceMultiplier = 1.2f,
             openSlots = listOf("22:30–23:00", "23:00–23:30", "23:30–24:00", "00:00–00:30", "00:30–01:00"),

@@ -16,7 +16,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -55,6 +59,7 @@ fun StageScreen(lotId: String, mode: RunMode, onExitToGeneral: () -> Unit) {
         stamps = stampsOf(c.session.baseStamps, records, c.parking::dungeon),
         onStart = parkedOnly { c.drive.startRun(lotId, mode, SystemClock.elapsedRealtime()) },
         onExit = parkedOnly(onExitToGeneral),
+        onCancelRun = parkedOnly { c.drive.cancelRun() },
     )
 }
 
@@ -70,11 +75,19 @@ internal fun StageContent(
     stamps: Int,
     onStart: () -> Unit,
     onExit: () -> Unit,
+    onCancelRun: () -> Unit,
 ) {
+    var confirmGiveUp by remember { mutableStateOf(false) }
+    val running = status is RunStatus.Running
+    // While a run is live, leaving the screen means giving up; while driving back does nothing (HUD only).
+    BackHandler(enabled = running) { if (vehicle.isParked && !vehicle.uxRestricted) confirmGiveUp = true }
     if (!vehicle.isParked || vehicle.uxRestricted) {
         MinimalHud(dungeon, mode, status)
         return
     }
+    val exit = { if (running) confirmGiveUp = true else onExit() }
+    val blocked = dungeon?.let { startBlockedReason(it, caps, vehicle) }
+    Box(Modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize().background(PixelColors.Bg)) {
         Row(
             Modifier.fillMaxWidth().background(PixelColors.Panel).padding(horizontal = 32.dp, vertical = 12.dp),
@@ -84,11 +97,11 @@ internal fun StageContent(
             Box(Modifier.background(Color.Transparent).padding(2.dp)) { Mono("LV.${Title.of(stamps).ordinal + 1} ${Title.of(stamps).label}", 14, PixelColors.Lavender) }
             Mono("STAMP ×$stamps", 14, PixelColors.Lavender)
             Box(Modifier.weight(1f))
-            PixelButton("일반 모드로", onExit, height = 52.dp, textSize = 20)
+            PixelButton("일반 모드로", exit, height = 52.dp, textSize = 20)
         }
         Box(Modifier.fillMaxWidth().height(4.dp).background(PixelColors.Paper))
         if (dungeon == null) {
-            NeedParkPanelLike("도전 가능한 주차장이 없어요 · 서버에서 도전 정보를 아직 제공하지 않아요")
+            NeedParkPanelLike("도전 가능한 주차장이 없어요 · 이 주차장은 서버에 도전 미션이 없어요")
             return@Column
         }
         Row(Modifier.fillMaxSize().padding(32.dp), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
@@ -140,13 +153,34 @@ internal fun StageContent(
                         PixelColors.Paper, false,
                     )
                 }
-                if (status !is RunStatus.Running) PixelButton(
-                    if (status is RunStatus.Aborted) "다시 시작" else if (mode == RunMode.CHALLENGE) "도전 시작" else "연습 시작",
-                    onStart, Modifier.fillMaxWidth(), filled = true, textSize = 26,
-                )
+                if (status !is RunStatus.Running) {
+                    blocked?.let { Ko(it, 17, PixelColors.Orange, false) }
+                    PixelButton(
+                        if (status is RunStatus.Aborted) "다시 시작" else if (mode == RunMode.CHALLENGE) "도전 시작" else "연습 시작",
+                        if (blocked == null) onStart else ({}), Modifier.fillMaxWidth(), filled = true, dim = blocked != null, textSize = 26,
+                    )
+                }
             }
         }
     }
+    if (confirmGiveUp) Box(Modifier.fillMaxSize().background(Color(0xB8050608)).tap {}, contentAlignment = Alignment.Center) {
+        PixelPanel(Modifier.width(720.dp), border = PixelColors.Orange, borderWidth = 4.dp, shadow = PixelColors.Purple, padding = 32.dp) {
+            Ko("도전을 포기할까요?", 34, PixelColors.Gold)
+            Ko("지금까지의 진행은 기록되고 도전은 중단돼요.", 18, PixelColors.Lavender, false, Modifier.padding(vertical = 16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                PixelButton("포기", { confirmGiveUp = false; onCancelRun() }, Modifier.weight(1f))
+                PixelButton("계속", { confirmGiveUp = false }, Modifier.weight(1f), filled = true)
+            }
+        }
+    }
+    }
+}
+
+/** Why the start button is off, or null. Doors open or a mission input the car lacks cannot produce a verifiable run. */
+internal fun startBlockedReason(d: Dungeon, caps: VehicleCapabilities, v: VehicleState): String? = when {
+    d.stages.any { !it.mission.supported(caps) } -> "이 차량에서 지원하지 않는 미션이 있어요"
+    v.doorOpen -> "문을 닫아주세요"
+    else -> null
 }
 
 /** RunStatus.stageIndex is treated as 0-based; see report. */
@@ -158,7 +192,8 @@ private fun NeedParkPanelLike(text: String) = Box(Modifier.fillMaxSize(), conten
 @Composable
 private fun ReservationLine(r: Reservation?) {
     Ko(
-        if (r != null) "예약 ${r.slot} · ${r.minutes}분 · ${won(r.paidWon)} 결제됨" else "예약 없음 · 데모 진행",
+        if (r != null && r.minutes == 0) "예약 기능 준비 중 · 바로 시작"
+        else if (r != null) "예약 ${r.slot} · ${r.minutes}분 · ${won(r.paidWon)} 결제됨" else "예약 없음 · 데모 진행",
         16, if (r != null) PixelColors.Lavender else Px.Dim, false,
     )
 }
@@ -245,14 +280,14 @@ private val PreviewDungeon = MockParkingRepository().dungeon("daon")!!
 
 @Preview(widthDp = 1682, heightDp = 1210)
 @Composable
-private fun PreviewStageIdle() = StageContent(PreviewDungeon, RunMode.CHALLENGE, RunStatus.Idle, VehicleState(), PreviewCaps.copy(steering = false), null, 7, {}, {})
+private fun PreviewStageIdle() = StageContent(PreviewDungeon, RunMode.CHALLENGE, RunStatus.Idle, VehicleState(), PreviewCaps.copy(steering = false), null, 7, {}, {}, {})
 
 @Preview(widthDp = 1682, heightDp = 1210)
 @Composable
 private fun PreviewStageRunningParked() =
-    StageContent(PreviewDungeon, RunMode.CHALLENGE, RunStatus.Running(1, 900_000, 2_700_000, "기둥 숲"), VehicleState(), PreviewCaps, null, 7, {}, {})
+    StageContent(PreviewDungeon, RunMode.CHALLENGE, RunStatus.Running(1, 900_000, 2_700_000, "부드러운 조향"), VehicleState(), PreviewCaps, null, 7, {}, {}, {})
 
 @Preview(widthDp = 1682, heightDp = 1210)
 @Composable
 private fun PreviewHud() =
-    StageContent(PreviewDungeon, RunMode.CHALLENGE, RunStatus.Running(1, 900_000, 2_472_000, "기둥 숲 부드럽게 통과"), VehicleState(gear = Gear.DRIVE, speedKmh = 6f), PreviewCaps, null, 7, {}, {})
+    StageContent(PreviewDungeon, RunMode.CHALLENGE, RunStatus.Running(1, 900_000, 2_472_000, "부드러운 조향"), VehicleState(gear = Gear.DRIVE, speedKmh = 6f), PreviewCaps, null, 7, {}, {}, {})

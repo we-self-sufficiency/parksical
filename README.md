@@ -9,8 +9,8 @@
 ### 1. 저장소 준비
 
 ```sh
-git clone --branch develop https://github.com/we-self-sufficiency/parksical-server.git
-cd parksical-server
+git clone --branch develop https://github.com/we-self-sufficiency/parksical.git
+cd parksical
 ```
 
 Android Studio에서는 저장소 안의 **`client/` 폴더**를 프로젝트로 엽니다. 서버 명령은 `server/`, 앱 빌드 명령은 `client/`에서 실행합니다.
@@ -163,7 +163,7 @@ python scripts/check_contract.py
 
 ## APK 파일 위치
 
-- **release APK:** [GitHub Release v1.0.0](https://github.com/we-self-sufficiency/parksical-server/releases/tag/v1.0.0)의 `parksical-v1.0.0.apk` (버전 1.0.0). 서버 주소와 개발 인증 키가 없어 [목업 모드](#목업-모드)로 동작합니다.
+- **release APK:** [GitHub Release v1.0.0](https://github.com/we-self-sufficiency/parksical/releases/tag/v1.0.0)의 `parksical-v1.0.0.apk` (버전 1.0.0). 서버 주소와 개발 인증 키가 없어 [목업 모드](#목업-모드)로 동작합니다.
 - **로컬 빌드:** `client/`에서 빌드하면 아래 경로에 생성됩니다.
 
 ```text

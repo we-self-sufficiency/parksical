@@ -1,26 +1,19 @@
-# parksical-server
+# P지컬
 
-P지컬 차량 앱과 통신하는 서비스 백엔드입니다.
+차량 앱 클라이언트와 서버를 함께 관리하기 위한 저장소입니다.
 
-- 기술: TypeScript, NestJS, PostgreSQL, Prisma
-- 실행·검증: [개발 안내](docs/server-development.md), [백업·복구](docs/operations.md)
-- 인증·차량 연결: [개발 인증과 운영 미정 범위](docs/authentication.md)
-- 이벤트 수신·재전송: [계약과 합성 시나리오](docs/vehicle-ingestion.md)
-- 주차장·구조 관리: [가상 주차장 1곳과 관리 API](docs/parking-lots.md)
-- 차량 크기별 난이도: [버전 고정 계산·결측 처리·조회 API](docs/difficulty.md)
-- 주변 검색·상세: [범위·필터·정렬·페이지·구조 조회](docs/lot-search.md)
-- 리뷰·개발 집계: [합성 방문·중복/수정/삭제·난이도 반영](docs/reviews.md)
-- 개인 주차 위치: [오프라인 동기화·수정 이력·비공개 사진/메모](docs/parked-locations.md)
-- QR·휴대폰 조회: [1회 교환·재조회·만료/폐기·최소 평면도](docs/location-qr.md)
-- MAX 선행 조사: [정책·신호·미션별 가능 범위와 후속 구현](docs/max-feasibility.md)
-- 합성 월간 랭킹·기록 인정·공개 동의: [KST·동점·철회/삭제·S-18 합성 입력](docs/rankings.md)
-- 합성 월간 정산·최대2장 쿠폰·현금0 사용/취소·알림 복구: [S-18 개발 가이드](docs/rewards.md)
-- 합성 예약 슬롯·견적·점유/만료·취소: [서버 가격·정원 경쟁·샌드박스 경계](docs/reservations.md)
-- 합성 연습 리포트·3회 연속 목표·도장/칭호: [비교·순서·지연·무효·합성 자격](docs/practice.md)
-- 합성 미션·도전 기록: [룰/구조 고정·품질/중단·불변 결과·재전송](docs/missions.md)
-- 개발 통합 브랜치: `develop`
-- 합성 MAX 패스·기간 권한: [월 구독·갱신/해지·환불·과거 자격](docs/subscriptions.md)
-- 합성 사전결제·제공자 검증·영수증·전액 환불: [상태/재시도·예약 연동·실청구 차단](docs/payments.md)
-- 서버 작업지시서: [develop의 Agent.md](https://github.com/we-self-sufficiency/parksical-server/blob/develop/Agent.md)
+- [`server/`](server/): 기존 NestJS 서버 코드, Prisma 스키마·마이그레이션, 테스트, 문서, Docker 설정
+- [서버 개발 안내](server/docs/server-development.md)
+- [서버 작업지시서](server/Agent.md)
 
-차량 SDK 연동과 주행 중 화면 제어는 차량 앱이 담당하며, 이 저장소는 API와 서비스 데이터를 관리합니다.
+서버 명령은 저장소 루트에서 `cd server`를 실행한 뒤 사용합니다.
+
+```sh
+cd server
+npm ci
+npm run verify
+```
+
+환경 설정은 `server/.env.example`을 `server/.env`로 복사해 준비합니다. Docker Compose도 `server/`에서 실행합니다.
+
+GitHub Actions 설정은 자동 실행을 위해 루트의 `.github/workflows/`에 유지하며, `server/`를 기준으로 서버를 검증합니다.

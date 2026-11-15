@@ -8,6 +8,8 @@ Node.js **24.22.1**, NestJS **12.5.0**, TypeScript **6.0.3**, Prisma CLI/Client/
 
 ## 호스트 개발
 
+아래 명령과 이 문서의 상대 경로는 `server/`를 기준으로 한다. 저장소 루트에서 먼저 `cd server`를 실행한다. Docker Compose도 `server/`에서 실행하며, Docker 빌드 컨텍스트는 `server/`다.
+
 1. `.nvmrc`의 Node로 `npm ci` → `npm run generate`.
 2. `.env.example`을 `.env`로 복사하고 예제 암호와 URL을 변경한다. 암호의 URL 특수문자는 인코딩한다. 파일은 커밋하지 않는다.
 3. `docker compose up -d db`. Compose가 해석하는 COMPOSE_DATABASE_URL도 설정해야 한다.

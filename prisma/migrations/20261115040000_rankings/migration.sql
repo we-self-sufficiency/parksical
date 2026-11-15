@@ -13,14 +13,15 @@ CREATE TABLE "RankingRecord" (
 );
 CREATE TABLE "RankingConsent" (
   "userId" UUID PRIMARY KEY REFERENCES "User"(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  version INTEGER NOT NULL CHECK (version BETWEEN 1 AND 1000), "policyVersion" VARCHAR(32) NOT NULL CHECK ("policyVersion"='rankings-public-v1'),
+  version INTEGER NOT NULL CHECK (version BETWEEN 1 AND 2147483647), "policyVersion" VARCHAR(32) NOT NULL CHECK ("policyVersion"='rankings-public-v1'),
   enabled BOOLEAN NOT NULL, nickname VARCHAR(16) NOT NULL CHECK (nickname ~ '^P-[a-f0-9]{12}$'),
   "agreedAt" TIMESTAMPTZ(3), "changedAt" TIMESTAMPTZ(3) NOT NULL,
-  CONSTRAINT ranking_consent_agreement CHECK (enabled=("agreedAt" IS NOT NULL))
+  CONSTRAINT ranking_consent_agreement CHECK (enabled=("agreedAt" IS NOT NULL)),
+  CONSTRAINT ranking_withdrawal_capacity CHECK (NOT enabled OR version<2147483647)
 );
 CREATE TABLE "RankingConsentChange" (
   "userId" UUID NOT NULL REFERENCES "User"(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  version INTEGER NOT NULL CHECK (version BETWEEN 1 AND 1000), "policyVersion" VARCHAR(32) NOT NULL CHECK ("policyVersion"='rankings-public-v1'), enabled BOOLEAN NOT NULL,
+  version INTEGER NOT NULL CHECK (version BETWEEN 1 AND 2147483647), "policyVersion" VARCHAR(32) NOT NULL CHECK ("policyVersion"='rankings-public-v1'), enabled BOOLEAN NOT NULL,
   "agreedAt" TIMESTAMPTZ(3), "changedAt" TIMESTAMPTZ(3) NOT NULL,
   PRIMARY KEY ("userId",version), CONSTRAINT ranking_consent_history_agreement CHECK (enabled=("agreedAt" IS NOT NULL))
 );

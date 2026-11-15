@@ -9,7 +9,7 @@ import { missionCatalog, validateRunResult } from '../../src/missions/rules.js';
 import type { LotCreateDto } from '../../src/lots/dto.js';
 import type { RunResultDto } from '../../src/missions/dto.js';
 import { RankingConsentDto, RankingPageQuery, RankingRecordMutationDto } from '../../src/rankings/dto.js';
-import { bestCandidates, candidate, monthOf, ranked, rankingBoundary, rankingCohort, rankingMonth, recognition, type RankingInput } from '../../src/rankings/rules.js';
+import { bestCandidates, candidate, monthOf, nextConsentVersion, ranked, rankingBoundary, rankingCohort, rankingMonth, recognition, type RankingInput } from '../../src/rankings/rules.js';
 const lot = JSON.parse(readFileSync('fixtures/lots/one-synthetic-lot.json', 'utf8')) as LotCreateDto;
 const catalog = missionCatalog(lot.snapshot), reverse = catalog.items.find(i => i.missionCode === 'ONE_SHOT_REVERSE')!.stage!;
 const scenarios = JSON.parse(readFileSync('fixtures/missions/result-scenarios.json', 'utf8')) as { scenarios: { name: string; result: RunResultDto }[] };
@@ -67,4 +67,13 @@ test('ranking opt-in defaults off and never enables production or real rankings'
   assert.equal(readConfig(env).devRankingsEnabled, false);
   assert.equal(readConfig({ ...env, DEV_RANKINGS_ENABLED: 'true' }).devRankingsEnabled, true);
   for (const patch of [{ NODE_ENV: 'production' }, { DEV_AUTH_ENABLED: 'false' }, { DEV_RANKINGS_ENABLED: 'yes' }, { REAL_RANKINGS_ENABLED: 'true' }]) assert.throws(() => readConfig({ ...env, DEV_RANKINGS_ENABLED: 'true', ...patch }));
+});
+
+test('consent version limits reserve withdrawal and already-disabled no-op never overflows', () => {
+  assert.equal(nextConsentVersion(1000, true, false), 1001);
+  assert.equal(nextConsentVersion(2147483646, true, false), 2147483647);
+  assert.equal(nextConsentVersion(2147483647, false, false), 2147483647);
+  assert.equal(nextConsentVersion(0, false, false), 0);
+  assert.throws(() => nextConsentVersion(2147483646, true, true));
+  assert.throws(() => nextConsentVersion(2147483647, false, true));
 });

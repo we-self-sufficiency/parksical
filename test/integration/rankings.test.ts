@@ -129,7 +129,23 @@ test('real PG rankings: KST/recognition, consent/privacy, final cutoff, tombston
     assert.equal((await json<{ bestRunId: string }>(await request(path + '/me' + currentQ, a.accessToken))).bestRunId, current.runId);
     await json(await request('/ranking-records/' + current.runId + '/invalidation', a.accessToken, 'POST', invalidate, 'invalidate-current'), 201);
     assert.equal((await json<{ bestRunId: string }>(await request(path + '/me' + currentQ, a.accessToken))).bestRunId, secondCurrent.runId, 'provisional invalidation selects next valid personal attempt');
+    await db.rankingMutation.createMany({ data: Array.from({ length: 4000 }, (_, i) => ({ userId: a.userId, key: 'old-receipt-' + i, requestHash: '0'.repeat(64), response: {} })) });
     await json(await request('/ranking-records/' + secondCurrent.runId + '/deletion', a.accessToken, 'POST', { expectedVersion: 1, reason: 'USER_REQUEST' }, 'delete-current'), 201);
+    await json(await request('/me/ranking-consent', a.accessToken, 'PUT', consentDto(1, false), 'withdraw-after-many-receipts'));
+    assert.equal((await json<Consent>(await request('/me/ranking-consent', a.accessToken))).enabled, false, 'receipt quota must not prevent withdrawal or participation deletion');
+    // Historical synthetic consent fixture: preserve every version without exhausting HTTP rate buckets.
+    await db.$transaction(async tx => {
+      for (let version = 1; version <= 1000; version++) {
+        const data = { version, policyVersion: 'rankings-public-v1', enabled: true, agreedAt: new Date(), changedAt: new Date() };
+        if (version === 1) await tx.rankingConsent.create({ data: { userId: outsider.userId, nickname: 'P-123456789abc', ...data } });
+        else await tx.rankingConsent.update({ where: { userId: outsider.userId }, data });
+        await tx.rankingConsentChange.create({ data: { userId: outsider.userId, ...data } });
+      }
+    }, { timeout: 30000 });
+    const exhaustedWithdrawal = await json<Consent>(await request('/me/ranking-consent', outsider.accessToken, 'PUT', consentDto(1000, false), 'withdraw-after-1000-versions'));
+    assert.equal(exhaustedWithdrawal.enabled, false); assert.equal(exhaustedWithdrawal.version, 1001);
+    const noOpWithdrawal = await json<Consent>(await request('/me/ranking-consent', outsider.accessToken, 'PUT', consentDto(1001, false), 'already-disabled'));
+    assert.equal(noOpWithdrawal.version, 1001);
     await assert.rejects(ranking.finalizeSyntheticMonth(lotId, monthOf(startedAt), currentRec.cohortKey));
     const practice = await json<{ runId: string }>(await request('/runs', av.accessToken, 'POST', { ...createDto, clientRunId: randomUUID(), mode: 'PRACTICE' }, 'current-practice'), 201); await error(await request('/ranking-records/' + practice.runId, a.accessToken), 404);
     await json(await request('/ranking-records/' + low + '/deletion', c.accessToken, 'POST', { expectedVersion: 1, reason: 'USER_REQUEST' }, 'delete-final-low'), 201);

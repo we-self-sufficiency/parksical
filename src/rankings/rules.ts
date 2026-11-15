@@ -4,6 +4,12 @@ import { missionRules, validateRunResult, type MissionRules, type StagePlan } fr
 import type { RunResultDto } from '../missions/dto.js';
 
 export const RANKING_VERSION = 'rankings-v1';
+export function nextConsentVersion(version: number, enabled: boolean, requested: boolean) {
+  if (!requested && !enabled) return version;
+  // Reserve the final PostgreSQL Int version for an explicit withdrawal.
+  if (version >= 2147483647 || requested && version >= 2147483646) throw new ApiError(409, 'RANKING_CONSENT_VERSION_LIMIT');
+  return version + 1;
+}
 export const PUBLIC_POLICY_VERSION = 'rankings-public-v1';
 export const rankingBoundary = { source: 'SYNTHETIC', physicalVerification: 'UNVERIFIED', operationalAllowed: false, rankingEligible: false, rewardEligible: false, operationalBlockers: ['D-02', 'D-04', 'D-05'] } as const;
 export function rankingMonth(month: string) {

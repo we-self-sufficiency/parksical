@@ -6952,7 +6952,7 @@
         "operationId": "putRankingConsent",
         "x-implementation-status": "implemented-development",
         "x-access-scope": "SYNTHETIC_DEVELOPMENT_RANKINGS",
-        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Explicit opt-in or withdrawal with expectedVersion (initial0), policy rankings-public-v1, enabled boolean and agreedAt UTC within5min DB time for opt-in / null for withdrawal. Monotonic maximum1000 versions; immutable version/time history, no arbitrary name/email/phone input. Nickname server-generated and stable. Consent/history/legacy mirror/receipt atomic; no operational D-02 consent is implied. Replayed original key/body returns historical acknowledgement, never re-enables a withdrawn consent: GET current state. Old version409, time mismatch422; max4000 ranking mutations/account.",
+        "description": "S-15 SYNTHETIC development ranking only. Explicit non-production DEV_AUTH_ENABLED + DEV_RANKINGS_ENABLED, default OFF. Bearer WEB/VEHICLE, current vehicle link revalidated; private views/changes own account, ADMIN cannot bypass ownership. No operational/real reward eligibility or physical vehicle correction. All responses no-store; JSON64KiB; read300/write100/account/5min. D-02/D-04/D-05 remain PENDING. Explicit opt-in or withdrawal with expectedVersion (initial0), policy rankings-public-v1, enabled boolean and agreedAt UTC within5min DB time for opt-in / null for withdrawal. Monotonic PostgreSQL Int versions reserve the final version for withdrawal; already-disabled withdrawal is a no-op. Immutable version/time history, no arbitrary name/email/phone input. Nickname server-generated and stable. Consent/history/legacy mirror/receipt atomic; no operational D-02 consent is implied. Replayed original key/body returns historical acknowledgement, never re-enables a withdrawn consent: GET current state. Old version409, time mismatch422. Receipt accumulation must not block withdrawal or participation deletion.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -7479,7 +7479,7 @@
           "expectedVersion": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 999
+            "maximum": 2147483647
           },
           "policyVersion": {
             "const": "rankings-public-v1"
@@ -7541,7 +7541,7 @@
           "version": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 1000
+            "maximum": 2147483647
           },
           "policyVersion": {
             "const": "rankings-public-v1"

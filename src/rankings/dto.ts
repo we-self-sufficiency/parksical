@@ -8,7 +8,7 @@ export class RankingPageQuery extends RankingQuery {
   @ValidateIf(o => o.cursor !== undefined) @Matches(/^[A-Za-z0-9_-]{1,1024}$/) cursor?: string;
 }
 export class RankingConsentDto {
-  @IsInt() @Min(0) @Max(999) expectedVersion!: number;
+  @IsInt() @Min(0) @Max(2147483647) expectedVersion!: number;
   @IsIn(['rankings-public-v1']) policyVersion!: 'rankings-public-v1';
   @IsBoolean() enabled!: boolean;
   @ValidateIf(o => o.agreedAt !== null) @IsISO8601({ strict: true }) @Matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/) agreedAt!: string | null;

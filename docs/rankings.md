@@ -33,7 +33,7 @@ DEV_RANKINGS_ENABLED는 기본false, production·개발 인증 없는 활성화�
 | POST /ranking-records/{runId}/invalidation | 완료 기록 무효화,201 |
 | POST /ranking-records/{runId}/deletion | 랭킹 참여 소프트 삭제,201 |
 
-성공/오류 모두 no-store, JSON64KiB, 미지 필드 거절. 읽기300/쓰기100회·계정·5분, 변경 영수증4000건/계정이다. 쓰기는 Idempotency-Key(ASCII 영숫자/점/밑줄/하이픈1~64자) 필수다. 월은2000~2099년 YYYY-MM, limit1~50/기본20이다. 보드 계산은 최대10000 CHALLENGE/주차장/월, 그룹 최대100이다. 한도 초과는503이며 상위 일부만 계산한 순위를 반환하지 않는다. 작은 합성 개발용 전역 잠금/한도이며 대규모 운영 랭킹의 성능 보장을 뜻하지 않는다.
+성공/오류 모두 no-store, JSON64KiB, 미지 필드 거절. 읽기300/쓰기100회·계정·5분이다. 영수증 누적 건수로 철회/참여 삭제를 차단하지 않는다. 쓰기는 Idempotency-Key(ASCII 영숫자/점/밑줄/하이픈1~64자) 필수다. 월은2000~2099년 YYYY-MM, limit1~50/기본20이다. 보드 계산은 최대10000 CHALLENGE/주차장/월, 그룹 최대100이다. 한도 초과는503이며 상위 일부만 계산한 순위를 반환하지 않는다. 작은 합성 개발용 전역 잠금/한도이며 대규모 운영 랭킹의 성능 보장을 뜻하지 않는다.
 
 1. [Missions](missions.md)에서 SYNTHETIC CHALLENGE를 만들고 원래 차량 AuthSession으로 결과를 제출한다. 기존 미션 요청/응답은 바뀌지 않는다.
 2. 본인 ranking-records로 month/cohortKey/recognition을 읽는다. 공개 동의가 없어도 본인 그룹을 알 수 있다. 다른 사용자의 runId를 탐색하지 않는다.
@@ -62,7 +62,7 @@ cohortKey는 주차장+구조 version+ruleVersion+동결 전체 rules+순서를 
 {"expectedVersion":0,"policyVersion":"rankings-public-v1","enabled":true,"agreedAt":"2026-11-15T09:00:00.000Z"}
 ```
 
-[동의 요청](examples/ranking-consent-write.json)의 시각은 현재 UTC로 바꾼다. 클라이언트 agreedAt은 DB 시각±5분, 서버 changedAt은 DB UTC epoch milliseconds다. [응답](examples/ranking-consent-on.json)은 version1과 서버 가명을 반환한다. 동의는 연속 버전과 시각/상태 이력을 남기고 과거 닉네임 복사본을 만들지 않는다. 동의 이력·현재 상태·기존 User.rankingPublic 표시값·영수증은 한 트랜잭션이다. 기존 rankingPublic=true만으로는 공개되지 않으며 /me의 기존 필드는 실제 현재 버전 동의를 반영한다.
+[동의 요청](examples/ranking-consent-write.json)의 시각은 현재 UTC로 바꾼다. 클라이언트 agreedAt은 DB 시각±5분, 서버 changedAt은 DB UTC epoch milliseconds다. [응답](examples/ranking-consent-on.json)은 version1과 서버 가명을 반환한다. 동의는 연속 PostgreSQL Int 버전과 시각/상태 이력을 남기고 과거 닉네임 복사본을 만들지 않는다. 동의 이력·현재 상태·기존 User.rankingPublic 표시값·영수증은 한 트랜잭션이다. 새 opt-in은 마지막 Int 버전을 사용하지 못하고 철회를 위해 한 버전을 남긴다. 이미 OFF인 철회는 버전을 늘리지 않는 no-op이며 1000회 변경/4000개 영수증 뒤에도 철회/삭제할 수 있다. 기존 rankingPublic=true만으로는 공개되지 않으며 /me의 기존 필드는 실제 현재 버전 동의를 반영한다.
 
 [철회](examples/ranking-consent-withdraw.json)는 최신 expectedVersion, enabled=false, agreedAt=null이다. 즉시 이후 공개 보드/그룹에서 제거하고 확정된 월도 현재 동의를 재검사한다. 닉네임은 비공개 응답에서null이다. 과거 동의 key를 재전송해도 역사적 응답을 재생할 뿐 다시 활성화하지 않는다. 변경 후 항상 GET으로 현재 version/enabled를 확인한다. 재동의는 최신 버전으로 새 요청을 보내야 한다.
 

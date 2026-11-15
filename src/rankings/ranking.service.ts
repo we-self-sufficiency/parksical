@@ -8,7 +8,7 @@ import type { Prisma, RankingConsent } from '../generated/prisma/client.js';
 import { asJson } from '../lots/store.js';
 import { fingerprint } from '../vehicle/normalization.js';
 import type { RankingConsentDto, RankingPageQuery, RankingQuery, RankingRecordMutationDto } from './dto.js';
-import { bestCandidates, candidate, monthOf, PUBLIC_POLICY_VERSION, ranked, rankingBoundary, rankingCohort, rankingMonth, RANKING_VERSION, recognition, type RankingCandidate } from './rules.js';
+import { bestCandidates, candidate, monthOf, nextConsentVersion, PUBLIC_POLICY_VERSION, ranked, rankingBoundary, rankingCohort, rankingMonth, RANKING_VERSION, recognition, type RankingCandidate } from './rules.js';
 
 type Tx = Prisma.TransactionClient;
 const included = { result: true, rankingRecord: true } as const;
@@ -51,7 +51,6 @@ export class RankingService {
     return this.locked(p, async tx => {
       const requestHash = fingerprint({ route, dto }), old = await tx.rankingMutation.findUnique({ where: { userId_key: { userId: p.userId, key } } });
       if (old) { if (old.requestHash !== requestHash) throw new ApiError(409, 'IDEMPOTENCY_CONFLICT'); return { body: old.response, replayed: true }; }
-      if (await tx.rankingMutation.count({ where: { userId: p.userId } }) >= 4000) throw new ApiError(409, 'RANKING_MUTATION_LIMIT');
       const result = await work(tx, requestHash), body = asJson(result.body);
       await tx.rankingMutation.create({ data: { userId: p.userId, key, requestHash, response: body } });
       return { body, replayed: result.replayed ?? false };
@@ -62,7 +61,9 @@ export class RankingService {
       const old = await tx.rankingConsent.findUnique({ where: { userId: p.userId } }), now = await this.now(tx);
       if ((old?.version ?? 0) !== dto.expectedVersion) throw new ApiError(409, 'RANKING_CONSENT_VERSION_CONFLICT');
       if (dto.enabled ? dto.agreedAt === null || Math.abs(Date.parse(dto.agreedAt) - now.getTime()) > 300000 : dto.agreedAt !== null) throw new ApiError(422, 'RANKING_CONSENT_TIME_INVALID');
-      const data = { version: dto.expectedVersion + 1, policyVersion: dto.policyVersion, enabled: dto.enabled, agreedAt: dto.agreedAt ? new Date(dto.agreedAt) : null, changedAt: now };
+      const version = nextConsentVersion(old?.version ?? 0, old?.enabled ?? false, dto.enabled);
+      if (version === (old?.version ?? 0)) return { body: this.consentView(old), replayed: true };
+      const data = { version, policyVersion: dto.policyVersion, enabled: dto.enabled, agreedAt: dto.agreedAt ? new Date(dto.agreedAt) : null, changedAt: now };
       const row = old ? await tx.rankingConsent.update({ where: { userId: p.userId }, data }) : await tx.rankingConsent.create({ data: { userId: p.userId, nickname: 'P-' + randomUUID().replaceAll('-', '').slice(0, 12), ...data } });
       await tx.rankingConsentChange.create({ data: { userId: p.userId, ...data } });
       await tx.user.update({ where: { id: p.userId }, data: { rankingPublic: dto.enabled } });

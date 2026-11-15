@@ -1422,9 +1422,9 @@
       "schema": "RankingConsentInput",
       "baseExample": "ranking-consent-write.json",
       "set": {
-        "expectedVersion": 1000
+        "expectedVersion": 2147483648
       },
-      "reason": "S-15 Consent cap1000"
+      "reason": "S-15 Consent version exceeds PostgreSQL Int"
     },
     {
       "schema": "RankingConsentInput",

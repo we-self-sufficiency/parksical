@@ -146,6 +146,6 @@ A-18 제안: 비운영 개발 인증+DEV_RANKINGS_ENABLED 기본OFF에서만 SYN
 
 발생 startedAt의 KST 월, 다음 KST 월 시작+72h 미만 서버 수신(도전·결과 모두)을 가역적인 개발 cutoff로 둔다. 기존 미션72h 지연 한도도 적용한다. cutoff 뒤 내부 합성 확정은 lot/month/cohort 고유 불변 snapshot/hash를 저장한다. 확정 후 무효/참여 소프트 삭제·공개 철회를 현재 뷰에 적용하고 제거된 최고 기록의 대체 승격은 하지 않는다. S-18 내부 포트는 syntheticCandidates만 제공하고 operationalCandidates=[]/rewardEligible=false를 강제하며 실제 쿠폰/cron/무인증 정산 API는 없다.
 
-rankings-public-v1은 과거/미래 모든 합성 월의 최소 공개 opt-in이며 defaultfalse다. 서버 가명·별도 공개 entry UUID·score/rank만 제공하고 user/run/installation/session/정확한 시각을 노출하지 않는다. 동의 version·클라이언트 agreedAt(±5분)·서버 changedAt/철회 이력을 원자 저장한다. 과거 rankingPublic boolean만으로 공개하지 않으며 /me 표시도 버전 동의를 따른다. 공개 OFF와 내부 합성 최고 기록 보관은 다르고 본인 비교 모집단은 공개 참가자+본인뿐이다. 삭제는 랭킹 참여 tombstone이며 원래 불변 미션/영수증의 완전 삭제가 아니다.
+rankings-public-v1은 과거/미래 모든 합성 월의 최소 공개 opt-in이며 defaultfalse다. 서버 가명·별도 공개 entry UUID·score/rank만 제공하고 user/run/installation/session/정확한 시각을 노출하지 않는다. 동의 version·클라이언트 agreedAt(±5분)·서버 changedAt/철회 이력을 원자 저장한다. 영수증 누적으로 철회/참여 삭제를 차단하지 않고 마지막 동의 Int 버전은 철회에 남긴다. 이미 비공개인 철회는 no-op이다. 과거 rankingPublic boolean만으로 공개하지 않으며 /me 표시도 버전 동의를 따른다. 공개 OFF와 내부 합성 최고 기록 보관은 다르고 본인 비교 모집단은 공개 참가자+본인뿐이다. 삭제는 랭킹 참여 tombstone이며 원래 불변 미션/영수증의 완전 삭제가 아니다.
 
 이 기본값은 D-02 실제 수집/인정·동의/보관/완전 삭제, D-04 실제 장소/주행/차량 지원, D-05 실제 동점·기준점수·구독 시점·업로드 마감/쿠폰 비용을 확정하지 않는다. E1~E8/QR D-07과 실제 SDK/실차·배포도 미완료다. 변경 시 새 registry/계약/migration과 호환성 검증이 필요하다. 상세는 [rankings.md](rankings.md).

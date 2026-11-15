@@ -106,7 +106,7 @@ VehicleState Flow (gear, speedKmh, steeringDeg, brakePressed, uxRestricted)
 - `GET /lots`(latitude, longitude, radiusM, limit, sort, vehicleLengthMm+vehicleWidthMm+vehicleStatus=SUPPORTED, cursor)와 `GET /lots/{id}`는 bearer 토큰 필수. 401이면 액세스 토큰을 버리고 1회 재시도, 토큰이 없으면 빈 목록 + "서버 인증 안 됨" 배너(런타임 목 폴백 없음).
 - 409 SEARCH_CHANGED는 커서를 버리고 1페이지부터 1회 재시작.
 - 서버 응답이 성공이지만 주차장 0개면 빈 목록 + "목적지 주변에 주차장이 없어요" 안내. 모든 실패는 사유 배너 + 빈 목록.
-- MAX 던전은 서버 미션 카탈로그(S-12 `GET /missions`)로 만든다. 순서: 경사로 무정지(NO_STOP_RAMP) → 부드러운 조향(SMOOTH_STEERING) → 한 번에 후진 주차(ONE_SHOT_REVERSE). 카탈로그가 없거나 실패한 주차장은 MAX에서 빠진다. `MockParkingRepository`는 테스트/프리뷰 전용.
+- MAX 던전은 서버 미션 카탈로그(S-12 `GET /missions`)로 만든다. 순서: 경사로 무정지(NO_STOP_RAMP) → 부드러운 조향(SMOOTH_STEERING) → 한 번에 후진 주차(ONE_SHOT_REVERSE). 카탈로그가 없거나 실패한 주차장은 MAX에서 빠진다. 도전장은 도전 시간 예약이 가능해야 붙는다: 예약 정책이 있고 currentlyAvailable·CHALLENGE 허용인 주차장만(정책 없음 404 → 도전장·던전 없음). `MockParkingRepository`는 테스트/프리뷰 전용.
 - 런: 시작 시 합성 vehicle-session + `POST /runs`(비동기, 판정은 네트워크를 기다리지 않음) → 종료 시 `POST /runs/{id}/result`(스테이지별 metrics·신호 품질 포함). 판정 규칙은 서버 missions-v1과 동일: 10km/h 초과 즉시 중단, 경사로 정지(P 포함) 중단, 급조향 1회당 -1별, 후진 진입 정확히 1회만 3별.
 - uxState는 항상 ALLOWED로 보고(shortcut): AAOS는 주행 중 항상 DO 필요=true라 그대로 보내면 모든 런이 중단됨. 서버 D-04 결정 후 재검토.
 - 차속은 0.25초마다 다시 읽음(서버가 표본 간격 1초 초과 스테이지를 판정 불가로 처리).

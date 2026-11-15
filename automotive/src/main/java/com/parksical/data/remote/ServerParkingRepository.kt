@@ -150,15 +150,17 @@ class ServerParkingRepository(
 
     override fun dungeon(lotId: String): Dungeon? = dungeons[lotId]
 
-    /** One catalog call per lot; any failure (403/404/422/network) just means no dungeon for that lot. */
-    // shortcut: one request per listed lot (<=150, read limit is 300/5 min), upgrade when the server flags challenge-capable lots in the list
+    /** Catalog + reservation policy per lot; any failure (403/404/422/network) means no dungeon for that lot. */
+    // shortcut: two requests per listed lot (<=150 lots, read limit is 300/5 min), upgrade when the server flags challenge-capable lots in the list
     private suspend fun loadDungeons(lots: List<ParkingLot>) {
         val found = mutableMapOf<String, Dungeon>()
         for (lot in lots) {
             val v = lot.structureVersion ?: continue
             try {
-                dungeonFromCatalog(lot, get("/missions", mapOf("lotId" to lot.id, "structureVersion" to v.toString())).toMap())
-                    ?.let { found[lot.id] = it }
+                val d = dungeonFromCatalog(lot, get("/missions", mapOf("lotId" to lot.id, "structureVersion" to v.toString())).toMap()) ?: continue
+                // A challenge needs a bookable challenge time slot; lots without a reservation policy (404) get no 도전장.
+                val p = parsePolicy(get("/lots/${lot.id}/reservation-policy", emptyMap()).toMap())
+                if (p.currentlyAvailable && "CHALLENGE" in p.allowedModes) found[lot.id] = d
             } catch (e: NoAuth) {
                 break
             } catch (e: Exception) {

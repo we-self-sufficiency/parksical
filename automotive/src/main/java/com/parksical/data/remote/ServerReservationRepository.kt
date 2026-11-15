@@ -101,6 +101,7 @@ class ServerReservationRepository(private val api: ApiClient, private val auth: 
 fun reservationReason(e: Throwable): String = when {
     e !is ApiException -> "서버 오류"
     e.status == 0 -> "서버 연결 안 됨"
+    e.status == 403 && e.code == "SYNTHETIC_PASS_REQUIRED" -> "P지컬 MAX 이용권이 필요해요"
     e.status == 403 -> "예약 기능이 꺼져 있어요"
     e.status == 404 -> "이 주차장은 예약을 받지 않아요"
     // server codes are prefixed, e.g. RESERVATION_USER_OVERLAP

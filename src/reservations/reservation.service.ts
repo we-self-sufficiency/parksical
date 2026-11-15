@@ -12,6 +12,8 @@ import { fingerprint } from '../vehicle/normalization.js';
 import type { ReservationCancelDto, ReservationHoldDto, ReservationPolicyWriteDto, ReservationQuoteDto, ReservationSandboxEventDto, ReservationSlotsQuery } from './dto.js';
 import { RESERVATION_PAYMENTS, type ReservationPaymentPort } from './payment-port.js';
 import { dayStart, HALF_HOUR_MS, horizon, inHours, localDay, quoteFare, slotsBetween, validatePeriod, validatePolicy, validateVehicle, type ReservationPolicySnapshot } from './rules.js';
+import {paymentUserLock,requireSubscription} from '../subscriptions/projection.js';
+import {SubscriptionClock} from '../subscriptions/clock.js';
 
 type Tx = Prisma.TransactionClient;
 type FullReservation = Prisma.ReservationGetPayload<{ include: { quote: true } }>;
@@ -19,7 +21,7 @@ export const reservationBoundary = { source: 'SYNTHETIC', operationalAllowed: fa
 
 @Injectable()
 export class ReservationService {
-  constructor(private readonly auth: AuthService, @Inject(APP_CONFIG) private readonly config: AppConfig, @Inject(RESERVATION_PAYMENTS) private readonly payments: ReservationPaymentPort) {}
+  constructor(private readonly auth: AuthService, @Inject(APP_CONFIG) private readonly config: AppConfig, @Inject(RESERVATION_PAYMENTS) private readonly payments: ReservationPaymentPort,private readonly subscriptionClock:SubscriptionClock) {}
   enabled() { if (!this.config.devReservationsEnabled || !this.config.devAuthEnabled || this.config.nodeEnv === 'production') throw new ApiError(403, 'RESERVATIONS_POLICY_DISABLED'); }
   private async now(tx: Tx) {
     // Epoch avoids session-timezone/raw timestamp decoding ambiguities across adapters.
@@ -29,7 +31,7 @@ export class ReservationService {
   private async lotLock(tx: Tx, id: string) { await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'lot:' + id},0))`; }
   private async locked<T>(p: Principal, work: (tx: Tx) => Promise<T>, admin = false) {
     this.enabled();
-    const action = async (tx: Tx) => { await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'reservation-user:' + p.userId},0))`; return work(tx); };
+    const action = async (tx: Tx) => { await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'reservation-user:' + p.userId},0))`; if(this.config.devSubscriptionsEnabled)await paymentUserLock(tx,p.userId);return work(tx); };
     return admin ? this.auth.forAdmin(p, action) : this.auth.forUser(p, action);
   }
   private async mutate(p: Principal, key: string | undefined, route: string, dto: unknown, action: (tx: Tx) => Promise<{ body: unknown; replayed?: boolean }>, admin = false) {
@@ -103,6 +105,7 @@ export class ReservationService {
   async quote(p: Principal, key: string | undefined, dto: ReservationQuoteDto) {
     const input = { ...dto, startsAt: new Date(dto.startsAt).toISOString() };
     return this.mutate(p, key, 'quote', input, async tx => {
+      await requireSubscription(tx,p.userId,this.config,this.subscriptionClock);
       await this.lotLock(tx, dto.lotId); const now = await this.now(tx), v = await this.current(tx, dto.lotId);
       validateVehicle(v.snapshot, dto.mode, dto.lengthMm, dto.widthMm);
       const start = new Date(input.startsAt), period = validatePeriod(v.snapshot, start, dto.durationMinutes, now), fare = quoteFare(v.snapshot, dto.mode, start, period.end);
@@ -129,6 +132,7 @@ export class ReservationService {
       await this.lotLock(tx, quote.lotId); const now = await this.now(tx), hash = fingerprint(input);
       const old = await tx.reservation.findUnique({ where: { quoteId: quote.id } });
       if (old) { if (old.creationHash !== hash) throw new ApiError(409, 'RESERVATION_QUOTE_ALREADY_USED'); return { body: old.creationReceipt, replayed: true }; }
+      await requireSubscription(tx,p.userId,this.config,this.subscriptionClock);
       if (quote.expiresAt <= now) throw new ApiError(409, 'RESERVATION_QUOTE_EXPIRED');
       const v = await this.current(tx, quote.lotId);
       if (v.policy.version !== quote.policyVersion) throw new ApiError(409, 'RESERVATION_QUOTE_POLICY_CHANGED');

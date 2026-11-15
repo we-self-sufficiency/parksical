@@ -143,7 +143,18 @@
     "payment-receipt.json": "PaymentReceiptView",
     "payment-page.json": "PaymentPage",
     "payment-webhook.json": "PaymentProviderWebhook",
-    "payment-webhook-ack.json": "PaymentWebhookAck"
+    "payment-webhook-ack.json": "PaymentWebhookAck",
+    "subscription-create.json": "SubscriptionCreateInput",
+    "subscription-renew.json": "SubscriptionRenewInput",
+    "subscription-cancel.json": "SubscriptionCancelInput",
+    "subscription-products.json": "SubscriptionProductsView",
+    "subscription-view.json": "SubscriptionView",
+    "subscription-me.json": "SubscriptionMeView",
+    "subscription-renewed.json": "SubscriptionRenewView",
+    "subscription-cancelled.json": "SubscriptionView",
+    "subscription-history.json": "SubscriptionHistoryPage",
+    "subscription-entitlements.json": "SubscriptionEntitlements",
+    "subscription-payment.json": "PaymentOrderView"
   },
   "cases": [
     {
@@ -859,6 +870,65 @@
       "schema": "PaymentWebhookAck",
       "example": "payment-webhook-ack.json",
       "requestExample": "payment-webhook.json"
+    },
+    {
+      "name": "S-17 listSubscriptionProducts",
+      "operationId": "listSubscriptionProducts",
+      "status": 200,
+      "schema": "SubscriptionProductsView",
+      "example": "subscription-products.json"
+    },
+    {
+      "name": "S-17 createSubscription",
+      "operationId": "createSubscription",
+      "status": 201,
+      "schema": "SubscriptionView",
+      "example": "subscription-view.json",
+      "requestExample": "subscription-create.json"
+    },
+    {
+      "name": "S-17 getOwnCurrentSubscription",
+      "operationId": "getOwnCurrentSubscription",
+      "status": 200,
+      "schema": "SubscriptionMeView",
+      "example": "subscription-me.json"
+    },
+    {
+      "name": "S-17 getOwnSubscription",
+      "operationId": "getOwnSubscription",
+      "status": 200,
+      "schema": "SubscriptionView",
+      "example": "subscription-view.json"
+    },
+    {
+      "name": "S-17 prepareSubscriptionRenewal",
+      "operationId": "prepareSubscriptionRenewal",
+      "status": 201,
+      "schema": "SubscriptionRenewView",
+      "example": "subscription-renewed.json",
+      "requestExample": "subscription-renew.json"
+    },
+    {
+      "name": "S-17 cancelOwnSubscriptionRenewal",
+      "operationId": "cancelOwnSubscriptionRenewal",
+      "status": 201,
+      "schema": "SubscriptionView",
+      "example": "subscription-cancelled.json",
+      "requestExample": "subscription-cancel.json"
+    },
+    {
+      "name": "S-17 listOwnSubscriptionHistory",
+      "operationId": "listOwnSubscriptionHistory",
+      "status": 200,
+      "schema": "SubscriptionHistoryPage",
+      "example": "subscription-history.json"
+    },
+    {
+      "name": "S-17 getOwnSubscriptionEntitlements",
+      "operationId": "getOwnSubscriptionEntitlements",
+      "status": 200,
+      "schema": "SubscriptionEntitlements",
+      "example": "subscription-entitlements.json"
     }
   ],
   "negativeCases": [
@@ -1687,6 +1757,78 @@
         "durationMinutes": 45
       },
       "reason": "S-16 30m grid"
+    },
+    {
+      "schema": "SubscriptionCreateInput",
+      "baseExample": "subscription-create.json",
+      "set": {
+        "amountKrw": 1
+      },
+      "reason": "S-17 server price only"
+    },
+    {
+      "schema": "SubscriptionCreateInput",
+      "baseExample": "subscription-create.json",
+      "set": {
+        "priceVersion": "free"
+      },
+      "reason": "S-17 immutable version"
+    },
+    {
+      "schema": "SubscriptionCreateInput",
+      "baseExample": "subscription-create.json",
+      "set": {
+        "active": true
+      },
+      "reason": "S-17 no client entitlement"
+    },
+    {
+      "schema": "SubscriptionCreateInput",
+      "baseExample": "subscription-create.json",
+      "set": {
+        "userId": "00000000-0000-4000-8000-000000000001"
+      },
+      "reason": "S-17 owner from bearer"
+    },
+    {
+      "schema": "SubscriptionCreateInput",
+      "baseExample": "subscription-create.json",
+      "set": {
+        "startsAt": "2027-01-01T00:00:00Z"
+      },
+      "reason": "S-17 server calendar anchor"
+    },
+    {
+      "schema": "SubscriptionRenewInput",
+      "baseExample": "subscription-renew.json",
+      "set": {
+        "expectedCycleIndex": "0"
+      },
+      "reason": "S-17 strict integer"
+    },
+    {
+      "schema": "SubscriptionRenewInput",
+      "baseExample": "subscription-renew.json",
+      "set": {
+        "expectedCycleIndex": -1
+      },
+      "reason": "S-17 nonnegative index"
+    },
+    {
+      "schema": "SubscriptionCancelInput",
+      "baseExample": "subscription-cancel.json",
+      "set": {
+        "reason": "REFUND_HALF"
+      },
+      "reason": "S-17 separate full refund"
+    },
+    {
+      "schema": "SubscriptionEntitlements",
+      "baseExample": "subscription-entitlements.json",
+      "set": {
+        "rewardEligible": true
+      },
+      "reason": "S-17 no real reward"
     }
   ]
 }

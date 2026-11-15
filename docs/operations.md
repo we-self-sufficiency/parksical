@@ -66,3 +66,9 @@ SQL
 [payments.md](payments.md)의 비운영 opt-in과 migration20261115050000_payments를 따른다. 일반 사전결제는 MAX 없이 가능하며 실청구는 차단한다. 견적/주문/시도/환불/불변 승인 영수증/명령/알림·독립 합성 제공자8테이블을 함께 백업·복원한다. 별도 제공자 테이블은 테스트 gateway이므로 실제 PG로 오인하지 않는다. 비밀은 환경에서 주입하고 DB/로그/예제에 저장하지 않는다.
 
 PENDING/REFUND_PENDING이면 본인 GET 확인 → 같은 명령 key/body 재전송 또는 새 key로 reconcile → 상태/영수증 재확인한다. 자동 청구/환불 worker는 없다. 실운영 서비스 활성화는 D-05와 실제 제공자 어댑터/장애/웹훅/배포 승인 후 별도 작업이다. merchant DB 롤백으로 이미 승인된 제공자 거래를 없었던 일로 취급하지 않는다.
+
+## S-17 구독 복구·호환성
+
+[subscriptions.md](subscriptions.md)의 비운영 opt-in과 migration20261115060000_subscriptions를 따른다. 구독/월별 cycle/불변 관측 이력/명령4테이블·PaymentOrder의 선택 cycle 참조/nullable lotId를 원자 추가한다. 일반/예약 주문의 필드와 금액/상태 제약은 보존하고 구독 주문에는 lotId=null·구독 pricing을 사용한다. 신규 앱/서버 계약 준비 후 명시적으로 기능을 켠다.
+
+상품/기간/영수증·관측 이력·S-16 결제/환불을 함께 백업하고 실패한 merchant 트랜잭션이 이미 실행한 제공자 승인을 삭제했다고 간주하지 않는다. S-16 동일 명령 또는 reconcile로 복구한다. 갱신/환불은 명시 합성 실행이며 실제 정기 청구/worker는 없다. 만료 권한은 매 요청 계산하므로 만료 worker 중단/재시작이 기간을 늘리지 않는다. 취소·기록 조회·동의 철회는 pass 만료로 막지 않는다.

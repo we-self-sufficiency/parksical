@@ -1,0 +1,23 @@
+{
+  "subscriptionId": "00000000-0000-4000-8000-000000000001",
+  "cycle": {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "cycleIndex": 1,
+    "startsAt": "2027-02-28T03:00:00.000Z",
+    "endsAt": "2027-03-31T03:00:00.000Z",
+    "chargeDeadline": "2027-02-28T03:05:00.000Z",
+    "amountKrw": 4900,
+    "currency": "KRW",
+    "paymentOrderId": "00000000-0000-4000-8000-000000000005",
+    "paymentState": "CREATED",
+    "paidAt": null,
+    "revokedAt": null
+  },
+  "source": "SYNTHETIC",
+  "operationalAllowed": false,
+  "realPaymentVerified": false,
+  "rewardEligible": false,
+  "operationalBlockers": [
+    "D-05"
+  ]
+}

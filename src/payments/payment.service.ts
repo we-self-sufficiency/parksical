@@ -14,6 +14,8 @@ import { horizon, inHours, quoteGeneralFare, slotsBetween, HALF_HOUR_MS } from '
 import { fingerprint } from '../vehicle/normalization.js';
 import type { PaymentAttemptDto, PaymentQuoteDto, PaymentWebhookDto } from './dto.js';
 import { PAYMENT_PROVIDER, type PaymentProvider, type ProviderPayment } from './provider.js';
+import { SubscriptionClock } from '../subscriptions/clock.js';
+import { projectSubscriptionPayment,subscriptionNeedsCompensation } from '../subscriptions/projection.js';
 
 type Tx=Prisma.TransactionClient;
 const include={attempt:true,refund:true,receipt:true} as const;
@@ -24,7 +26,7 @@ export function verifyPayment(order:Pick<PaymentOrder,'id'|'amountKrw'|'currency
 }
 @Injectable()
 export class PaymentService {
-  constructor(private readonly auth:AuthService,private readonly db:DatabaseService,private readonly reservations:ReservationService,@Inject(APP_CONFIG) private readonly config:AppConfig,@Inject(PAYMENT_PROVIDER) private readonly provider:PaymentProvider){}
+  constructor(private readonly auth:AuthService,private readonly db:DatabaseService,private readonly reservations:ReservationService,@Inject(APP_CONFIG) private readonly config:AppConfig,@Inject(PAYMENT_PROVIDER) private readonly provider:PaymentProvider,private readonly subscriptionClock:SubscriptionClock){}
   enabled(){if(!this.config.devPaymentsEnabled || !this.config.devAuthEnabled || this.config.nodeEnv==='production')throw new ApiError(403,'PAYMENTS_POLICY_DISABLED');}
   private async external<T>(call:()=>Promise<T>):Promise<T>{try{return await call();}catch(error){if(error instanceof ApiError)throw error;throw new ApiError(503,'PAYMENT_PROVIDER_UNAVAILABLE');}}
   private async lock(tx:Tx,userId:string){
@@ -33,8 +35,9 @@ export class PaymentService {
   }
   private async user<T>(p:Principal,work:(tx:Tx)=>Promise<T>){this.enabled();return this.auth.forUser(p,async tx=>{await this.lock(tx,p.userId);return work(tx);});}
   private async now(tx:Tx){const rows=await tx.$queryRaw<{ms:bigint}[]>`SELECT floor(extract(epoch FROM clock_timestamp())*1000)::bigint AS ms`;return new Date(Number(rows[0]!.ms));}
+  private async orderTime(tx:Tx,row:PaymentOrder){return row.subscriptionCycleId?this.subscriptionClock.now(tx):this.now(tx);}
   private async owned(tx:Tx,userId:string,id:string){const row=await tx.paymentOrder.findFirst({where:{id,userId},include});if(!row)throw new ApiError(404,'RESOURCE_NOT_FOUND');return row;}
-  private view(row:FullOrder){return {id:row.id,quoteId:row.quoteId,reservationId:row.reservationId,lotId:row.lotId,amountKrw:row.amountKrw,currency:row.currency,pricing:row.pricing,state:row.state,attempt:row.attempt?{state:row.attempt.state,transactionId:row.attempt.transactionId}:null,refund:row.refund?{state:row.refund.state,amountKrw:row.refund.amountKrw}:null,receiptId:row.receipt?.id??null,createdAt:row.createdAt.toISOString(),expiresAt:row.expiresAt.toISOString(),...paymentBoundary};}
+  private view(row:FullOrder){return {id:row.id,quoteId:row.quoteId,reservationId:row.reservationId,lotId:row.lotId,...(row.subscriptionCycleId?{subscriptionCycleId:row.subscriptionCycleId}:{}),amountKrw:row.amountKrw,currency:row.currency,pricing:row.pricing,state:row.state,attempt:row.attempt?{state:row.attempt.state,transactionId:row.attempt.transactionId}:null,refund:row.refund?{state:row.refund.state,amountKrw:row.refund.amountKrw}:null,receiptId:row.receipt?.id??null,createdAt:row.createdAt.toISOString(),expiresAt:row.expiresAt.toISOString(),...paymentBoundary};}
   private async command(tx:Tx,userId:string,key:string|undefined,route:string,dto:unknown){
     if(!key || !/^[A-Za-z0-9_.-]{1,64}$/.test(key))throw new ApiError(400,'INVALID_IDEMPOTENCY_KEY');
     const requestHash=fingerprint({route,dto}),where={userId_key:{userId,key}};
@@ -62,11 +65,20 @@ export class PaymentService {
     const body={quoteId:id,lotId:lot.id,startsAt:start.toISOString(),endsAt:end.toISOString(),createdAt:now.toISOString(),expiresAt:expiresAt.toISOString(),details,...paymentBoundary};
     await tx.paymentQuote.create({data:{id,userId:p.userId,lotId:lot.id,structureVersion:lot.currentVersion,startsAt:start,endsAt:end,amountKrw,details:asJson(details),createdAt:now,expiresAt,receipt:asJson(body)}});return body;
   });}
-  private async create(tx:Tx,data:Pick<PaymentOrder,'userId'|'quoteId'|'reservationId'|'lotId'|'amountKrw'|'pricing'|'expiresAt'>){
+  private async create(tx:Tx,data:Pick<PaymentOrder,'userId'|'quoteId'|'reservationId'|'lotId'|'amountKrw'|'pricing'|'expiresAt'> & {subscriptionCycleId?:string},at?:Date){
     if(data.amountKrw<1)throw new ApiError(422,'PAYMENT_ZERO_AMOUNT_UNSUPPORTED');
     if(await tx.paymentOrder.count({where:{userId:data.userId}})>=1000)throw new ApiError(409,'PAYMENT_ORDER_LIMIT');
-    const id=randomUUID(),createdAt=await this.now(tx),row={...data,id,currency:'KRW',state:'CREATED',createdAt,attempt:null,refund:null,receipt:null,creationReceipt:{}};
+    const id=randomUUID(),createdAt=at??await this.now(tx),row={...data,subscriptionCycleId:data.subscriptionCycleId??null,id,currency:'KRW',state:'CREATED',createdAt,attempt:null,refund:null,receipt:null,creationReceipt:{}};
     const body=this.view(row);await tx.paymentOrder.create({data:{...data,pricing:asJson(data.pricing),id,currency:'KRW',state:'CREATED',createdAt,creationReceipt:asJson(body)}});return body;
+  }
+  async createSubscriptionOrder(tx:Tx,userId:string,cycleId:string,now:Date){
+    this.enabled();if(!this.config.devSubscriptionsEnabled)throw new ApiError(403,'SUBSCRIPTIONS_POLICY_DISABLED');
+    const c=await tx.subscriptionCycle.findFirstOrThrow({where:{id:cycleId,subscription:{userId}}});
+    return this.create(tx,{userId,subscriptionCycleId:cycleId,quoteId:null,reservationId:null,lotId:null,amountKrw:c.amountKrw,pricing:c.pricing,expiresAt:c.chargeDeadline},now);
+  }
+  async cancelPendingSubscriptionOrders(tx:Tx,subscriptionId:string,now:Date){
+    const rows=await tx.paymentOrder.findMany({where:{subscriptionCycle:{subscriptionId},state:{in:['CREATED','PENDING']}}});
+    for(const row of rows){await tx.paymentOrder.update({where:{id:row.id},data:{state:'CANCELLED'}});await projectSubscriptionPayment(tx,row.subscriptionCycleId!,row.id,'CANCELLED',now);}
   }
   async order(p:Principal,key:string|undefined,quoteId:string){return this.mutate(p,key,'order',{quoteId},async tx=>{
     const q=await tx.paymentQuote.findFirst({where:{id:quoteId,userId:p.userId}});if(!q)throw new ApiError(404,'RESOURCE_NOT_FOUND');
@@ -93,9 +105,10 @@ export class PaymentService {
       if(cmd.response)return {response:cmd.response,row};
       if(row.attempt){if(row.attempt.sandboxOutcome!==dto.sandboxOutcome)throw new ApiError(409,'PAYMENT_ATTEMPT_CONFLICT');}
       else {
-        if(row.state!=='CREATED' || row.expiresAt<=await this.now(tx))throw new ApiError(409,'PAYMENT_ATTEMPT_CLOSED');
-        if(row.reservationId)await this.reservations.bindPayment(tx,p.userId,row.reservationId);
-        else {const q=await tx.paymentQuote.findUniqueOrThrow({where:{id:row.quoteId!}});await this.venue(tx,row.lotId,q.structureVersion);}
+        if(row.state!=='CREATED' || row.expiresAt<=await this.orderTime(tx,row))throw new ApiError(409,'PAYMENT_ATTEMPT_CLOSED');
+        if(row.subscriptionCycleId){if(!this.config.devSubscriptionsEnabled)throw new ApiError(403,'SUBSCRIPTIONS_POLICY_DISABLED');}
+        else if(row.reservationId)await this.reservations.bindPayment(tx,p.userId,row.reservationId);
+        else {const q=await tx.paymentQuote.findUniqueOrThrow({where:{id:row.quoteId!}});await this.venue(tx,row.lotId!,q.structureVersion);}
         await tx.paymentAttempt.create({data:{orderId:id,sandboxOutcome:dto.sandboxOutcome,state:'PENDING'}});
         await tx.paymentOrder.update({where:{id},data:{state:'PENDING'}});
       }
@@ -110,7 +123,7 @@ export class PaymentService {
   private async apply(tx:Tx,row:FullOrder,result:ProviderPayment){
     verifyPayment(row,result,row.attempt?.transactionId);if(!row.attempt)throw new ApiError(409,'PAYMENT_ATTEMPT_NOT_FOUND');
     if((row.attempt.state==='FAILED' && result.status!=='FAILED') || (row.attempt.state==='SUCCEEDED' && result.status==='FAILED') || (row.state==='REFUNDED' && result.status!=='REFUNDED'))throw new ApiError(409,'PAYMENT_PROVIDER_STATE_CONFLICT');
-    const paid=result.status!=='FAILED',now=await this.now(tx);
+    const paid=result.status!=='FAILED',now=await this.orderTime(tx,row);
     await tx.paymentAttempt.update({where:{orderId:row.id},data:{state:paid?'SUCCEEDED':'FAILED',transactionId:result.transactionId}});
     let state=paid?'SUCCEEDED':'FAILED';
     if(paid){
@@ -118,12 +131,14 @@ export class PaymentService {
       if(['CANCELLED','REFUND_PENDING','REFUNDED'].includes(row.state) || (row.state==='PENDING' && row.expiresAt<=now))state='REFUND_PENDING';
     }else if(row.state==='CANCELLED')state='CANCELLED';
     if(row.reservationId && await this.reservations.applyPayment(tx,row.reservationId,result.status) && paid)state='REFUND_PENDING';
+    if(row.subscriptionCycleId && paid && await subscriptionNeedsCompensation(tx,row.subscriptionCycleId,now))state='REFUND_PENDING';
     if(result.status==='REFUNDED')state='REFUNDED';
     if(state==='REFUND_PENDING' || state==='REFUNDED'){
       await this.refundPending(tx,row);
       if(state==='REFUNDED')await tx.paymentRefund.update({where:{orderId:row.id},data:{state:'SUCCEEDED'}});
     }
     if(state!==row.state)await tx.paymentOrder.update({where:{id:row.id},data:{state}});
+    if(row.subscriptionCycleId)await projectSubscriptionPayment(tx,row.subscriptionCycleId,row.id,state,now);
   }
   async cancel(p:Principal,id:string,key:string|undefined,reason:{reason:'USER_REQUEST'}){return this.mutate(p,key,'cancel:'+id,reason,async tx=>{
     const row=await this.owned(tx,p.userId,id);
@@ -135,6 +150,7 @@ export class PaymentService {
     if(['CREATED','PENDING','SUCCEEDED'].includes(row.state)){
       const paid=row.state==='SUCCEEDED';if(paid)await this.refundPending(tx,row);
       await tx.paymentOrder.update({where:{id},data:{state:paid?'REFUND_PENDING':'CANCELLED'}});
+      if(row.subscriptionCycleId)await projectSubscriptionPayment(tx,row.subscriptionCycleId,row.id,paid?'REFUND_PENDING':'CANCELLED',await this.orderTime(tx,row));
     }
     return this.view(await this.owned(tx,p.userId,id));
   });}

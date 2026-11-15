@@ -187,8 +187,9 @@ export class ReservationService {
   }
   async sandboxEvent(p: Principal, id: string, key: string | undefined, dto: ReservationSandboxEventDto) {
     return this.mutate(p, key, 'sandbox-event:' + id, dto, async tx => {
+      const old = await this.owned(tx, p, id);
       if(await tx.paymentOrder.findUnique({where:{reservationId:id}}))throw new ApiError(409,'RESERVATION_PAYMENT_ORDER_BOUND');
-      const old = await this.owned(tx, p, id); await this.lotLock(tx, old.lotId); const now = await this.now(tx);
+      await this.lotLock(tx, old.lotId); const now = await this.now(tx);
       await this.sweep(tx, old.lotId, now); const row = await this.owned(tx, p, id), hash = fingerprint(dto), replay = await this.action(tx, row, dto.kind, hash); if (replay) return replay;
       const evidence = this.payments.createSandboxEvidence(id, row.quote.amountKrw, dto.kind);
       if (evidence.source !== 'SANDBOX' || evidence.realPaymentVerified !== false || evidence.reservationId !== id || evidence.amountKrw !== row.quote.amountKrw || evidence.currency !== 'KRW' || evidence.kind !== dto.kind) throw new ApiError(422, 'INVALID_SANDBOX_PAYMENT_EVIDENCE');

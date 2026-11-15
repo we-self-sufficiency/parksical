@@ -90,6 +90,7 @@ test('real PG payments: verified durable provider, retries/loss, atomic receipts
     const bind=async(t:Token,r:Reservation)=>json<Order>(await call('/payments/reservations',t.accessToken,'POST',{reservationId:r.id},randomUUID(),rb),201);
     const r=await held(alice,1),ro=await bind(alice,r);assert.equal(ro.amountKrw,1250);
     await error(await call('/reservations/'+r.id+'/sandbox-events',alice.accessToken,'POST',{kind:'PAYMENT_SUCCEEDED'},randomUUID(),rb),409,'RESERVATION_PAYMENT_ORDER_BOUND');
+    for(const outsider of [bob,admin])await error(await call('/reservations/'+r.id+'/sandbox-events',outsider.accessToken,'POST',{kind:'PAYMENT_SUCCEEDED'},randomUUID(),rb),404);
     assert.equal((await json<Order>(await attempt(alice,ro,randomUUID(),rb),201)).state,'SUCCEEDED');let rv=await json<Reservation>(await call('/reservations/'+r.id,alice.accessToken,'GET',undefined,undefined,rb));assert.equal(rv.state,'SANDBOX_CONFIRMED');
     await json(await call('/reservations/'+r.id+'/cancel',alice.accessToken,'POST',{expectedVersion:rv.version,reason:'USER_REQUEST'},randomUUID(),rb),201);
     assert.equal((await json<Order>(await recover(alice,ro),201)).state,'REFUNDED');rv=await json<Reservation>(await call('/reservations/'+r.id,alice.accessToken,'GET',undefined,undefined,rb));assert.equal(rv.state,'REFUNDED');assert.equal(await db.reservationClaim.count({where:{reservationId:r.id}}),0);

@@ -8105,6 +8105,655 @@
       }
     },
     "schemas": {
+      "PaymentQuoteInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 240,
+            "multipleOf": 30
+          }
+        },
+        "required": [
+          "lotId",
+          "startsAt",
+          "durationMinutes"
+        ]
+      },
+      "PaymentOrderInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "quoteId"
+        ]
+      },
+      "ReservationPaymentOrderInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "reservationId"
+        ]
+      },
+      "PaymentAttemptInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sandboxOutcome": {
+            "enum": [
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          }
+        },
+        "required": [
+          "sandboxOutcome"
+        ]
+      },
+      "PaymentCancelInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "const": "USER_REQUEST"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "PaymentRecoverInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "const": "RECOVER"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "PaymentPricing": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "const": "KRW"
+          },
+          "priceVersion": {
+            "const": "prepayment-v1"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          },
+          "days": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": 30,
+                  "maximum": 240,
+                  "multipleOf": 30
+                },
+                "generalAmountKrw": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000000
+                }
+              },
+              "required": [
+                "date",
+                "minutes",
+                "generalAmountKrw"
+              ]
+            }
+          },
+          "fees": {
+            "$ref": "#/components/schemas/LotFees"
+          },
+          "structureVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "dailyCapScope": {
+            "const": "GENERAL_FARE_PER_KST_DATE"
+          },
+          "capacityReserved": {
+            "const": false
+          }
+        },
+        "required": [
+          "currency",
+          "priceVersion",
+          "amountKrw",
+          "days",
+          "fees",
+          "structureVersion",
+          "dailyCapScope",
+          "capacityReserved"
+        ]
+      },
+      "PaymentQuoteView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "details": {
+            "$ref": "#/components/schemas/PaymentPricing"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "quoteId",
+          "lotId",
+          "startsAt",
+          "endsAt",
+          "createdAt",
+          "expiresAt",
+          "details",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentAttemptView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          },
+          "transactionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "transactionId"
+        ]
+      },
+      "PaymentRefundView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "PENDING",
+              "SUCCEEDED"
+            ]
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          }
+        },
+        "required": [
+          "state",
+          "amountKrw"
+        ]
+      },
+      "PaymentOrderView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quoteId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reservationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lotId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "pricing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentPricing"
+              },
+              {
+                "$ref": "#/components/schemas/ReservationPricing"
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "CREATED",
+              "PENDING",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED",
+              "REFUND_PENDING",
+              "REFUNDED"
+            ]
+          },
+          "attempt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentAttemptView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "refund": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentRefundView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receiptId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "quoteId",
+          "reservationId",
+          "lotId",
+          "amountKrw",
+          "currency",
+          "pricing",
+          "state",
+          "attempt",
+          "refund",
+          "receiptId",
+          "createdAt",
+          "expiresAt",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PaymentOrderView"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "PaymentApprovalReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "pricing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentPricing"
+              },
+              {
+                "$ref": "#/components/schemas/ReservationPricing"
+              }
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "transactionId",
+          "amountKrw",
+          "currency",
+          "pricing",
+          "recordedAt",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentReceiptView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "receipt": {
+            "$ref": "#/components/schemas/PaymentApprovalReceipt"
+          },
+          "refund": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentRefundView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "receipt",
+          "refund",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
+      "PaymentProviderWebhook": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "enum": [
+              "SUCCEEDED",
+              "FAILED",
+              "REFUNDED"
+            ]
+          },
+          "currency": {
+            "const": "KRW"
+          },
+          "amountKrw": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000
+          }
+        },
+        "required": [
+          "eventId",
+          "orderId",
+          "transactionId",
+          "status",
+          "currency",
+          "amountKrw"
+        ]
+      },
+      "PaymentWebhookAck": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "accepted": {
+            "const": true
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "const": "SYNTHETIC"
+          },
+          "provider": {
+            "const": "SANDBOX"
+          },
+          "operationalAllowed": {
+            "const": false
+          },
+          "realPaymentVerified": {
+            "const": false
+          },
+          "operationalBlockers": {
+            "const": [
+              "D-05"
+            ]
+          }
+        },
+        "required": [
+          "accepted",
+          "eventId",
+          "source",
+          "provider",
+          "operationalAllowed",
+          "realPaymentVerified",
+          "operationalBlockers"
+        ]
+      },
       "RankingCohort": {
         "type": "object",
         "additionalProperties": false,
@@ -16949,655 +17598,6 @@
         "required": [
           "items",
           "nextCursor"
-        ]
-      },
-      "PaymentQuoteInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "lotId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "durationMinutes": {
-            "type": "integer",
-            "minimum": 30,
-            "maximum": 240,
-            "multipleOf": 30
-          }
-        },
-        "required": [
-          "lotId",
-          "startsAt",
-          "durationMinutes"
-        ]
-      },
-      "PaymentOrderInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "quoteId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "quoteId"
-        ]
-      },
-      "ReservationPaymentOrderInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "reservationId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "reservationId"
-        ]
-      },
-      "PaymentAttemptInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "sandboxOutcome": {
-            "enum": [
-              "SUCCEEDED",
-              "FAILED"
-            ]
-          }
-        },
-        "required": [
-          "sandboxOutcome"
-        ]
-      },
-      "PaymentCancelInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "reason": {
-            "const": "USER_REQUEST"
-          }
-        },
-        "required": [
-          "reason"
-        ]
-      },
-      "PaymentRecoverInput": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "action": {
-            "const": "RECOVER"
-          }
-        },
-        "required": [
-          "action"
-        ]
-      },
-      "PaymentPricing": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "currency": {
-            "const": "KRW"
-          },
-          "priceVersion": {
-            "const": "prepayment-v1"
-          },
-          "amountKrw": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100000000
-          },
-          "days": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 2,
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "date": {
-                  "type": "string",
-                  "format": "date",
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                },
-                "minutes": {
-                  "type": "integer",
-                  "minimum": 30,
-                  "maximum": 240,
-                  "multipleOf": 30
-                },
-                "generalAmountKrw": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 100000000
-                }
-              },
-              "required": [
-                "date",
-                "minutes",
-                "generalAmountKrw"
-              ]
-            }
-          },
-          "fees": {
-            "$ref": "#/components/schemas/LotFees"
-          },
-          "structureVersion": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 2147483647
-          },
-          "dailyCapScope": {
-            "const": "GENERAL_FARE_PER_KST_DATE"
-          },
-          "capacityReserved": {
-            "const": false
-          }
-        },
-        "required": [
-          "currency",
-          "priceVersion",
-          "amountKrw",
-          "days",
-          "fees",
-          "structureVersion",
-          "dailyCapScope",
-          "capacityReserved"
-        ]
-      },
-      "PaymentQuoteView": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "quoteId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "lotId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "details": {
-            "$ref": "#/components/schemas/PaymentPricing"
-          },
-          "source": {
-            "const": "SYNTHETIC"
-          },
-          "provider": {
-            "const": "SANDBOX"
-          },
-          "operationalAllowed": {
-            "const": false
-          },
-          "realPaymentVerified": {
-            "const": false
-          },
-          "operationalBlockers": {
-            "const": [
-              "D-05"
-            ]
-          }
-        },
-        "required": [
-          "quoteId",
-          "lotId",
-          "startsAt",
-          "endsAt",
-          "createdAt",
-          "expiresAt",
-          "details",
-          "source",
-          "provider",
-          "operationalAllowed",
-          "realPaymentVerified",
-          "operationalBlockers"
-        ]
-      },
-      "PaymentAttemptView": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "state": {
-            "enum": [
-              "PENDING",
-              "SUCCEEDED",
-              "FAILED"
-            ]
-          },
-          "transactionId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "state",
-          "transactionId"
-        ]
-      },
-      "PaymentRefundView": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "state": {
-            "enum": [
-              "PENDING",
-              "SUCCEEDED"
-            ]
-          },
-          "amountKrw": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100000000
-          }
-        },
-        "required": [
-          "state",
-          "amountKrw"
-        ]
-      },
-      "PaymentOrderView": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "quoteId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "reservationId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "lotId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountKrw": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100000000
-          },
-          "currency": {
-            "const": "KRW"
-          },
-          "pricing": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaymentPricing"
-              },
-              {
-                "$ref": "#/components/schemas/ReservationPricing"
-              }
-            ]
-          },
-          "state": {
-            "enum": [
-              "CREATED",
-              "PENDING",
-              "SUCCEEDED",
-              "FAILED",
-              "CANCELLED",
-              "REFUND_PENDING",
-              "REFUNDED"
-            ]
-          },
-          "attempt": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaymentAttemptView"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "refund": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaymentRefundView"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "receiptId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "source": {
-            "const": "SYNTHETIC"
-          },
-          "provider": {
-            "const": "SANDBOX"
-          },
-          "operationalAllowed": {
-            "const": false
-          },
-          "realPaymentVerified": {
-            "const": false
-          },
-          "operationalBlockers": {
-            "const": [
-              "D-05"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "quoteId",
-          "reservationId",
-          "lotId",
-          "amountKrw",
-          "currency",
-          "pricing",
-          "state",
-          "attempt",
-          "refund",
-          "receiptId",
-          "createdAt",
-          "expiresAt",
-          "source",
-          "provider",
-          "operationalAllowed",
-          "realPaymentVerified",
-          "operationalBlockers"
-        ]
-      },
-      "PaymentPage": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "maxItems": 50,
-            "items": {
-              "$ref": "#/components/schemas/PaymentOrderView"
-            }
-          },
-          "nextCursor": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 256
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "nextCursor"
-        ]
-      },
-      "PaymentApprovalReceipt": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "orderId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "transactionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountKrw": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100000000
-          },
-          "currency": {
-            "const": "KRW"
-          },
-          "pricing": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaymentPricing"
-              },
-              {
-                "$ref": "#/components/schemas/ReservationPricing"
-              }
-            ]
-          },
-          "recordedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$"
-          },
-          "source": {
-            "const": "SYNTHETIC"
-          },
-          "provider": {
-            "const": "SANDBOX"
-          },
-          "operationalAllowed": {
-            "const": false
-          },
-          "realPaymentVerified": {
-            "const": false
-          },
-          "operationalBlockers": {
-            "const": [
-              "D-05"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "orderId",
-          "transactionId",
-          "amountKrw",
-          "currency",
-          "pricing",
-          "recordedAt",
-          "source",
-          "provider",
-          "operationalAllowed",
-          "realPaymentVerified",
-          "operationalBlockers"
-        ]
-      },
-      "PaymentReceiptView": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "receipt": {
-            "$ref": "#/components/schemas/PaymentApprovalReceipt"
-          },
-          "refund": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaymentRefundView"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "source": {
-            "const": "SYNTHETIC"
-          },
-          "provider": {
-            "const": "SANDBOX"
-          },
-          "operationalAllowed": {
-            "const": false
-          },
-          "realPaymentVerified": {
-            "const": false
-          },
-          "operationalBlockers": {
-            "const": [
-              "D-05"
-            ]
-          }
-        },
-        "required": [
-          "receipt",
-          "refund",
-          "source",
-          "provider",
-          "operationalAllowed",
-          "realPaymentVerified",
-          "operationalBlockers"
-        ]
-      },
-      "PaymentProviderWebhook": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "eventId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "orderId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "transactionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "enum": [
-              "SUCCEEDED",
-              "FAILED",
-              "REFUNDED"
-            ]
-          },
-          "currency": {
-            "const": "KRW"
-          },
-          "amountKrw": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100000000
-          }
-        },
-        "required": [
-          "eventId",
-          "orderId",
-          "transactionId",
-          "status",
-          "currency",
-          "amountKrw"
-        ]
-      },
-      "PaymentWebhookAck": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "accepted": {
-            "const": true
-          },
-          "eventId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "source": {
-            "const": "SYNTHETIC"
-          },
-          "provider": {
-            "const": "SANDBOX"
-          },
-          "operationalAllowed": {
-            "const": false
-          },
-          "realPaymentVerified": {
-            "const": false
-          },
-          "operationalBlockers": {
-            "const": [
-              "D-05"
-            ]
-          }
-        },
-        "required": [
-          "accepted",
-          "eventId",
-          "source",
-          "provider",
-          "operationalAllowed",
-          "realPaymentVerified",
-          "operationalBlockers"
         ]
       }
     },

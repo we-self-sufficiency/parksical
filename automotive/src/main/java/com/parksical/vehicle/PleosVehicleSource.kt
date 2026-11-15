@@ -24,11 +24,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 private const val TAG = "PleosVehicleSource"
+private const val POLL_MS = 250L
 
 /**
  * AAOS gear/speed/UX restrictions + Pleos steering/brake -> [VehicleState].
@@ -93,6 +95,16 @@ class PleosVehicleSource(private val context: Context) : VehicleSource {
             DebugSpeedOverride.kmh.collect { o ->
                 setCap { it.copy(speed = speedReal || o != null) }
                 synchronized(lock) { publish() }
+            }
+        }
+        // Events arrive only on change, but the server rejects mission stages with sample gaps > 1 s.
+        // Speed is re-read for real; gear/steering are on-change signals, so their last value is still current.
+        sc.launch {
+            while (true) {
+                delay(POLL_MS)
+                val pm = propMgr
+                val ms = if (speedReal && pm != null) runCatching { pm.getProperty<Float>(VehiclePropertyIds.PERF_VEHICLE_SPEED, 0)?.value }.getOrNull() else null
+                update { s -> ms?.let { s.copy(speedKmh = it * 3.6f) } ?: s }
             }
         }
         startPleos()

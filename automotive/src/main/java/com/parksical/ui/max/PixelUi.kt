@@ -175,9 +175,9 @@ internal fun won(n: Int): String = "%,d원".format(n)
 
 /** Mission inputs a car must provide; unsupported missions are shown greyed / skipped. */
 internal fun MissionType.supported(c: VehicleCapabilities): Boolean = when (this) {
-    MissionType.SPIRAL_NO_STOP -> c.speed
-    MissionType.PILLAR_SMOOTH -> c.speed && c.steering
-    MissionType.REVERSE_PARK_ONE_SHOT -> c.gear
+    MissionType.NO_STOP_RAMP -> c.speed && c.gear
+    MissionType.SMOOTH_STEERING -> c.speed && c.gear && c.steering
+    MissionType.ONE_SHOT_REVERSE -> c.speed && c.gear
 }
 
 /** A CHALLENGE record counts as a stamp only when every stage was judged (aborted partials have fewer). */

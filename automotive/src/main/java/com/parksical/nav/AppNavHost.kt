@@ -29,7 +29,11 @@ private object Closed
 fun AppNavHost(nav: NavHostController = rememberNavController()) {
     val container = LocalAppContainer.current
     var maxEntry by remember { mutableStateOf<Any?>(Closed) }
-    val openEntry: (String?) -> Unit = { maxEntry = it }
+    val openEntry: (String?) -> Unit = { lotId ->
+        // A run in progress owns the MAX flow: go back to its stage screen instead of reserving again.
+        val run = container.drive.activeRun
+        if (run != null) nav.navigate(Routes.maxStage(run.first, run.second)) { popUpTo(Routes.HOME) } else maxEntry = lotId
+    }
 
     LaunchedEffect(Unit) {
         container.drive.events.collect { e ->

@@ -26,7 +26,6 @@ import com.parksical.data.MockParkingRepository
 import com.parksical.domain.model.Dungeon
 import com.parksical.domain.model.RunMode
 import com.parksical.domain.model.RunRecord
-import com.parksical.domain.model.RunStatus
 import com.parksical.domain.model.Title
 import com.parksical.ui.common.LocalVehicleState
 import com.parksical.ui.common.parkedOnly
@@ -38,25 +37,22 @@ fun ResultScreen(onBackToGeneral: () -> Unit) {
     val parked = LocalVehicleState.current.isParked
     if (!parked) { NeedParkPanel(); return }
     val records by c.session.records.collectAsState()
-    val status by c.judge.status.collectAsState()
     val ctx = LocalContext.current
     val record = records.lastOrNull { it.mode == RunMode.CHALLENGE }
     ResultContent(
         record = record,
         dungeon = record?.let { c.parking.dungeon(it.lotId) },
-        abortReason = (status as? RunStatus.Aborted)?.takeIf { it.partial.startedAtMs == record?.startedAtMs }?.reason,
         stamps = stampsOf(c.session.baseStamps, records, c.parking::dungeon),
         onShare = parkedOnly { Toast.makeText(ctx, "기록을 공유했어요 (데모)", Toast.LENGTH_SHORT).show() },
         onBack = parkedOnly(onBackToGeneral),
     )
 }
 
-/** Mockup 07. [abortReason] is only known while the judge still holds the Aborted status. */
+/** Mockup 07. */
 @Composable
 internal fun ResultContent(
     record: RunRecord?,
     dungeon: Dungeon?,
-    abortReason: String?,
     stamps: Int,
     onShare: () -> Unit,
     onBack: () -> Unit,
@@ -70,7 +66,7 @@ internal fun ResultContent(
         }
         return
     }
-    val cleared = abortReason == null && record.cleared(dungeon)
+    val cleared = record.cleared(dungeon)
     val name = dungeon?.name ?: "던전"
     val maxStars = (dungeon?.stages?.size ?: record.stageResults.size).coerceAtLeast(1) * 3
     val next = Title.entries.firstOrNull { it.minStamps > stamps }
@@ -79,7 +75,11 @@ internal fun ResultContent(
             Mono(if (cleared) "DUNGEON\nCLEAR!" else "MISSION\nABORTED", 30, if (cleared) PixelColors.Gold else PixelColors.Orange, align = TextAlign.Center)
             PixelStamp(cleared, Modifier.size(360.dp))
             Ko(if (cleared) "$name 도장 획득" else "MISSION 중단", 34, align = TextAlign.Center)
-            if (!cleared) Ko(abortReason ?: "모든 스테이지를 완료하지 못했어요", 18, Px.Warm, false, align = TextAlign.Center)
+            if (!cleared) Ko(record.reason.ko, 18, Px.Warm, false, align = TextAlign.Center)
+            Ko(
+                record.submit.ko + (record.receiptOutcome?.let { " · $it" } ?: ""),
+                16, PixelColors.Lavender, false, align = TextAlign.Center,
+            )
             Ko(
                 "도장 ${stamps}개째 · " + (next?.let { "다음 칭호 '${it.label}'까지 ${it.minStamps - stamps}개" } ?: "최고 칭호 달성"),
                 18, PixelColors.Lavender, false, align = TextAlign.Center,
@@ -123,9 +123,9 @@ private val PreviewDungeon = MockParkingRepository().dungeon("daon")!!
 
 @Preview(widthDp = 1682, heightDp = 1210)
 @Composable
-private fun PreviewClear() = ResultContent(SampleData.record(RunMode.CHALLENGE, 3, 1), PreviewDungeon, null, 7, {}, {})
+private fun PreviewClear() = ResultContent(SampleData.record(RunMode.CHALLENGE, 3, 1), PreviewDungeon, 7, {}, {})
 
 @Preview(widthDp = 1682, heightDp = 1210)
 @Composable
 private fun PreviewAborted() =
-    ResultContent(SampleData.record(RunMode.CHALLENGE, 0, 0, full = false), PreviewDungeon, "저속 상한 초과로 미션이 중단됐어요", 6, {}, {})
+    ResultContent(SampleData.record(RunMode.CHALLENGE, 0, 0, full = false), PreviewDungeon, 6, {}, {})

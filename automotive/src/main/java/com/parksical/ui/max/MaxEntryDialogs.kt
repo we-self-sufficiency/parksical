@@ -80,7 +80,7 @@ internal fun MaxEntryContent(
         when {
             pair == null -> GeneralPanel {
                 Text26("도전 가능한 주차장이 없어요")
-                Text("서버에서 도전 정보를 아직 제공하지 않아요", color = GeneralColors.TextSub, fontSize = 20.sp)
+                Text("이 주변 주차장에는 서버 도전 미션이 없어요", color = GeneralColors.TextSub, fontSize = 20.sp)
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { GButton("일반 모드로", onDismiss, primary = false, dim = false) }
             }
             step == 1 -> ModeSwitchPanel(pair.second, parked, onDismiss) { step = 2 }
@@ -182,7 +182,9 @@ private fun ReservationPanel(
     val slots = sel.sorted().map { dungeon.openSlots[it] }
     val range = if (slots.isEmpty()) "-" else slots.first().substringBefore("–") + "–" + slots.last().substringAfter("–")
     val fee = feeWon(lot.fee30MinWon ?: 0, mult, sel.size)
-    val ready = sel.isNotEmpty() && checks.all { it } && !paying
+    // The server has no reservation/slot API yet (S-14): no slots, no payment, only the safety agreements.
+    val noSlots = dungeon.openSlots.isEmpty()
+    val ready = (sel.isNotEmpty() || noSlots) && checks.all { it } && !paying
     val date = remember { LocalDate.now().plusDays(1).let { "${it.monthValue}월 ${it.dayOfMonth}일 (${it.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)})" } }
 
     LaunchedEffect(paying) {
@@ -202,7 +204,10 @@ private fun ReservationPanel(
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Ko("${dungeon.name} · 도전 예약", 34)
-                Ko("일반 이용객이 없는 개방 시간에만 예약할 수 있어요. 최소 30분 단위입니다.", 17, PixelColors.Lavender, false)
+                Ko(
+                    if (noSlots) "예약 기능 준비 중 · 바로 시작" else "일반 이용객이 없는 개방 시간에만 예약할 수 있어요. 최소 30분 단위입니다.",
+                    17, PixelColors.Lavender, false,
+                )
             }
             if (lots.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 lots.forEach { (l, _) ->
@@ -210,10 +215,10 @@ private fun ReservationPanel(
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Chip("도전 ×${dungeon.challengeMultiplier}", mode == RunMode.CHALLENGE, parked, Modifier.weight(1f)) { mode = RunMode.CHALLENGE }
-                Chip("연습 ×${dungeon.practiceMultiplier}", mode == RunMode.PRACTICE, parked, Modifier.weight(1f)) { mode = RunMode.PRACTICE }
+                Chip(if (noSlots) "도전" else "도전 ×${dungeon.challengeMultiplier}", mode == RunMode.CHALLENGE, parked, Modifier.weight(1f)) { mode = RunMode.CHALLENGE }
+                Chip(if (noSlots) "연습" else "연습 ×${dungeon.practiceMultiplier}", mode == RunMode.PRACTICE, parked, Modifier.weight(1f)) { mode = RunMode.PRACTICE }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (!noSlots) Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Ko("$date 개방 시간", 16, PixelColors.Lavender)
                 dungeon.openSlots.chunked(7).forEachIndexed { row, items ->
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -225,7 +230,7 @@ private fun ReservationPanel(
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                PixelPanel(Modifier.weight(1f), bg = PixelColors.Bg, padding = 18.dp) {
+                if (!noSlots) PixelPanel(Modifier.weight(1f), bg = PixelColors.Bg, padding = 18.dp) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         KV("일반 주차비", lot.fee30MinWon?.let { "30분 ${won(it)}" } ?: "정보 없음")
                         KV("P지컬 MAX 프리미엄", "× $mult")
@@ -257,8 +262,8 @@ private fun ReservationPanel(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 PixelButton("이전", parkedOnly { if (!paying) onBack() }, Modifier.widthIn(min = 200.dp), dim = !parked)
                 PixelButton(
-                    if (paying) "결제 중…" else "결제하고 ${if (mode == RunMode.CHALLENGE) "도전" else "연습"} 시작",
-                    parkedOnly { if (ready) paying = true },
+                    if (paying) "결제 중…" else "${if (noSlots) "" else "결제하고 "}${if (mode == RunMode.CHALLENGE) "도전" else "연습"} 시작",
+                    parkedOnly { if (ready) { if (noSlots) onConfirmed(Reservation(lot.id, mode, "", 0, 0)) else paying = true } },
                     Modifier.weight(1f), filled = true, dim = !parked || !ready, textSize = 24,
                 )
             }

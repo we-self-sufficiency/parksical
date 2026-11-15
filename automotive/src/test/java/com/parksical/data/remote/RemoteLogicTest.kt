@@ -54,6 +54,26 @@ class RemoteLogicTest {
         assertEquals(DifficultyFactor.STRUCTURE, factorOf("structure")); assertNull(factorOf("x"))
     }
 
+    @Test fun createFieldsNullChain() {
+        val b = createFields(ParkingSpotEstimate("lot", "B2", "A", 0.8f, 0, clientRecordId = "r1", occurredAtEpochMs = 1704067200123L),
+            LocationIds("f-b2", "z-A", "3"))
+        assertEquals(3, b["structureVersion"]); assertEquals("f-b2", b["floorId"]); assertEquals("z-A", b["zoneId"])
+        assertEquals("HIGH", b["confidence"]); assertEquals("SYNTHETIC", b["source"])
+        assertEquals("2024-01-01T00:00:00.123Z", b["occurredAt"]); assertNull(b["parkingSpaceId"]); assertNull(b["distanceM"])
+        assertEquals(10, b.size) // exactly the schema fields, no note
+        val n = createFields(spot("B9", "A"), LocationIds(null, null, null))
+        assertNull(n["structureVersion"]); assertNull(n["floorId"]); assertNull(n["zoneId"])
+        // floor without a numeric version must not leak floor/zone ids
+        val v = createFields(spot("B2", "A"), LocationIds("f", "z", "v3"))
+        assertNull(v["structureVersion"]); assertNull(v["floorId"]); assertNull(v["zoneId"])
+        assertNull(createFields(spot("B2", "Q"), LocationIds("f", null, "3"))["zoneId"])
+    }
+
+    @Test fun patchFieldsHaveVersion() {
+        val b = patchFields(spot("B2", "A"), LocationIds("f", "z", "3"), 7)
+        assertEquals(7, b["expectedVersion"]); assertEquals("z", b["zoneId"]); assertEquals(3, b["structureVersion"])
+    }
+
     @Test fun rfc3339() = assertEquals("2024-01-01T00:00:00Z", rfc3339Utc(1704067200000L))
 
     @Test fun reasons() {

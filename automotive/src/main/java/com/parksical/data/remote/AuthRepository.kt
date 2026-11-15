@@ -55,6 +55,9 @@ class AuthRepository(context: Context, private val api: ApiClient) {
         }
     }
 
+    /** Server-issued installation id (set after the first pairing); needed to open a vehicle session. */
+    fun installationId(): String? = prefs.getString(K_INST_ID, null)
+
     /** Forget only the access token (server said 401); the next [accessToken] refreshes. */
     fun invalidate() { prefs.edit().remove(K_ACCESS).remove(K_EXPIRY).apply() }
 

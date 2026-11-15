@@ -104,6 +104,7 @@ class ServerParkingRepository(
             }
             _lots.value = out
             _status.value = LotsStatus.Server
+            loadDungeons(out)
         } catch (e: Exception) {
             _lots.value = emptyList()
             _status.value = LotsStatus.Error(if (e is NoAuth) auth.lastError?.let(::fallbackReason)?.takeIf { it == "서버 연결 안 됨" } ?: "서버 인증 안 됨" else fallbackReason(e))
@@ -145,8 +146,28 @@ class ServerParkingRepository(
         }
     }
 
-    // no server dungeon source yet: MAX shows its unavailable state
-    override fun dungeon(lotId: String): Dungeon? = null
+    @Volatile private var dungeons = emptyMap<String, Dungeon>()
+
+    override fun dungeon(lotId: String): Dungeon? = dungeons[lotId]
+
+    /** One catalog call per lot; any failure (403/404/422/network) just means no dungeon for that lot. */
+    // shortcut: one request per listed lot (<=150, read limit is 300/5 min), upgrade when the server flags challenge-capable lots in the list
+    private suspend fun loadDungeons(lots: List<ParkingLot>) {
+        val found = mutableMapOf<String, Dungeon>()
+        for (lot in lots) {
+            val v = lot.structureVersion ?: continue
+            try {
+                dungeonFromCatalog(lot, get("/missions", mapOf("lotId" to lot.id, "structureVersion" to v.toString())).toMap())
+                    ?.let { found[lot.id] = it }
+            } catch (e: NoAuth) {
+                break
+            } catch (e: Exception) {
+                // no dungeon for this lot
+            }
+        }
+        dungeons = found
+        _lots.value = _lots.value.map { it.copy(challengeOpen = it.id in found) }
+    }
 
     private fun parseFee(f: JSONObject?): Int? = f?.let {
         fee30Min(
@@ -191,7 +212,7 @@ class ServerParkingRepository(
             isPartner = o.getBoolean("partnered"),
             tags = tags?.let { t -> (0 until t.length()).map(t::getString) }.orEmpty(),
             synthetic = o.optString("source") == "SYNTHETIC",
-            source = LotSource.SERVER, distanceM = o.getDouble("distanceM").toFloat(), challengeOpen = false,
+            source = LotSource.SERVER, distanceM = o.getDouble("distanceM").toFloat(), challengeOpen = false, structureVersion = if (o.isNull("version")) null else o.optInt("version"),
             serverDifficulty = parseDifficulty(o.getJSONObject("difficulty")),
             navigationLat = if (usable) nav?.getDouble("latitude") else null,
             navigationLng = if (usable) nav?.getDouble("longitude") else null,

@@ -41,6 +41,9 @@ test('real PG S-12/S-13 upgrade preserves immutable data through practice, reser
     const rankingRecords = await db.rankingRecord.findMany({ include: { run: true } });
     assert.equal(rankingRecords.length, 1); assert.equal(rankingRecords[0]!.run.mode, 'CHALLENGE'); assert.equal(rankingRecords[0]!.version, 1); assert.equal(rankingRecords[0]!.deletedAt, null);
     assert.equal(await db.rankingConsent.count(), 0); assert.equal(await db.rankingMonthSnapshot.count(), 0);
+    await sql.query(await readFile('prisma/migrations/20261115050000_payments/migration.sql','utf8'));
+    assert.deepEqual(await db.missionRun.findMany({include:{result:true},orderBy:{id:'asc'}}),before);
+    assert.equal(await db.paymentOrder.count(),0);assert.equal(await db.paymentQuote.count(),0);assert.equal(await db.sandboxProviderPayment.count(),0);
     await assert.rejects(db.rankingRecord.update({ where: { runId: rankingRecords[0]!.runId }, data: { rankingVersion: 'rankings-v2' } }));
     await assert.rejects(db.practiceRecord.update({ where: { runId: enrolled[0]!.runId }, data: { goalVersion: 'practice-v2' } }));
     await assert.rejects(db.missionRunResult.update({ where: { runId: enrolled[0]!.runId }, data: { stars: 1 } }));

@@ -39,6 +39,9 @@ import { PracticeController } from './practice/practice.controller.js';
 import { PracticeService } from './practice/practice.service.js';
 import { MissionController } from './missions/mission.controller.js';
 import { MissionService } from './missions/mission.service.js';
+import { PaymentController,PaymentWebhookController } from './payments/payment.controller.js';
+import { PaymentService } from './payments/payment.service.js';
+import { PAYMENT_PROVIDER,SandboxPaymentProvider } from './payments/provider.js';
 
 @Module({})
 class AppModule {}
@@ -46,11 +49,11 @@ class AppModule {}
 export async function createApp(config: AppConfig, sink: LogSink = defaultLogSink) {
   const app = await NestFactory.create({
     module: AppModule,
-    controllers: [RankingController, ReservationController, PracticeController, MissionController, HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController, LocationController, QrOwnerController, QrPhoneController, QrPageController],
-    providers: [{ provide: APP_CONFIG, useValue: config }, DatabaseService, AuthService, AuthGuard, RankingService, ReservationService, { provide: RESERVATION_PAYMENTS, useClass: SandboxReservationPayments }, PracticeService, MissionService, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, LocationService, QrService, { provide: PRIVATE_PHOTO_STORE, useClass: DatabasePhotoStore }, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
+    controllers: [PaymentController,PaymentWebhookController,RankingController, ReservationController, PracticeController, MissionController, HealthController, AuthController, VehicleController, LotController, DifficultyController, CatalogController, ReviewController, LocationController, QrOwnerController, QrPhoneController, QrPageController],
+    providers: [{ provide: APP_CONFIG, useValue: config }, PaymentService,{provide:PAYMENT_PROVIDER,useClass:SandboxPaymentProvider},DatabaseService, AuthService, AuthGuard, RankingService, ReservationService, { provide: RESERVATION_PAYMENTS, useClass: SandboxReservationPayments }, PracticeService, MissionService, VehicleService, LotService, DifficultyService, CatalogService, ReviewService, LocationService, QrService, { provide: PRIVATE_PHOTO_STORE, useClass: DatabasePhotoStore }, { provide: LOGIN_PROVIDER, useClass: DevelopmentLoginProvider }],
   }, { logger: false, bodyParser: false, abortOnError: false });
   app.use(requestContext(sink));
-  const ordinaryJson=json({limit:'64kb'}),photoJson=json({limit:'3mb'});
+  const ordinaryJson=json({limit:'64kb',verify:(req,_res,buf)=>{if((req as Request).path==='/api/v1/payments/webhooks/sandbox')(req as Request & {rawBody?:Buffer}).rawBody=Buffer.from(buf);}}),photoJson=json({limit:'3mb'});
   app.use((req:Request,res:Response,next:NextFunction)=>req.method==='POST' && /^\/api\/v1\/parked-locations\/[0-9a-f-]{36}\/photos$/i.test(req.path)?photoJson(req,res,next):ordinaryJson(req,res,next));
   app.use(urlencoded({ extended: false, limit: '64kb' }));
   app.setGlobalPrefix('api/v1',{exclude:['p','p/app.js','p/style.css'].map(path=>({path,method:RequestMethod.GET}))});

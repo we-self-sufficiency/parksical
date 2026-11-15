@@ -72,3 +72,5 @@ S-12 #13의 [미션·도전 기록 가이드](missions.md)는 DEV_MISSIONS_ENABL
 
 
 S-15 #16은 [합성 월간 랭킹](rankings.md)8연산·버전 있는 공개 동의/철회·기록 인정/참여 소프트 삭제·내부 S-18 합성 확정 입력을 추가한다. DEV_RANKINGS_ENABLED 기본OFF/개발 인증 필수, REAL_RANKINGS_ENABLED 불가다. Prisma migration20261115040000_rankings를 적용하고 generate/build 후 선택적으로 호출한다. 기존 미션/연습/예약·차량 contractVersion1.0은 유지한다. 실제 차체 보정/운영 인정/쿠폰·SDK/실차/배포는 완료로 취급하지 않는다.
+
+S-16 #17은 [사전결제](payments.md)10연산을 추가한다. DEV_PAYMENTS_ENABLED 기본OFF·명시 SANDBOX/별도 webhook secret/개발 인증 필수, production과 실제 청구는 차단한다. 일반 흐름은 MAX 독립, 예약 최초 연결/시도만 S-14 opt-in을 요구한다. migrate deploy→generate/build 후 선택적으로 호출한다. 로컬 S-16 검증은 native PostgreSQL18.1이고 Docker/Compose·백업 복원은 최종 head CI로 구분한다. D-05와 실제 PG·SDK/실차/배포는 미검증이다.

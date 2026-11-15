@@ -62,7 +62,11 @@ for path, methods in DOC['paths'].items():
         assert all(p['required'] for p in operation.get('parameters', []) if p['in'] == 'path')
         assert {'400', '401', '403', '404', '409', '413', '422', '429', '503'} <= set(operation['responses'])
         if method in ('post', 'patch', 'put'):
-            if operation.get('x-idempotency-policy') == 'credential-flow':
+            if operation.get('x-idempotency-policy') == 'provider-event':
+                assert path == '/payments/webhooks/sandbox' and oid == 'receiveSandboxPaymentWebhook'
+                assert operation['security'] == [{'paymentSignature': [], 'paymentTimestamp': []}]
+                assert {'X-Payment-Signature', 'X-Payment-Timestamp'} <= {p['name'] for p in operation['parameters'] if p['required']}
+            elif operation.get('x-idempotency-policy') == 'credential-flow':
                 assert path.startswith('/auth/') or (path in {'/qr/bootstrap','/qr/exchanges'} and oid in {'bootstrapQrPhone','exchangeQrGrant'}), 'Credential exception must be an approved authentication/QR flow'
             else:
                 assert any(p['name'] == 'Idempotency-Key' and p['required'] for p in operation['parameters'])

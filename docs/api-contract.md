@@ -1,8 +1,8 @@
-# 서버·차량 앱 계약 v0.13
+# 서버·차량 앱 계약 v0.14
 
-상태: 설계와 구현을 함께 추적하는 계약. S-03~S-10 및 S-12/S-13/S-14/S-15 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md)·[미션](missions.md)·[연습 리포트](practice.md)·[예약](reservations.md)·[랭킹](rankings.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
+상태: 설계와 구현을 함께 추적하는 계약. S-03~S-10 및 S-12/S-13/S-14/S-15/S-16 개발 구현 범위는 각 연산의 상태와 [인증](authentication.md)·[차량 수신](vehicle-ingestion.md)·[주차장 관리](parking-lots.md)·[난이도](difficulty.md)·[검색/상세](lot-search.md)·[리뷰](reviews.md)·[개인 위치](parked-locations.md)·[QR/휴대폰](location-qr.md)·[미션](missions.md)·[연습 리포트](practice.md)·[예약](reservations.md)·[랭킹](rankings.md)·[결제](payments.md) 안내를 따른다. 원 계약 이슈: [#2](https://github.com/we-self-sufficiency/parksical-server/issues/2). 기준: [Agent.md](../Agent.md).
 
-기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.13.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
+기계 판독 명세는 [openapi.json](openapi.json), 합성 예제와 사례 목록은 [examples/manifest.json](examples/manifest.json)이다. OpenAPI 버전은 3.1.1이며 계약 문서 버전 0.14.0, 차량 요청 contractVersion은 `1.0`이다. 이 명세는 API가 이미 배포됐다는 뜻이 아니다. D-01~D-07의 운영 정책은 [DECISIONS.md](DECISIONS.md)에서 별도로 추적한다.
 
 ## 책임과 첫 구현 범위
 
@@ -18,7 +18,8 @@
 | 개발 합성 구현 | S-12/S-13 #13/#14 | [미션·결과](missions.md)와 [연습 리포트·합성 자격](practice.md), 기본 OFF/실차 미검증 |
 | 개발 합성 구현 | S-14 #15 | [예약 정책/슬롯·원화 견적·점유/만료·취소/샌드박스](reservations.md), 기본OFF/실결제 미구현 |
 | 개발 합성 구현 | S-15 #16 | [월간 랭킹·공개 동의/철회·기록 표식](rankings.md), 기본OFF/운영 보상 불가 |
-| 후속 | S-16~S-18 #17~#19 | 거래·보상 |
+| 개발 합성 구현 | S-16 #17 | [일반 사전결제·샌드박스 검증/영수증·취소/전액 환불·예약 연동](payments.md), 기본OFF/실제 PG·청구 미구현 |
+| 후속 | S-17~S-18 #18~#19 | 구독·보상 |
 
 ## URL·버전·인증
 

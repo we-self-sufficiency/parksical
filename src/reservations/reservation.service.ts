@@ -187,7 +187,9 @@ export class ReservationService {
   }
   async sandboxEvent(p: Principal, id: string, key: string | undefined, dto: ReservationSandboxEventDto) {
     return this.mutate(p, key, 'sandbox-event:' + id, dto, async tx => {
-      const old = await this.owned(tx, p, id); await this.lotLock(tx, old.lotId); const now = await this.now(tx);
+      const old = await this.owned(tx, p, id);
+      if(await tx.paymentOrder.findUnique({where:{reservationId:id}}))throw new ApiError(409,'RESERVATION_PAYMENT_ORDER_BOUND');
+      await this.lotLock(tx, old.lotId); const now = await this.now(tx);
       await this.sweep(tx, old.lotId, now); const row = await this.owned(tx, p, id), hash = fingerprint(dto), replay = await this.action(tx, row, dto.kind, hash); if (replay) return replay;
       const evidence = this.payments.createSandboxEvidence(id, row.quote.amountKrw, dto.kind);
       if (evidence.source !== 'SANDBOX' || evidence.realPaymentVerified !== false || evidence.reservationId !== id || evidence.amountKrw !== row.quote.amountKrw || evidence.currency !== 'KRW' || evidence.kind !== dto.kind) throw new ApiError(422, 'INVALID_SANDBOX_PAYMENT_EVIDENCE');
@@ -210,5 +212,49 @@ export class ReservationService {
       await tx.reservationAction.create({ data: { reservationId: id, action: dto.kind, requestHash: hash, response: asJson(body) } });
       return { body };
     });
+  }
+
+  // Internal S-16 port: caller holds reservation-user then payment-user locks. No client evidence enters here.
+  async bindPayment(tx: Tx, userId: string, id: string) {
+    this.enabled();
+    const row=await tx.reservation.findFirst({where:{id,userId},include:{quote:true}});
+    if(!row)throw new ApiError(404,'RESOURCE_NOT_FOUND');
+    await this.lotLock(tx,row.lotId); const now=await this.now(tx);
+    await this.sweep(tx,row.lotId,now); const v=await this.current(tx,row.lotId,false);
+    if(row.state!=='HELD' || row.paymentStatus!=='NOT_STARTED' || row.holdExpiresAt<=now || row.startsAt<=now || !v.available || v.policy.version!==row.quote.policyVersion)throw new ApiError(409,'RESERVATION_PAYMENT_CLOSED');
+    return row;
+  }
+  async cancelPayment(tx: Tx, userId:string, id:string) {
+    const row=await tx.reservation.findFirstOrThrow({where:{id,userId},include:{quote:true}});
+    await this.lotLock(tx,row.lotId); const now=await this.now(tx); await this.sweep(tx,row.lotId,now);
+    if(row.startsAt<=now)throw new ApiError(409,'RESERVATION_CANCELLATION_CLOSED');
+    const current=await tx.reservation.findUniqueOrThrow({where:{id}});
+    if(['HELD','SANDBOX_CONFIRMED'].includes(current.state)){
+      const paid=current.state==='SANDBOX_CONFIRMED';
+      await tx.reservation.update({where:{id},data:{state:paid?'REFUND_PENDING':'CANCELLED',paymentStatus:paid?'SANDBOX_REFUND_REQUIRED':'NOT_STARTED',version:{increment:1},updatedAt:now}});
+      await tx.reservationClaim.deleteMany({where:{reservationId:id}});
+    }
+  }
+  async applyPayment(tx:Tx, id:string, status:'SUCCEEDED'|'FAILED'|'REFUNDED'):Promise<boolean> {
+    const old=await tx.reservation.findUniqueOrThrow({where:{id}}); await this.lotLock(tx,old.lotId);
+    const now=await this.now(tx); await this.sweep(tx,old.lotId,now);
+    const row=await tx.reservation.findUniqueOrThrow({where:{id},include:{quote:true}});
+    let state=row.state,paymentStatus=row.paymentStatus;
+    if(status==='FAILED' && state==='HELD'){state='PAYMENT_FAILED';paymentStatus='SANDBOX_FAILED';}
+    if(status==='SUCCEEDED' && !['SANDBOX_CONFIRMED','REFUND_PENDING','REFUNDED'].includes(state)){
+      const v=await this.current(tx,row.lotId,false);
+      const allowed=state==='HELD' && row.holdExpiresAt>now && row.startsAt>now && v.available && v.policy.version===row.quote.policyVersion;
+      state=allowed?'SANDBOX_CONFIRMED':'REFUND_PENDING';paymentStatus=allowed?'SANDBOX_SUCCEEDED':'SANDBOX_REFUND_REQUIRED';
+    }
+    // Refund-before-success notifications still pass through required compensation state.
+    if(status==='REFUNDED' && !['REFUND_PENDING','REFUNDED'].includes(state)){
+      await tx.reservation.update({where:{id},data:{state:'REFUND_PENDING',paymentStatus:'SANDBOX_REFUND_REQUIRED',version:{increment:1},updatedAt:now}});
+      state='REFUND_PENDING';paymentStatus='SANDBOX_REFUND_REQUIRED';
+    }
+    if(status==='REFUNDED' && state==='REFUND_PENDING'){state='REFUNDED';paymentStatus='SANDBOX_REFUNDED';}
+    const fresh=await tx.reservation.findUniqueOrThrow({where:{id}});
+    if(state!==fresh.state)await tx.reservation.update({where:{id},data:{state,paymentStatus,version:{increment:1},updatedAt:now}});
+    if(state!=='SANDBOX_CONFIRMED')await tx.reservationClaim.deleteMany({where:{reservationId:id}});
+    return state==='REFUND_PENDING' || state==='REFUNDED';
   }
 }

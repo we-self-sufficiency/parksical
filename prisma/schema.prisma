@@ -33,6 +33,9 @@ enum PairingStatus {
 }
 
 model User {
+  paymentQuotes PaymentQuote[]
+  paymentOrders PaymentOrder[]
+  paymentMutations PaymentMutation[]
   rankingConsent RankingConsent?
   rankingConsentChanges RankingConsentChange[]
   rankingMutations RankingMutation[]
@@ -205,6 +208,7 @@ model ParkingLot {
 }
 
 model LotRevision {
+  paymentQuotes PaymentQuote[]
   reservationPolicies ReservationPolicy[]
   missionRuns MissionRun[]
   lotId           String @db.Uuid
@@ -621,6 +625,7 @@ model ReservationQuote {
   @@index([userId,createdAt,id])
 }
 model Reservation {
+  paymentOrder PaymentOrder?
   id String @id @default(uuid()) @db.Uuid
   userId String @db.Uuid
   user User @relation(fields:[userId],references:[id],onDelete:Restrict)
@@ -723,4 +728,85 @@ model RankingMonthSnapshot {
   candidates Json @db.JsonB
   cohort Json @db.JsonB
   @@unique([lotId,month,cohortKey])
+}
+model PaymentQuote {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  lotId String @db.Uuid
+  structureVersion Int
+  revision LotRevision @relation(fields:[lotId,structureVersion],references:[lotId,version],onDelete:Restrict)
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt DateTime @db.Timestamptz(3)
+  amountKrw Int
+  details Json @db.JsonB
+  createdAt DateTime @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  receipt Json @db.JsonB
+  order PaymentOrder?
+}
+model PaymentOrder {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  quoteId String? @unique @db.Uuid
+  quote PaymentQuote? @relation(fields:[quoteId],references:[id],onDelete:Restrict)
+  reservationId String? @unique @db.Uuid
+  reservation Reservation? @relation(fields:[reservationId],references:[id],onDelete:Restrict)
+  lotId String @db.Uuid
+  amountKrw Int
+  currency String @default("KRW") @db.Char(3)
+  pricing Json @db.JsonB
+  state String @db.VarChar(24)
+  createdAt DateTime @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  creationReceipt Json @db.JsonB
+  attempt PaymentAttempt?
+  refund PaymentRefund?
+  receipt PaymentReceipt?
+  events PaymentProviderEvent[]
+  @@index([userId,createdAt,id])
+}
+model PaymentAttempt {
+  orderId String @id @db.Uuid
+  order PaymentOrder @relation(fields:[orderId],references:[id],onDelete:Cascade)
+  sandboxOutcome String @db.VarChar(16)
+  state String @db.VarChar(16)
+  transactionId String? @unique @db.Uuid
+}
+model PaymentRefund {
+  orderId String @id @db.Uuid
+  order PaymentOrder @relation(fields:[orderId],references:[id],onDelete:Cascade)
+  state String @db.VarChar(16)
+  amountKrw Int
+}
+model PaymentReceipt {
+  id String @id @default(uuid()) @db.Uuid
+  orderId String @unique @db.Uuid
+  order PaymentOrder @relation(fields:[orderId],references:[id],onDelete:Cascade)
+  body Json @db.JsonB
+}
+model PaymentMutation {
+  userId String @db.Uuid
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  key String @db.VarChar(64)
+  requestHash String @db.Char(64)
+  response Json? @db.JsonB
+  @@id([userId,key])
+}
+model PaymentProviderEvent {
+  eventId String @id @db.Uuid
+  orderId String @db.Uuid
+  order PaymentOrder @relation(fields:[orderId],references:[id],onDelete:Cascade)
+  requestHash String @db.Char(64)
+  response Json @db.JsonB
+}
+// Independent durable test gateway; never real charges or card data.
+model SandboxProviderPayment {
+  orderId String @id @db.Uuid
+  transactionId String @unique @db.Uuid
+  currency String @db.Char(3)
+  amountKrw Int
+  outcome String @db.VarChar(16)
+  status String @db.VarChar(16)
 }
